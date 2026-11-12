@@ -1,0 +1,150 @@
+
+.main-header {
+    width: 100%;
+    height: 75px;
+    padding: 0 5%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #064e45;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.header-logo i {
+    font-size: 29px;
+}
+
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.header-nav button {
+    border: none;
+    background: transparent;
+    color: #344b46;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.header-nav button:hover {
+    color: #159b83;
+}
+
+.header-nav button i {
+    font-size: 17px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-right button {
+    padding: 10px 19px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.header-login-btn {
+    background: #064e45;
+    color: #ffffff;
+    border: 1px solid #064e45;
+}
+
+.header-login-btn:hover {
+    background: #043c35;
+    transform: translateY(-2px);
+}
+
+
+.header-logout-btn {
+    background: #ffffff;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+
+.header-logout-btn:hover {
+    background: #dc3545;
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .main-header {
+        height: auto;
+        min-height: 70px;
+        padding: 15px 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .header-logo {
+        font-size: 19px;
+    }
+
+    .header-nav {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        gap: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-header {
+        padding: 12px 15px;
+    }
+
+    .header-logo {
+        font-size: 16px;
+    }
+
+    .header-logo i {
+        font-size: 22px;
+    }
+
+    .header-right {
+        gap: 6px;
+    }
+
+    .header-right button {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .header-nav {
+        gap: 18px;
+    }
+
+    .header-nav button {
+        font-size: 13px;
+    }
+}

@@ -1,0 +1,46 @@
+:root {
+  --primary: #064e45;
+  --primary-dark: #043c35;
+  --primary-light: #e8f3f0;
+  --background: #f5f8f7;
+  --text: #263c38;
+  --muted: #82918d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-geist-sans), sans-serif;
+  background: var(--background);
+  color: var(--text);
+}
+
+a {
+  text-decoration: none;
+}
+
+
+
+.app-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.no-sidebar .main-content {
+  width: 100%;
+  margin-left: 0;
+  padding: 0;
+}

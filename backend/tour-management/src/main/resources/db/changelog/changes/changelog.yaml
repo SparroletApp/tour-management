@@ -1,0 +1,169 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-user-table
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_user_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_forms_table
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_forms_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_form_section
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_form_section.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_form_question
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_form_question.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_form_submission
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_form_submission.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_form_answer
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_form_answer.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_form_add_slug
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_form_add_slug.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_tour_package
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_tour_package.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_tour_destination
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_tour_destination.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_iterenarary_day
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_iterenarary_day.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_tour_itirenarary
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_tour_itirenarary.sql
+            relativeToChangelogFile: true
+
+
+  - changeSet:
+      id: create_tour_hotel
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_tour_hotel.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_tour_flights
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_tour_flights.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_tour_inclusions
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_tour_inclusions.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_tour_exclusions
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_tour_exclusions.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_optional_activity
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_optional_activity.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_tour_price_rule
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_tour_price_rule.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_tour_media
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_tour_media.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_tour_destinations_add_image
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_tour_destinations_add_image.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_table_hotel_add_images
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_table_hotel_add_images.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_form_add_tour_package_id
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_form_add_tour_package_id.sql
+            relativeToChangelogFile: true

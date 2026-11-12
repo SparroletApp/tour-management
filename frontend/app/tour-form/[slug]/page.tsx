@@ -60,7 +60,6 @@ export default function PublicFormPage() {
             });
             setForm(formData);
 
-            // Keep the related tour package ID for the Tour Details page.
             const packageId = (
                 formData as FormResponseDto & { packageId?: number }
             ).packageId;
@@ -68,8 +67,6 @@ export default function PublicFormPage() {
             if (packageId) {
                 setSelectedTourId(packageId);
 
-                // Load the tour cover and code without blocking the public form
-                // if the tour details request fails.
                 try {
                     const tourResponse = await tourPackageService.getFull(
                         String(packageId)

@@ -1112,9 +1112,6 @@
     margin-left: 4px;
 }
 
-
-/* COMPACT DESTINATION CARDS */
-
 .td-destinations {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -12,8 +12,7 @@ import {
 import { getSelectedTourId } from "../../utils/tourStorage";
 import "./tour-details.css";
 
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 const imageUrl = (url?: string | null) => {
     if (!url) return "";

@@ -23,11 +23,7 @@ apiService.interceptors.request.use(
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
 
-                console.log("JWT attached to request:", config.url);
             } else {
-                console.error(
-                    "JWT TOKEN NOT FOUND in sessionStorage"
-                );
             }
         }
 

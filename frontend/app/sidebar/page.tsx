@@ -28,8 +28,8 @@ function Sidebar() {
         { name: "Dashboard", icon: "bi-graph-up-arrow", path: "/dashboard" },
         { name: "Tours", icon: "bi-truck", path: "/tours" },
         { name: "Forms", icon: "bi-file-earmark-richtext", path: "/forms" },
-        { name: "Responses", icon: "bi-chat-left-dots", path: "/responses" },
-        { name: "Settings", icon: "bi-gear", path: "/settings" },
+        // { name: "Responses", icon: "bi-chat-left-dots", path: "/responses" },
+        // { name: "Settings", icon: "bi-gear", path: "/settings" },
         // { name: "Inbox", icon: "bi-inbox", path: "/inbox" },
 
     ];

@@ -25,8 +25,15 @@ spring:
 jwt:
   secret: V7qN2xK9mR4tY8pL6sW3cF1hJ5zD9bG7uA2eX6nP4vQ8
 
+garage:
+  endpoint: ${GARAGE_ENDPOINT}
+  bucket: ${GARAGE_BUCKET:tour-images}
+  access-key: ${GARAGE_ACCESS_KEY}
+  secret-key: ${GARAGE_SECRET_KEY}
+  region: garage
+
 file:
-  upload-dir: C:/upload
+  upload-dir: uploads
 
 app:
   base-url: http://localhost:8080

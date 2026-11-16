@@ -24,7 +24,6 @@ public class CorsConfig {
                 "https://tms.rayloop.com",
                 "https://tmsapi.rayloop.com"
 
-
         ));
 
         configuration.setAllowedMethods(Arrays.asList(

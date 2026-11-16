@@ -40,7 +40,7 @@ export default function EditTourPage() {
     <div className="edit-tour-page">
         <Breadcrumb
             items={[
-                { label: "Home", href: "/" },
+              
                 { label: "Tours", href: "/tours" },
                 {
                     label: tour?.tourPackage.tourName ?? "Tour",

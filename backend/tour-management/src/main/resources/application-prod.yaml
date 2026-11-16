@@ -28,7 +28,7 @@ jwt:
 
 garage:
   endpoint: ${GARAGE_ENDPOINT}
-  bucket: ${GARAGE_BUCKET:tour-images}
+  bucket: ${GARAGE_BUCKET}
   access-key: ${GARAGE_ACCESS_KEY}
   secret-key: ${GARAGE_SECRET_KEY}
   region: garage

@@ -13,7 +13,7 @@ export default function CreateTourPage() {
     return (
         <>
             <Breadcrumb
-                items={[{ label: "Home", href: "/" }, { label: "Tours", href: "/tours" }, { label: "Create" }]}
+                items={[ { label: "Tours", href: "/tours" }, { label: "Create" }]}
             />
             <h2 style={{ marginBottom: 16 }}>Create Tour</h2>
 

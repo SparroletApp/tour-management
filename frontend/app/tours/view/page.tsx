@@ -124,7 +124,6 @@ export default function ViewTourPage() {
 
             <Breadcrumb
                 items={[
-                    { label: "Home", href: "/" },
                     { label: "Tours", href: "/tours" },
                     { label: p.tourName },
                 ]}

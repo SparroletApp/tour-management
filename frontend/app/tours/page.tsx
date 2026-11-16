@@ -21,6 +21,15 @@ function Tours() {
     const [tours, setTours] = useState<TourPackage[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+
+    const totalPages = Math.ceil(tours.length / pageSize);
+
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, tours.length);
+
+    const currentTours = tours.slice(startIndex, endIndex);
 
     const loadTours = async () => {
         try {
@@ -29,6 +38,7 @@ function Tours() {
 
             const data = await tourPackageService.getAll();
             setTours(data);
+            setCurrentPage(1);
         } catch (e) {
             setError("Failed to load tours");
         } finally {
@@ -57,14 +67,53 @@ function Tours() {
         try {
             await tourPackageService.delete(id);
 
-            setTours((prev) => prev.filter((tour) => tour.id !== id));
+            const updatedTours = tours.filter(
+                (tour) => tour.id !== id
+            );
+
+            setTours(updatedTours);
 
             if (getSelectedTourId() === String(id)) {
                 clearSelectedTourId();
             }
+            const updatedTotalPages = Math.ceil(
+                updatedTours.length / pageSize
+            );
+
+            if (currentPage > updatedTotalPages && updatedTotalPages > 0) {
+                setCurrentPage(updatedTotalPages);
+            }
         } catch (e) {
             alert("Failed to delete tour");
         }
+    };
+
+    const handlePageSizeChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        setPageSize(Number(e.target.value));
+        setCurrentPage(1);
+    };
+
+    const getPageNumbers = () => {
+        const pages: number[] = [];
+
+        let start = Math.max(1, currentPage - 2);
+        let end = Math.min(totalPages, currentPage + 2);
+
+        if (currentPage <= 2) {
+            end = Math.min(totalPages, 5);
+        }
+
+        if (currentPage >= totalPages - 1) {
+            start = Math.max(1, totalPages - 4);
+        }
+
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+
+        return pages;
     };
 
     return (
@@ -170,7 +219,7 @@ function Tours() {
                             </thead>
 
                             <tbody>
-                                {tours.map((tour) => (
+                                {currentTours.map((tour) => (
                                     <tr key={tour.id}>
                                         <td className="tour-id">
                                             #{tour.id}
@@ -217,10 +266,7 @@ function Tours() {
                                                 type="button"
                                                 className="tour-action-btn tour-view-btn"
                                                 onClick={() =>
-                                                    openTour(
-                                                        tour.id as number,
-                                                        "view"
-                                                    )
+                                                    openTour(tour.id as number, "view")
                                                 }
                                                 title="View tour"
                                             >
@@ -232,10 +278,7 @@ function Tours() {
                                                 type="button"
                                                 className="tour-action-btn tour-edit-btn"
                                                 onClick={() =>
-                                                    openTour(
-                                                        tour.id as number,
-                                                        "edit"
-                                                    )
+                                                    openTour(tour.id as number, "edit")
                                                 }
                                                 title="Edit tour"
                                             >
@@ -247,9 +290,7 @@ function Tours() {
                                                 type="button"
                                                 className="tour-action-btn tour-delete-btn"
                                                 onClick={() =>
-                                                    handleDelete(
-                                                        tour.id as number
-                                                    )
+                                                    handleDelete(tour.id as number)
                                                 }
                                                 title="Delete tour"
                                             >
@@ -261,6 +302,76 @@ function Tours() {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    <div className="tours-pagination">
+
+                        <div className="pagination-info">
+                            <span>Showing</span>
+                            <strong>{startIndex + 1}-{endIndex}</strong>
+                            <span>of</span>
+                            <strong>{tours.length}</strong>
+                            <span>tours</span>
+                        </div>
+
+                        <div className="pagination-controls">
+
+                            <div className="pagination-size">
+                                <label htmlFor="tourPageSize">
+                                    Rows per page
+                                </label>
+
+                                <select
+                                    id="tourPageSize"
+                                    value={pageSize}
+                                    onChange={handlePageSizeChange}
+                                >
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+                            </div>
+
+                            <div className="pagination-buttons">
+                                <button
+                                    type="button"
+                                    className="pagination-arrow"
+                                    disabled={currentPage === 1}
+                                    onClick={() =>
+                                        setCurrentPage((prev) => prev - 1)
+                                    }
+                                    title="Previous page"
+                                >
+                                    <i className="bi bi-chevron-left"></i>
+                                </button>
+
+                                {getPageNumbers().map((page) => (
+                                    <button
+                                        type="button"
+                                        key={page}
+                                        className={`pagination-number ${
+                                            currentPage === page ? "active" : ""
+                                        }`}
+                                        onClick={() => setCurrentPage(page)}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    className="pagination-arrow"
+                                    disabled={currentPage === totalPages}
+                                    onClick={() =>
+                                        setCurrentPage((prev) => prev + 1)
+                                    }
+                                    title="Next page"
+                                >
+                                    <i className="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

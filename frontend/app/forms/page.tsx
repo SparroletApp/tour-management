@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { MouseEvent } from "react";
 import Link from "next/link";
@@ -14,9 +14,12 @@ export default function Forms() {
     const [forms, setForms] = useState<FormResponseDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
     const [openMenu, setOpenMenu] = useState<number | null>(null);
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
     const [mounted, setMounted] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     useEffect(() => {
         setMounted(true);
@@ -31,12 +34,56 @@ export default function Forms() {
 
             setForms(data);
             setError("");
+            setCurrentPage(1);
         } catch (err) {
             console.error(err);
             setError("Unable to load forms.");
         } finally {
             setLoading(false);
         }
+    };
+
+    const sortedForms = useMemo(() => {
+        return [...forms].sort((a, b) => {
+            const dateA = a.createdAt
+                ? new Date(a.createdAt).getTime()
+                : 0;
+
+            const dateB = b.createdAt
+                ? new Date(b.createdAt).getTime()
+                : 0;
+
+            return dateB - dateA;
+        });
+    }, [forms]);
+
+    const totalForms = sortedForms.length;
+    const totalPages = Math.ceil(totalForms / pageSize);
+
+    const paginatedForms = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize;
+
+        return sortedForms.slice(
+            startIndex,
+            startIndex + pageSize
+        );
+    }, [sortedForms, currentPage, pageSize]);
+
+    const startRecord =
+        totalForms === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+
+    const endRecord = Math.min(currentPage * pageSize, totalForms);
+
+    const changePage = (page: number) => {
+        if (page < 1 || page > totalPages) return;
+        setCurrentPage(page);
+        closeMenu();
+    };
+
+    const handlePageSizeChange = (value: number) => {
+        setPageSize(value);
+        setCurrentPage(1);
+        closeMenu();
     };
 
     const closeMenu = () => {
@@ -130,13 +177,11 @@ export default function Forms() {
 
         try {
             await formBuilderService.forms.delete({ id });
-
             await loadForms();
 
             showToast("success", "Form deleted successfully!");
         } catch (err) {
             console.error(err);
-
             showToast("error", "Unable to delete form.");
         }
     };
@@ -183,11 +228,9 @@ export default function Forms() {
             await navigator.clipboard.writeText(getPublicUrl(slug));
 
             closeMenu();
-
             showToast("success", "Form link copied successfully!");
         } catch (err) {
             console.error(err);
-
             showToast("error", "Unable to copy form link.");
         }
     };
@@ -225,7 +268,7 @@ export default function Forms() {
 
     return (
         <section className="forms">
-  
+
             <div className="forms-header">
                 <div>
                     <h1>Forms</h1>
@@ -251,6 +294,7 @@ export default function Forms() {
                     {error}
                 </div>
             )}
+
             {!loading && !error && forms.length === 0 && (
                 <div className="forms-empty">
                     <div className="forms-empty-icon">
@@ -268,106 +312,203 @@ export default function Forms() {
             )}
 
             {!loading && !error && forms.length > 0 && (
-                <div className="forms-table-wrapper">
-                    <table className="forms-table">
-                        <thead>
-                            <tr>
-                                <th>Form Name</th>
-                                <th>Status</th>
-                                <th>Multiple Submissions</th>
-                                <th>Created</th>
-                                <th className="forms-actions-heading">Actions</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {forms.map((form) => (
-                                <tr key={form.id}>
-                                    <td className="forms-name-cell">
-                                        <strong>{form.formTitle}</strong>
-                                        <small>
-                                            {form.formDescription || "No description"}
-                                        </small>
-                                    </td>
-
-                                    <td>
-                                        <span
-                                            className={`form-status ${form.status.toLowerCase()}`}
-                                        >
-                                            <span className="status-dot"></span>
-                                            {form.status}
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <span className="forms-submission-text">
-                                            {form.allowMultipleSubmissions
-                                                ? "Allowed"
-                                                : "Not allowed"}
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <span className="forms-date">
-                                            {form.createdAt
-                                                ? new Date(form.createdAt).toLocaleDateString()
-                                                : "-"}
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <div className="forms-actions">
-
-                                            <Link
-                                                href={`/forms/${form.slug}/builder`}
-                                                className="action-icon-btn"
-                                                data-tooltip="Open Builder"
-                                                aria-label="Open Builder"
-                                            >
-                                                <i className="bi bi-layout-text-window-reverse"></i>
-                                            </Link>
-
-                                            <Link
-                                                href={`/forms/${form.slug}/edit`}
-                                                className="action-icon-btn"
-                                                data-tooltip="Edit Form"
-                                                aria-label="Edit Form"
-                                            >
-                                                <i className="bi bi-pencil-square"></i>
-                                            </Link>
-
-                                            <Link
-                                                href={`/forms/${form.slug}/submissions`}
-                                                className="action-icon-btn"
-                                                data-tooltip="View Responses"
-                                                aria-label="View Responses"
-                                            >
-                                                <i className="bi bi-chat-left-text"></i>
-                                            </Link>
-
-                                            <div className="forms-more-wrapper">
-                                                <button
-                                                    type="button"
-                                                    className={`action-icon-btn more-btn ${openMenu === form.id ? "active" : ""
-                                                        }`}
-                                                    data-tooltip="More Actions"
-                                                    aria-label="More Actions"
-                                                    aria-expanded={openMenu === form.id}
-                                                    onClick={(event) =>
-                                                        toggleMenu(form.id, event)
-                                                    }
-                                                >
-                                                    <i className="bi bi-three-dots-vertical"></i>
-                                                </button>
-                                            </div>
-
-                                        </div>
-                                    </td>
+                <>
+                    <div className="forms-table-wrapper">
+                        <table className="forms-table">
+                            <thead>
+                                <tr>
+                                    <th>Form Name</th>
+                                    <th>Status</th>
+                                    <th>Multiple Submissions</th>
+                                    <th>Created</th>
+                                    <th className="forms-actions-heading">
+                                        Actions
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+
+                            <tbody>
+                                {paginatedForms.map((form) => (
+                                    <tr key={form.id}>
+                                        <td className="forms-name-cell">
+                                            <strong>{form.formTitle}</strong>
+                                            <small>
+                                                {form.formDescription || "No description"}
+                                            </small>
+                                        </td>
+
+                                        <td>
+                                            <span
+                                                className={`form-status ${form.status.toLowerCase()}`}
+                                            >
+                                                <span className="status-dot"></span>
+                                                {form.status}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span className="forms-submission-text">
+                                                {form.allowMultipleSubmissions
+                                                    ? "Allowed"
+                                                    : "Not allowed"}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span className="forms-date">
+                                                {form.createdAt
+                                                    ? new Date(form.createdAt).toLocaleDateString()
+                                                    : "-"}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <div className="forms-actions">
+
+                                                <Link
+                                                    href={`/forms/${form.slug}/builder`}
+                                                    className="action-icon-btn"
+                                                    data-tooltip="Open Builder"
+                                                    aria-label="Open Builder"
+                                                >
+                                                    <i className="bi bi-layout-text-window-reverse"></i>
+                                                </Link>
+
+                                                <Link
+                                                    href={`/forms/${form.slug}/edit`}
+                                                    className="action-icon-btn"
+                                                    data-tooltip="Edit Form"
+                                                    aria-label="Edit Form"
+                                                >
+                                                    <i className="bi bi-pencil-square"></i>
+                                                </Link>
+
+                                                <Link
+                                                    href={`/forms/${form.slug}/submissions`}
+                                                    className="action-icon-btn"
+                                                    data-tooltip="View Responses"
+                                                    aria-label="View Responses"
+                                                >
+                                                    <i className="bi bi-chat-left-text"></i>
+                                                </Link>
+
+                                                <div className="forms-more-wrapper">
+                                                    <button
+                                                        type="button"
+                                                        className={`action-icon-btn more-btn ${
+                                                            openMenu === form.id ? "active" : ""
+                                                        }`}
+                                                        data-tooltip="More Actions"
+                                                        aria-label="More Actions"
+                                                        aria-expanded={openMenu === form.id}
+                                                        onClick={(event) =>
+                                                            toggleMenu(form.id, event)
+                                                        }
+                                                    >
+                                                        <i className="bi bi-three-dots-vertical"></i>
+                                                    </button>
+                                                </div>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="forms-pagination">
+
+                        <div className="forms-pagination-info">
+                            <span>Showing</span>
+
+                            <strong>{startRecord}-{endRecord}</strong>
+
+                            <span>of</span>
+
+                            <strong>{totalForms}</strong>
+
+                            <span>forms</span>
+                        </div>
+
+                        <div className="forms-pagination-controls">
+
+                            <div className="forms-page-size">
+                                <label htmlFor="forms-page-size">
+                                    Rows per page
+                                </label>
+
+                                <select
+                                    id="forms-page-size"
+                                    value={pageSize}
+                                    onChange={(e) =>
+                                        handlePageSizeChange(Number(e.target.value))
+                                    }
+                                >
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+                            </div>
+
+                            <div className="forms-page-buttons">
+
+                                <button
+                                    type="button"
+                                    className="forms-page-btn"
+                                    disabled={currentPage === 1}
+                                    onClick={() => changePage(currentPage - 1)}
+                                    aria-label="Previous page"
+                                >
+                                    <i className="bi bi-chevron-left"></i>
+                                </button>
+
+                                {Array.from(
+                                    { length: totalPages },
+                                    (_, index) => index + 1
+                                )
+                                    .filter((page) => {
+                                        return (
+                                            page === 1 ||
+                                            page === totalPages ||
+                                            Math.abs(page - currentPage) <= 1
+                                        );
+                                    })
+                                    .map((page, index, pages) => (
+                                        <span key={page} className="forms-page-item">
+                                            {index > 0 &&
+                                                page - pages[index - 1] > 1 && (
+                                                    <span className="forms-page-dots">
+                                                        ...
+                                                    </span>
+                                                )}
+
+                                            <button
+                                                type="button"
+                                                className={`forms-page-btn ${
+                                                    currentPage === page ? "active" : ""
+                                                }`}
+                                                onClick={() => changePage(page)}
+                                            >
+                                                {page}
+                                            </button>
+                                        </span>
+                                    ))}
+
+                                <button
+                                    type="button"
+                                    className="forms-page-btn"
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => changePage(currentPage + 1)}
+                                    aria-label="Next page"
+                                >
+                                    <i className="bi bi-chevron-right"></i>
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+                </>
             )}
 
             {mounted && openMenu !== null && selectedForm &&
@@ -451,18 +592,6 @@ export default function Forms() {
                                     </button>
                                 </>
                             )}
-
-                            {/* {selectedForm.status === "CLOSED" && (
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        changeStatus(selectedForm.id, "publish")
-                                    }
-                                >
-                                    <i className="bi bi-arrow-repeat"></i>
-                                    <span>Reopen Form</span>
-                                </button>
-                            )} */}
 
                             <div className="dropdown-divider"></div>
 

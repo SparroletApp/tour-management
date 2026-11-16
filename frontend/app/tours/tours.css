@@ -313,6 +313,139 @@
 }
 
 
+/* Pagination */
+
+.tours-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 22px;
+    border-top: 1px solid #edf0f2;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #82918d;
+    font-size: 13px;
+}
+
+.pagination-info strong {
+    color: #263c38;
+    font-weight: 600;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.pagination-size {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.pagination-size label {
+    color: #687873;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.pagination-size select {
+    height: 35px;
+    min-width: 65px;
+    padding: 0 9px;
+    border: 1px solid #dfe7e4;
+    border-radius: 6px;
+    background: #fff;
+    color: #263c38;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+}
+
+.pagination-size select:focus {
+    border-color: #064e45;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pagination-arrow,
+.pagination-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 9px;
+    border: 1px solid #e3e9e7;
+    border-radius: 6px;
+    background: #fff;
+    color: #52645f;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pagination-number:hover:not(.active),
+.pagination-arrow:hover:not(:disabled) {
+    background: #e8f3f0;
+    border-color: #064e45;
+    color: #064e45;
+}
+
+.pagination-number.active {
+    background: #064e45;
+    border-color: #064e45;
+    color: #fff;
+    font-weight: 600;
+}
+
+.pagination-arrow:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+    .tours-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pagination-controls {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .pagination-info {
+        font-size: 12px;
+    }
+
+    .pagination-buttons {
+        gap: 3px;
+    }
+
+    .pagination-arrow,
+    .pagination-number {
+        min-width: 30px;
+        height: 32px;
+        padding: 0 7px;
+    }
+}
+
+
+
 .tours-table-top{
     padding: 20px;
 }

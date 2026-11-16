@@ -56,7 +56,7 @@ function Header() {
                 </button>
 
                 {/* CENTER - NAVIGATION */}
-                <nav className={`header-nav ${menuOpen ? "active" : ""}`}>
+                {/* <nav className={`header-nav ${menuOpen ? "active" : ""}`}>
 
                     <button
                         className="nav-link active"
@@ -74,7 +74,7 @@ function Header() {
                         <span>Available Tours</span>
                     </button>
 
-                </nav>
+                </nav> */}
 
                 {/* RIGHT SIDE - AUTH BUTTONS */}
                 <div className={`header-right ${menuOpen ? "active" : ""}`}>

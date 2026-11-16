@@ -11,6 +11,7 @@ import {
 } from "../../types/tour";
 import { getSelectedTourId } from "../../utils/tourStorage";
 import "./tour-details.css";
+import Header from "@/app/header/page";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
@@ -258,27 +259,7 @@ function TourDetails() {
         <div className="td-site">
 
 
-            <header className="td-header">
-                <div className="td-header-inner">
-                    <div className="td-logo">
-                        <span className="td-logo-icon">
-                            <i className="bi bi-airplane-fill"></i>
-                        </span>
-
-                        <div className="td-logo-content">
-                            <span className="td-logo-name">
-                                Travel<span>World</span>
-                            </span>
-                            <small>DISCOVER. EXPLORE. EXPERIENCE.</small>
-                        </div>
-                    </div>
-
-                    <div className="td-header-tagline">
-                        <i className="bi bi-globe-americas"></i>
-                        <span>Your journey begins here</span>
-                    </div>
-                </div>
-            </header>
+            <Header/>
 
             <main className="td-page">
 

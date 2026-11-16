@@ -1,5 +1,6 @@
 
 import api from "./apiservice";
+import axios from "axios";
 
 export interface ImageUploadResponse {
     message: string;
@@ -13,7 +14,12 @@ export const uploadService = {
 
         const response = await api.post<ImageUploadResponse>(
             "/api/uploads/image",
-            formData
+            formData,
+            {
+                headers: {
+                    "Content-Type": undefined as any,
+                },
+            }
         );
 
         return response;
@@ -23,7 +29,7 @@ export const uploadService = {
 export const getImageUrl = (url?: string | null): string => {
     if (!url) return "";
 
-    // Already a complete URL (for example, a Garage presigned URL)
+    // Already a complete URL (Garage S3 URL)
     if (/^https?:\/\//i.test(url)) {
         return url;
     }

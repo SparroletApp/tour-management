@@ -54,7 +54,7 @@ function Sidebar() {
 
         if (result.isConfirmed) {
             sessionStorage.clear();
-    
+
 
             await Swal.fire({
                 title: "Logged Out!",
@@ -66,27 +66,21 @@ function Sidebar() {
                 showConfirmButton: false,
             });
 
-            router.replace("/");
+            router.replace("/login");
         }
     };
 
     return (
         <aside className={`sidebar ${collapsed ? "collapsed" : "expanded"}`}>
-
-
-
             <div className={`sidebar-logo ${collapsed ? "logo-collapsed" : "logo-expanded"}`}>
-
                 <div className="bonv-brand">
                     <div className="bonv-icon">
                         B
                     </div>
-
                     {!collapsed && (
                         <span className="bonv-text">bonv</span>
                     )}
                 </div>
-
                 <button
                     type="button"
                     className="sidebar-toggle"
@@ -96,13 +90,8 @@ function Sidebar() {
                 >
                     <i className={`bi ${collapsed ? "bi-chevron-right" : "bi-chevron-left"}`} />
                 </button>
-
             </div>
-
-
             <div className="sidebar-menu">
-
-
                 <nav className="sidebar-nav">
                     {menuItems.map((item) => (
                         <Link
@@ -119,7 +108,6 @@ function Sidebar() {
                                     {item.name}
                                 </span>
                             )}
-
                             {collapsed && (
                                 <span className="sidebar-tooltip">
                                     {item.name}
@@ -129,7 +117,6 @@ function Sidebar() {
                     ))}
                 </nav>
             </div>
-
             <div className="sidebar-bottom">
                 <button
                     type="button"
@@ -138,13 +125,11 @@ function Sidebar() {
                     title={collapsed ? "Logout" : undefined}
                 >
                     <i className="bi bi-box-arrow-right" />
-
                     {!collapsed && (
                         <span className="sidebar-link-text">
                             Logout
                         </span>
                     )}
-
                     {collapsed && (
                         <span className="sidebar-tooltip">
                             Logout
@@ -152,7 +137,6 @@ function Sidebar() {
                     )}
                 </button>
             </div>
-
         </aside >
     );
 }

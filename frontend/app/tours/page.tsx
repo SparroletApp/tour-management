@@ -118,13 +118,6 @@ function Tours() {
 
     return (
         <div className="tours-page">
-            <Breadcrumb
-                items={[
-                    { label: "Home", href: "/" },
-                    { label: "Tours" },
-                ]}
-            />
-
             <div className="tours-header">
                 <div className="tours-header-content">
                     <h2 className="tours-title">Tours</h2>
@@ -132,12 +125,10 @@ function Tours() {
                         Manage and organize all your tour packages.
                     </p>
                 </div>
-
                 <button
                     type="button"
                     className="create-tour-btn"
-                    onClick={() => router.push("/tours/create")}
-                >
+                    onClick={() => router.push("/tours/create")}>
                     <i className="bi bi-plus-lg"></i>
                     <span>Create Tour</span>
                 </button>
@@ -158,8 +149,7 @@ function Tours() {
                     <button
                         type="button"
                         className="tours-retry-btn"
-                        onClick={loadTours}
-                    >
+                        onClick={loadTours}>
                         Retry
                     </button>
                 </div>

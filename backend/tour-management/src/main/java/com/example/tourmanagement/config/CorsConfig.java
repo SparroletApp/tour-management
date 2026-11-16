@@ -22,7 +22,7 @@ public class CorsConfig {
                 "http://127.0.0.1:3000",
                 "http://n11njfppsv3ytlzluyvhpz2y.187.127.182.225.sslip.io",
                 "https://tms.rayloop.com",
-                "https://tmsapi.rayloop.com/"
+                "https://tmsapi.rayloop.com"
 
 
         ));

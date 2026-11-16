@@ -74,6 +74,11 @@ export default function ImageUpload({
 
             for (const file of files) {
                 const response = await uploadService.uploadImage(file);
+
+                if (!response.imageUrl) {
+                    throw new Error("Image URL was not returned by the server.");
+                }
+
                 uploadedUrls.push(response.imageUrl);
             }
 
@@ -99,11 +104,7 @@ export default function ImageUpload({
             (_, imageIndex) => imageIndex !== index
         );
 
-        if (multiple) {
-            onChange(updatedImages);
-        } else {
-            onChange("");
-        }
+        onChange(multiple ? updatedImages : "");
     };
 
     return (
@@ -144,7 +145,9 @@ export default function ImageUpload({
                                 ? "Select one or more images"
                                 : "Select an image from your computer"}
                         </span>
-                        <small>JPG, PNG, WEBP or GIF · Maximum 10 MB</small>
+                        <small>
+                            JPG, PNG, WEBP or GIF · Maximum 10 MB
+                        </small>
                     </>
                 )}
             </div>

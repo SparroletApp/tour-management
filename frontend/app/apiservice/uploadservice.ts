@@ -13,12 +13,7 @@ export const uploadService = {
 
         const response = await api.post<ImageUploadResponse>(
             "/api/uploads/image",
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            }
+            formData
         );
 
         return response;
@@ -28,6 +23,7 @@ export const uploadService = {
 export const getImageUrl = (url?: string | null): string => {
     if (!url) return "";
 
+    // Already a complete URL (for example, a Garage presigned URL)
     if (/^https?:\/\//i.test(url)) {
         return url;
     }

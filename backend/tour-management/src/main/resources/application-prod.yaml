@@ -26,14 +26,17 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
 
-file:
-  upload-dir: C:/upload
+garage:
+  endpoint: ${GARAGE_ENDPOINT}
+  bucket: ${GARAGE_BUCKET:tour-images}
+  access-key: ${GARAGE_ACCESS_KEY}
+  secret-key: ${GARAGE_SECRET_KEY}
+  region: garage
 
 app:
   base-url: ${APP_BASE_URL}
 
 logging:
   level:
-    org.springframework.security: TRACE
+    org.springframework.security: INFO
     com.example.tourmanagement.config: DEBUG
-

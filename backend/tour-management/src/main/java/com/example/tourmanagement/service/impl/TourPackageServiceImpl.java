@@ -7,10 +7,14 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.example.tourmanagement.service.GarageStorageService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.tourmanagement.dto.tourdto.*;
@@ -24,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage, TourPackageDto>
         implements TourPackageService {
-
+    private final GarageStorageService garageStorageService;
     private final TourPackageRepository packageRepo;
     private final TourDestinationRepository destinationRepo;
     private final TourFlightRepository flightRepo;
@@ -90,13 +94,18 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
         }
     }
 
-    /** Deleting a package also deletes everything that belongs to it (no JPA cascade, only plain ids). */
     @Override
     @Transactional
     public void delete(Long id) {
-        findEntity(id); // 404 if missing
+
+        TourPackage pkg = findEntity(id);
+
+        String coverImage = pkg.getCoverImageUrl();
         deleteChildren(id);
         packageRepo.deleteById(id);
+        if (coverImage != null && !coverImage.isBlank()) {
+            deleteFromGarageAfterCommit(coverImage);
+        }
     }
 
 
@@ -293,6 +302,51 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
 
     private static ResponseStatusException bad(String message) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @Override
+    @Transactional
+    public String uploadCoverImage(Long id, MultipartFile file) {
+
+        TourPackage pkg = findEntity(id);
+        String oldImage = pkg.getCoverImageUrl();
+        String newImage = garageStorageService.uploadImage(
+                file,
+                "tours/covers"
+        );
+
+        try {
+            pkg.setCoverImageUrl(newImage);
+            packageRepo.save(pkg);
+
+        } catch (RuntimeException ex) {
+
+            garageStorageService.deleteImage(newImage);
+
+            throw ex;
+        }
+
+        if (oldImage != null
+                && !oldImage.isBlank()
+                && !oldImage.equals(newImage)) {
+
+            deleteFromGarageAfterCommit(oldImage);
+        }
+
+        return newImage;
+    }
+
+    private void deleteFromGarageAfterCommit(String objectKey) {
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+
+                    @Override
+                    public void afterCommit() {
+                        garageStorageService.deleteImage(objectKey);
+                    }
+                }
+        );
     }
 
     private static <T> List<T> orEmpty(List<T> list) {

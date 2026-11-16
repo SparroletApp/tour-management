@@ -20,7 +20,7 @@ public abstract class BaseCrudController<D> {
         return crudService().findAll();
     }
 
-    @GetMapping("/{id}")
+    @   PostMapping("/{id}")
     public D getById(@PathVariable Long id) {
         return crudService().findById(id);
     }
@@ -31,12 +31,12 @@ public abstract class BaseCrudController<D> {
         return crudService().create(body);
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/{id}")
     public D update(@PathVariable Long id, @RequestBody D body) {
         return crudService().update(id, body);
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         crudService().delete(id);

@@ -20,7 +20,8 @@ public class CorsConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
-                "http://n11njfppsv3ytlzluyvhpz2y.187.127.182.225.sslip.io"
+                "http://n11njfppsv3ytlzluyvhpz2y.187.127.182.225.sslip.io",
+                "https://tmsapi.rayloop.com/"
 
         ));
 

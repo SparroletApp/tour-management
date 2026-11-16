@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { tourPackageService } from "../apiservice/tourservice";
-import { TourDestination, TourPackage } from "../types/tour";
+import { TourPackage } from "../types/tour";
 import "./landing-page.css";
 
 function LandingPage() {
@@ -13,6 +13,7 @@ function LandingPage() {
     const [tours, setTours] = useState<TourPackage[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
     useEffect(() => {
         const loadTours = async () => {
             try {
@@ -21,7 +22,7 @@ function LandingPage() {
 
                 const data = await tourPackageService.getAll();
                 setTours(data);
-            } catch (error) {
+            } catch {
                 setError("Failed to load tours. Please try again.");
             } finally {
                 setLoading(false);
@@ -47,16 +48,31 @@ function LandingPage() {
             String(tour.id)
         );
 
-        router.push(`/tour-details/${encodeURIComponent(tour.tourCode)}`);
+        router.push(
+            `/tour-details/${encodeURIComponent(tour.tourCode)}`
+        );
+    };
+
+    const scrollToTours = () => {
+        document.getElementById("available-tours")?.scrollIntoView({
+            behavior: "smooth",
+        });
     };
 
     return (
-        <div className="landing-page">
+        <main className="landing-page">
+
+            {/* HERO SECTION */}
             <section className="landing-hero">
+
+                <div className="landing-hero-overlay"></div>
+
                 <div className="landing-hero-content">
-                    <span className="landing-tag">
+
+                    <div className="landing-tag">
+                        <i className="bi bi-globe-americas"></i>
                         EXPLORE THE WORLD
-                    </span>
+                    </div>
 
                     <h1>
                         Discover Your Next
@@ -66,79 +82,189 @@ function LandingPage() {
                     <p>
                         Explore amazing destinations, discover unique
                         experiences and find the perfect tour package
-                        for your next journey.
+                        for your next journey. Your unforgettable
+                        adventure starts here.
                     </p>
 
-                    <button
-                        className="landing-explore-btn"
-                        onClick={() =>
-                            document.getElementById("available-tours")
-                                ?.scrollIntoView({ behavior: "smooth" })
-                        }
-                    >
-                        Explore Tours
-                        <i className="bi bi-arrow-right"></i>
-                    </button>
+                    <div className="landing-hero-actions">
+                        <button
+                            className="landing-explore-btn"
+                            onClick={scrollToTours}
+                        >
+                            Explore Tours
+                            <i className="bi bi-arrow-up-right"></i>
+                        </button>
+
+                        <button
+                            className="landing-secondary-btn"
+                            onClick={scrollToTours}
+                        >
+                            <i className="bi bi-compass"></i>
+                            Discover Destinations
+                        </button>
+                    </div>
+
+                    <div className="landing-hero-bottom">
+                        <div className="landing-hero-bottom-icon">
+                            <i className="bi bi-airplane"></i>
+                        </div>
+
+                        <div>
+                            <strong>Make Every Journey Special</strong>
+                            <span>Discover places. Create memories.</span>
+                        </div>
+                    </div>
+
                 </div>
+
+                {/* FLOATING CARD */}
+                <div className="landing-floating-card">
+                    <div className="landing-floating-icon">
+                        <i className="bi bi-map"></i>
+                    </div>
+
+                    <div>
+                        <strong>{tours.length}+</strong>
+                        <span>Tour Packages</span>
+                    </div>
+                </div>
+
+                <div className="landing-scroll-indicator">
+                    <span></span>
+                    SCROLL TO EXPLORE
+                </div>
+
             </section>
 
-            <section className="landing-tours-section" id="available-tours">
+            {/* FEATURES */}
+            <section className="landing-features">
+
+                <div className="landing-feature">
+                    <div className="landing-feature-icon">
+                        <i className="bi bi-geo-alt"></i>
+                    </div>
+
+                    <div>
+                        <h4>Amazing Destinations</h4>
+                        <p>Explore beautiful places</p>
+                    </div>
+                </div>
+
+                <div className="landing-feature">
+                    <div className="landing-feature-icon">
+                        <i className="bi bi-calendar-heart"></i>
+                    </div>
+
+                    <div>
+                        <h4>Memorable Journeys</h4>
+                        <p>Create lasting memories</p>
+                    </div>
+                </div>
+
+                <div className="landing-feature">
+                    <div className="landing-feature-icon">
+                        <i className="bi bi-stars"></i>
+                    </div>
+
+                    <div>
+                        <h4>Unique Experiences</h4>
+                        <p>Every trip is special</p>
+                    </div>
+                </div>
+
+            </section>
+
+            {/* TOUR PACKAGES */}
+            <section
+                className="landing-tours-section"
+                id="available-tours"
+            >
 
                 <div className="landing-section-header">
-                    <div>
+
+                    <div className="landing-section-heading">
+
                         <span className="landing-section-label">
+                            <span></span>
                             FIND YOUR JOURNEY
                         </span>
 
-                        <h2>Explore Our Tour Packages</h2>
+                        <h2>
+                            Explore Our
+                            <span> Tour Packages</span>
+                        </h2>
 
                         <p>
                             Choose your destination and start planning
-                            your next adventure.
+                            your next adventure. Discover exciting
+                            journeys and unforgettable experiences.
                         </p>
+
                     </div>
 
-                    <span className="landing-tour-count">
-                        {tours.length} Tours Available
-                    </span>
+                    <div className="landing-tour-count">
+                        <i className="bi bi-globe2"></i>
+
+                        <div>
+                            <strong>{tours.length}</strong>
+                            <span>Tours Available</span>
+                        </div>
+                    </div>
+
                 </div>
 
+                {/* LOADING */}
                 {loading && (
                     <div className="landing-loading">
                         <span className="landing-spinner"></span>
-                        <p>Loading tour packages...</p>
+                        <h3>Discovering amazing journeys...</h3>
+                        <p>Loading tour packages. Please wait.</p>
                     </div>
                 )}
 
+                {/* ERROR */}
                 {!loading && error && (
                     <div className="landing-error">
                         <i className="bi bi-exclamation-circle"></i>
-                        {error}
+                        <h3>Unable to Load Tours</h3>
+                        <p>{error}</p>
                     </div>
                 )}
 
+                {/* EMPTY */}
                 {!loading && !error && tours.length === 0 && (
                     <div className="landing-empty">
-                        <i className="bi bi-map"></i>
+                        <div className="landing-empty-icon">
+                            <i className="bi bi-map"></i>
+                        </div>
+
                         <h3>No Tours Available</h3>
-                        <p>Tour packages will appear here.</p>
+
+                        <p>
+                            Exciting destinations will appear here.
+                            Please check back later.
+                        </p>
                     </div>
                 )}
 
+                {/* TOUR GRID */}
                 {!loading && !error && tours.length > 0 && (
                     <div className="landing-tours-grid">
 
                         {tours.map((tour) => (
-                            <div
+                            <article
                                 className="landing-tour-card"
                                 key={tour.id}
                                 onClick={() => openTour(tour)}
                             >
+
+                                {/* IMAGE */}
                                 <div className="landing-tour-image">
+
                                     {tour.coverImageUrl ? (
                                         <img
                                             src={tour.coverImageUrl}
-                                            alt={tour.tourName}
+                                            alt={tour.tourName || "Tour destination"}
                                             className="landing-tour-cover"
                                         />
                                     ) : (
@@ -147,38 +273,55 @@ function LandingPage() {
                                         </div>
                                     )}
 
+                                    <div className="landing-image-overlay"></div>
+
                                     <span className="landing-tour-status">
                                         {tour.status ?? "Draft"}
                                     </span>
-                                </div>
-                                <div className="landing-tour-content">
 
                                     <span className="landing-tour-code">
                                         {tour.tourCode ?? "-"}
                                     </span>
 
-                                    <h3>{tour.tourName}</h3>
+                                </div>
+
+                                {/* CONTENT */}
+                                <div className="landing-tour-content">
+
+                                    <div className="landing-tour-title-row">
+                                        <h3>{tour.tourName}</h3>
+
+                                        <i className="bi bi-arrow-up-right"></i>
+                                    </div>
 
                                     <p className="landing-tour-description">
                                         {tour.description ||
                                             "Discover this amazing tour package and explore new destinations."}
                                     </p>
 
-                                    <div className="landing-tour-info">
-                                        <span>
-                                            <i className="bi bi-moon-stars"></i>
-                                            {tour.durationDays ?? 0} Days /
-                                            {" "}
-                                            {tour.durationNights ?? 0} Nights
-                                        </span>
-                                    </div>
+                                    <div className="landing-tour-divider"></div>
 
-                                    <div className="landing-tour-dates">
-                                        <i className="bi bi-calendar3"></i>
-                                        <span>
-                                            {tour.startDate ?? "-"} -{" "}
-                                            {tour.endDate ?? "-"}
-                                        </span>
+                                    <div className="landing-tour-details">
+
+                                        <div className="landing-tour-info">
+                                            <i className="bi bi-moon-stars"></i>
+
+                                            <span>
+                                                {tour.durationDays ?? 0} Days /
+                                                {" "}
+                                                {tour.durationNights ?? 0} Nights
+                                            </span>
+                                        </div>
+
+                                        <div className="landing-tour-info">
+                                            <i className="bi bi-calendar3"></i>
+
+                                            <span>
+                                                {tour.startDate ?? "-"} -{" "}
+                                                {tour.endDate ?? "-"}
+                                            </span>
+                                        </div>
+
                                     </div>
 
                                     <button
@@ -193,14 +336,48 @@ function LandingPage() {
                                     </button>
 
                                 </div>
-                            </div>
+
+                            </article>
                         ))}
 
                     </div>
                 )}
+
             </section>
 
-        </div>
+            {/* BOTTOM CTA */}
+            <section className="landing-bottom-cta">
+
+                <div className="landing-cta-content">
+                    <span>YOUR NEXT ADVENTURE AWAITS</span>
+
+                    <h2>
+                        Ready to Explore
+                        <br />
+                        the World?
+                    </h2>
+
+                    <p>
+                        Find your dream destination and make your
+                        next journey truly unforgettable.
+                    </p>
+                </div>
+
+                <button
+                    className="landing-cta-btn"
+                    onClick={scrollToTours}
+                >
+                    Explore All Tours
+                    <i className="bi bi-arrow-right"></i>
+                </button>
+
+                <div className="landing-cta-decoration">
+                    <i className="bi bi-globe-americas"></i>
+                </div>
+
+            </section>
+
+        </main>
     );
 }
 

@@ -25,6 +25,9 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
 
+server:
+  forward-headers-strategy: framework
+
 garage:
   endpoint: ${GARAGE_ENDPOINT}
   bucket: ${GARAGE_BUCKET}

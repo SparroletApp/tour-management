@@ -30,14 +30,12 @@ garage:
   bucket: ${GARAGE_BUCKET}
   access-key: ${GARAGE_ACCESS_KEY}
   secret-key: ${GARAGE_SECRET_KEY}
+  public-base-url: ${GARAGE_PUBLIC_BASE_URL}
   region: garage
 
 
-file:
-  upload-dir: uploads
-
 app:
-  base-url: http://localhost:8080
+  base-url:${GARAGE_PUBLIC_BASE_URL}
 
 
 logging:

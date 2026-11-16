@@ -44,9 +44,7 @@ public class TourMediaServiceImpl
         return TourMediaDto::new;
     }
 
-    /**
-     * The parent can't be changed after creation.
-     */
+
     @Override
     protected String[] lockedFields() {
         return new String[]{"tourPackageId"};

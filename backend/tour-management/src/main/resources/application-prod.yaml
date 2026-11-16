@@ -33,9 +33,6 @@ garage:
   secret-key: ${GARAGE_SECRET_KEY}
   region: garage
 
-file:
-  upload-dir: uploads
-
 app:
   base-url: ${APP_BASE_URL}
 

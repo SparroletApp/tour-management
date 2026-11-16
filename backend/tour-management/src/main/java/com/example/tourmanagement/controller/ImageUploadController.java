@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.tourmanagement.service.impl.FileStorageService;
+import com.example.tourmanagement.service.GarageStorageService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,23 +21,30 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ImageUploadController {
 
-    private final FileStorageService fileStorageService;
+    private final GarageStorageService garageStorageService;
 
-    @Value("${app.base-url}")
-    private String baseUrl;
+    @Value("${garage.public-base-url}")
+    private String publicBaseUrl;
 
     @PostMapping("/image")
     @ResponseStatus(HttpStatus.CREATED)
     public Map<String, String> uploadImage(
             @RequestParam("file") MultipartFile file) {
 
-        String imagePath = fileStorageService.uploadImage(file);
+        // Upload image to Garage S3
+        String objectKey = garageStorageService.uploadImage(
+                file,
+                "uploads"
+        );
 
-        String imageUrl = baseUrl.replaceAll("/$", "") + imagePath;
+        // Generate public image URL
+        String imageUrl = publicBaseUrl.replaceAll("/+$", "")
+                + "/" + objectKey;
 
         return Map.of(
                 "message", "Image uploaded successfully",
-                "imageUrl", imageUrl
+                "imageUrl", imageUrl,
+                "objectKey", objectKey
         );
     }
 }

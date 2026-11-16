@@ -35,13 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        // No token: let Spring Security handle authentication.
         if (authHeader == null || authHeader.isBlank()) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Only Bearer authentication is supported.
         if (!authHeader.startsWith("Bearer ")) {
             writeUnauthorized(response, "Invalid Authorization header.");
             return;
@@ -89,8 +87,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // IMPORTANT: Keep outside the JWT try-catch.
-        // Controller, service and database exceptions must not become 401.
         filterChain.doFilter(request, response);
     }
 

@@ -1,150 +1,391 @@
 
+:root {
+    --header-primary: #064e45;
+    --header-primary-dark: #043b35;
+    --header-primary-light: #e8f3f0;
+    --header-text: #263c38;
+    --header-muted: #82918d;
+    --header-border: #e8efec;
+}
+
+/* =====================================
+   MAIN HEADER
+===================================== */
+
 .main-header {
+    position: sticky;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 75px;
-    padding: 0 5%;
-    background: #ffffff;
+    height: 82px;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--header-border);
+    box-shadow: 0 4px 20px rgba(6, 78, 69, 0.05);
+    z-index: 1000;
+}
+
+.header-container {
+    width: 100%;
+    max-width: 1440px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 55px;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    gap: 30px;
 }
+
+/* =====================================
+   LOGO SECTION
+===================================== */
 
 .header-logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 22px;
-    font-weight: 700;
-    color: #064e45;
+    flex-shrink: 0;
     cursor: pointer;
+    text-decoration: none;
+}
+
+.header-logo-image {
+    width: 145px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.header-logo-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.header-logo:hover .header-logo-image img {
+    transform: scale(1.07);
+}
+
+.header-logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.header-brand-name {
+    color: var(--header-primary);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.6px;
     white-space: nowrap;
 }
 
-.header-logo i {
-    font-size: 29px;
+.header-brand-tagline {
+    color: var(--header-muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
+/* =====================================
+   CENTER NAVIGATION
+===================================== */
 
 .header-nav {
     display: flex;
     align-items: center;
-    gap: 30px;
+    justify-content: center;
+    gap: 8px;
 }
 
-.header-nav button {
-    border: none;
-    background: transparent;
-    color: #344b46;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
+.nav-link {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
-    transition: 0.3s;
+    justify-content: center;
+    gap: 9px;
+
+    padding: 12px 19px;
+
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+
+    color: #647570;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: all 0.25s ease;
 }
 
-.header-nav button:hover {
-    color: #159b83;
-}
-
-.header-nav button i {
+.nav-link i {
     font-size: 17px;
 }
+
+.nav-link:hover {
+    color: var(--header-primary);
+    background: var(--header-primary-light);
+}
+
+.nav-link.active {
+    color: var(--header-primary);
+    background: var(--header-primary-light);
+}
+
+/* =====================================
+   RIGHT AUTH BUTTONS
+===================================== */
 
 .header-right {
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0;
 }
 
-.header-right button {
-    padding: 10px 19px;
-    border-radius: 7px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
+.header-login-btn,
+.header-logout-btn {
+    height: 44px;
+    padding: 0 20px;
+
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
+    justify-content: center;
+    gap: 9px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition: all 0.25s ease;
 }
+
+.header-login-btn i,
+.header-logout-btn i {
+    font-size: 16px;
+}
+
+/* LOGIN */
 
 .header-login-btn {
-    background: #064e45;
-    color: #ffffff;
-    border: 1px solid #064e45;
+    color: var(--header-primary);
+    background: #ffffff;
+    border: 1px solid #dce8e4;
 }
 
 .header-login-btn:hover {
-    background: #043c35;
+    background: var(--header-primary-light);
+    border-color: var(--header-primary);
     transform: translateY(-2px);
 }
 
+/* LOGOUT */
 
 .header-logout-btn {
-    background: #ffffff;
-    color: #dc3545;
-    border: 1px solid #dc3545;
+    color: #ffffff;
+    background: var(--header-primary);
+    border: 1px solid var(--header-primary);
+    box-shadow: 0 4px 12px rgba(6, 78, 69, 0.14);
 }
 
 .header-logout-btn:hover {
-    background: #dc3545;
-    color: #ffffff;
+    background: var(--header-primary-dark);
+    border-color: var(--header-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 7px 16px rgba(6, 78, 69, 0.2);
 }
 
-@media (max-width: 768px) {
-    .main-header {
-        height: auto;
-        min-height: 70px;
-        padding: 15px 20px;
-        flex-wrap: wrap;
+/* =====================================
+   MOBILE MENU BUTTON
+===================================== */
+
+.mobile-menu-btn {
+    display: none;
+
+    width: 43px;
+    height: 43px;
+
+    align-items: center;
+    justify-content: center;
+
+    color: var(--header-primary);
+    background: #ffffff;
+
+    border: 1px solid var(--header-border);
+    border-radius: 10px;
+
+    font-size: 23px;
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+}
+
+.mobile-menu-btn:hover {
+    background: var(--header-primary-light);
+}
+
+/* =====================================
+   TABLET RESPONSIVE
+===================================== */
+
+@media (max-width: 1100px) {
+    .header-container {
+        padding: 0 28px;
         gap: 15px;
     }
 
-    .header-logo {
-        font-size: 19px;
+    .header-brand-name {
+        font-size: 17px;
     }
 
-    .header-nav {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        gap: 25px;
+    .nav-link {
+        padding: 11px 13px;
+        font-size: 13px;
+    }
+
+    .header-login-btn,
+    .header-logout-btn {
+        padding: 0 14px;
     }
 }
 
-@media (max-width: 480px) {
+/* =====================================
+   MOBILE RESPONSIVE
+===================================== */
+
+@media (max-width: 768px) {
+
     .main-header {
-        padding: 12px 15px;
+        height: 72px;
+    }
+
+    .header-container {
+        padding: 0 18px;
+        justify-content: space-between;
+        gap: 10px;
     }
 
     .header-logo {
+        gap: 9px;
+    }
+
+
+    .header-brand-name {
         font-size: 16px;
     }
 
-    .header-logo i {
-        font-size: 22px;
+    .header-brand-tagline {
+        font-size: 8px;
+        letter-spacing: 0.7px;
     }
 
-    .header-right {
-        gap: 6px;
+    .mobile-menu-btn {
+        display: flex;
+        margin-left: auto;
+        flex-shrink: 0;
     }
 
-    .header-right button {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
+    /* MOBILE NAVIGATION */
 
     .header-nav {
-        gap: 18px;
+        display: none;
+
+        position: absolute;
+        top: 72px;
+        left: 0;
+
+        width: 100%;
+        padding: 14px 18px;
+
+        flex-direction: column;
+        align-items: stretch;
+        gap: 7px;
+
+        background: #ffffff;
+        border-bottom: 1px solid var(--header-border);
+
+        box-shadow: 0 10px 20px rgba(6, 78, 69, 0.07);
     }
 
-    .header-nav button {
-        font-size: 13px;
+    .header-nav.active {
+        display: flex;
+    }
+
+    .nav-link {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 13px 15px;
+        font-size: 14px;
+    }
+
+    /* MOBILE AUTH BUTTONS */
+
+    .header-right {
+        display: none;
+
+        position: absolute;
+        top: 188px;
+        left: 0;
+
+        width: 100%;
+        padding: 12px 18px 18px;
+
+        background: #ffffff;
+        border-bottom: 1px solid var(--header-border);
+
+        gap: 10px;
+    }
+
+    .header-right.active {
+        display: flex;
+    }
+
+    .header-login-btn,
+    .header-logout-btn {
+        flex: 1;
+        height: 44px;
+        padding: 0 12px;
+    }
+}
+
+/* =====================================
+   SMALL MOBILE
+===================================== */
+
+@media (max-width: 380px) {
+
+    .header-container {
+        padding: 0 12px;
+    }
+
+    .header-logo {
+        gap: 7px;
+    }
+
+    .header-logo-image {
+        width: 40px;
+        height: 40px;
+    }
+
+    .header-brand-name {
+        font-size: 14px;
+    }
+
+    .header-brand-tagline {
+        font-size: 7px;
+        letter-spacing: 0.4px;
     }
 }

@@ -1,3 +1,4 @@
+
 package com.example.tourmanagement.service;
 
 import java.io.IOException;
@@ -23,33 +24,26 @@ public class GarageStorageService {
     @Value("${garage.bucket}")
     private String bucket;
 
-    public String uploadImage(
-            MultipartFile file,
-            String folder
-    ) {
+    @Value("${garage.public-base-url}")
+    private String publicBaseUrl;
+
+    public String uploadImage(MultipartFile file, String folder) {
 
         try {
-
             if (file == null || file.isEmpty()) {
                 throw new IllegalArgumentException("Image is required");
             }
 
             String contentType = file.getContentType();
 
-            if (contentType == null ||
-                    !contentType.startsWith("image/")) {
-                throw new IllegalArgumentException(
-                        "Only image files are allowed"
-                );
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new IllegalArgumentException("Only image files are allowed");
             }
 
             String originalName = file.getOriginalFilename();
-
             String extension = "";
 
-            if (originalName != null &&
-                    originalName.contains(".")) {
-
+            if (originalName != null && originalName.contains(".")) {
                 extension = originalName.substring(
                         originalName.lastIndexOf(".")
                 ).toLowerCase();
@@ -77,12 +71,20 @@ public class GarageStorageService {
             return objectKey;
 
         } catch (IOException e) {
-
             throw new RuntimeException(
-                    "Failed to upload image to Garage",
-                    e
+                    "Failed to upload image to Garage", e
             );
         }
+    }
+
+    public String getPublicUrl(String objectKey) {
+
+        if (objectKey == null || objectKey.isBlank()) {
+            return null;
+        }
+
+        return publicBaseUrl.replaceAll("/+$", "")
+                + "/" + bucket + "/" + objectKey;
     }
 
     public void deleteImage(String objectKey) {

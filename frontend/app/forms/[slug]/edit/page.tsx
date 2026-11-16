@@ -242,171 +242,182 @@ export default function EditForm() {
 
     return (
         <section className="edit-form">
-            <div className="edit-form-header">
-                <div>
-                    <h1>Edit Form</h1>
-                    <p>Update your form information.</p>
+            <div className="edits-data-forms">
+                <div className="edit-form-header">
+                    <div>
+                        <button
+                            type="button"
+                            className="back-to-forms-btn"
+                            onClick={() => router.push("/forms")}
+                        >
+                            <i className="bi bi-arrow-left"></i>
+                            <span>Back to Forms</span>
+                        </button>
+
+                        <h1>Edit Form</h1>
+                        <p>Update your form information.</p>
+                    </div>
                 </div>
-            </div>
 
-            <form className="edit-form-card" onSubmit={handleSubmit}>
-                <div className="form-field package-search-field">
-                    <label>
-                        Select Tour Package <span>*</span>
-                    </label>
 
-                    <div className="package-search-wrapper">
-                        <div className="package-search-input-wrapper">
-                            <i className="bi bi-search"></i>
+                <form className="edit-form-card" onSubmit={handleSubmit}>
+                    <div className="form-field package-search-field">
+                        <label>
+                            Select Tour Package <span>*</span>
+                        </label>
 
-                            <input
-                                type="text"
-                                className="tour-name-data"
-                                value={packageSearch}
-                                onChange={(e) =>
-                                    handlePackageSearch(e.target.value)
-                                }
-                                onFocus={() =>
-                                    setShowPackageDropdown(true)
-                                }
-                                placeholder="Search by tour name or code..."
-                                autoComplete="off"
-                            />
+                        <div className="package-search-wrapper">
+                            <div className="package-search-input-wrapper">
+                                <i className="bi bi-search"></i>
 
-                            {packageSearch && (
-                                <button
-                                    type="button"
-                                    className="package-clear-btn"
-                                    onClick={() => {
-                                        setPackageSearch("");
-                                        setSelectedPackage(null);
-                                        setShowPackageDropdown(true);
-                                    }}
-                                >
-                                    <i className="bi bi-x-circle"></i>
-                                </button>
+                                <input
+                                    type="text"
+                                    className="tour-name-data"
+                                    value={packageSearch}
+                                    onChange={(e) =>
+                                        handlePackageSearch(e.target.value)
+                                    }
+                                    onFocus={() =>
+                                        setShowPackageDropdown(true)
+                                    }
+                                    placeholder="Search by tour name or code..."
+                                    autoComplete="off"
+                                />
+
+                                {packageSearch && (
+                                    <button
+                                        type="button"
+                                        className="package-clear-btn"
+                                        onClick={() => {
+                                            setPackageSearch("");
+                                            setSelectedPackage(null);
+                                            setShowPackageDropdown(true);
+                                        }}
+                                    >
+                                        <i className="bi bi-x-circle"></i>
+                                    </button>
+                                )}
+                            </div>
+
+                            {showPackageDropdown && (
+                                <div className="package-dropdown">
+                                    {packageLoading ? (
+                                        <div className="package-dropdown-message">
+                                            Loading tour packages...
+                                        </div>
+                                    ) : filteredPackages.length > 0 ? (
+                                        filteredPackages.map((pkg) => (
+                                            <button
+                                                type="button"
+                                                key={pkg.id}
+                                                className={`package-option ${selectedPackage?.id === pkg.id
+                                                    ? "selected"
+                                                    : ""
+                                                    }`}
+                                                onClick={() =>
+                                                    handlePackageSelect(pkg)
+                                                }
+                                            >
+                                                <div className="package-option-icon">
+                                                    <i className="bi bi-airplane"></i>
+                                                </div>
+
+                                                <div className="package-option-details">
+                                                    <strong>{pkg.tourName}</strong>
+                                                    <span>
+                                                        {pkg.tourCode || "No tour code"}
+                                                    </span>
+                                                </div>
+
+                                                {selectedPackage?.id === pkg.id && (
+                                                    <i className="bi bi-check-circle-fill package-check"></i>
+                                                )}
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="package-dropdown-message">
+                                            No tour packages found.
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </div>
 
-                        {showPackageDropdown && (
-                            <div className="package-dropdown">
-                                {packageLoading ? (
-                                    <div className="package-dropdown-message">
-                                        Loading tour packages...
-                                    </div>
-                                ) : filteredPackages.length > 0 ? (
-                                    filteredPackages.map((pkg) => (
-                                        <button
-                                            type="button"
-                                            key={pkg.id}
-                                            className={`package-option ${
-                                                selectedPackage?.id === pkg.id
-                                                    ? "selected"
-                                                    : ""
-                                            }`}
-                                            onClick={() =>
-                                                handlePackageSelect(pkg)
-                                            }
-                                        >
-                                            <div className="package-option-icon">
-                                                <i className="bi bi-airplane"></i>
-                                            </div>
-
-                                            <div className="package-option-details">
-                                                <strong>{pkg.tourName}</strong>
-                                                <span>
-                                                    {pkg.tourCode || "No tour code"}
-                                                </span>
-                                            </div>
-
-                                            {selectedPackage?.id === pkg.id && (
-                                                <i className="bi bi-check-circle-fill package-check"></i>
-                                            )}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <div className="package-dropdown-message">
-                                        No tour packages found.
-                                    </div>
-                                )}
+                        {selectedPackage && (
+                            <div className="selected-package-info">
+                                <i className="bi bi-check-circle-fill"></i>
+                                Selected: {selectedPackage.tourName}
+                                {selectedPackage.tourCode &&
+                                    ` (${selectedPackage.tourCode})`}
                             </div>
                         )}
                     </div>
 
-                    {selectedPackage && (
-                        <div className="selected-package-info">
-                            <i className="bi bi-check-circle-fill"></i>
-                            Selected: {selectedPackage.tourName}
-                            {selectedPackage.tourCode &&
-                                ` (${selectedPackage.tourCode})`}
-                        </div>
-                    )}
-                </div>
+                    <div className="form-field">
+                        <label>Form Title *</label>
+                        <input
+                            type="text"
+                            value={formTitle}
+                            onChange={(e) => setFormTitle(e.target.value)}
+                            placeholder="Enter form title"
+                            required
+                        />
+                    </div>
 
-                <div className="form-field">
-                    <label>Form Title *</label>
-                    <input
-                        type="text"
-                        value={formTitle}
-                        onChange={(e) => setFormTitle(e.target.value)}
-                        placeholder="Enter form title"
-                        required
-                    />
-                </div>
+                    <div className="form-field">
+                        <label>Description</label>
+                        <textarea
+                            rows={4}
+                            value={formDescription}
+                            onChange={(e) =>
+                                setFormDescription(e.target.value)
+                            }
+                            placeholder="Enter form description"
+                        />
+                    </div>
 
-                <div className="form-field">
-                    <label>Description</label>
-                    <textarea
-                        rows={4}
-                        value={formDescription}
-                        onChange={(e) =>
-                            setFormDescription(e.target.value)
-                        }
-                        placeholder="Enter form description"
-                    />
-                </div>
+                    <div className="form-field">
+                        <label>Expiry Date</label>
+                        <input
+                            type="datetime-local"
+                            value={expiryDate}
+                            onChange={(e) =>
+                                setExpiryDate(e.target.value)
+                            }
+                        />
+                    </div>
 
-                <div className="form-field">
-                    <label>Expiry Date</label>
-                    <input
-                        type="datetime-local"
-                        value={expiryDate}
-                        onChange={(e) =>
-                            setExpiryDate(e.target.value)
-                        }
-                    />
-                </div>
+                    <label className="form-checkbox">
+                        <input
+                            type="checkbox"
+                            checked={allowMultipleSubmissions}
+                            onChange={(e) =>
+                                setAllowMultipleSubmissions(e.target.checked)
+                            }
+                        />
+                        Allow multiple submissions
+                    </label>
 
-                <label className="form-checkbox">
-                    <input
-                        type="checkbox"
-                        checked={allowMultipleSubmissions}
-                        onChange={(e) =>
-                            setAllowMultipleSubmissions(e.target.checked)
-                        }
-                    />
-                    Allow multiple submissions
-                </label>
+                    <div className="edit-form-actions">
+                        <button
+                            type="button"
+                            className="form-secondary-btn"
+                            onClick={() => router.back()}
+                            disabled={saving}
+                        >
+                            Cancel
+                        </button>
 
-                <div className="edit-form-actions">
-                    <button
-                        type="button"
-                        className="form-secondary-btn"
-                        onClick={() => router.back()}
-                        disabled={saving}
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        disabled={saving || packageLoading}
-                        className="form-primary-btn"
-                    >
-                        {saving ? "Saving..." : "Save Changes"}
-                    </button>
-                </div>
-            </form>
+                        <button
+                            type="submit"
+                            disabled={saving || packageLoading}
+                            className="form-primary-btn"
+                        >
+                            {saving ? "Saving..." : "Save Changes"}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </section>
     );
 }

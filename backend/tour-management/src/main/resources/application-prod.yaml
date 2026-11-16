@@ -33,6 +33,7 @@ garage:
   secret-key: ${GARAGE_SECRET_KEY}
   region: garage
 
+
 app:
   base-url: ${APP_BASE_URL}
 

@@ -10,9 +10,17 @@
     --white: #ffffff;
 }
 
+.edits-data-forms{
+width: 750px;
+}
+
 .edit-form {
     min-height: 100vh;
-    padding: 32px;
+    padding: 32px;justify-content: center;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    flex-direction: column;
     background: var(--background);
     color: var(--text);
     font-family: Arial, sans-serif;
@@ -40,7 +48,6 @@
 
 .edit-form-card {
     width: 100%;
-    max-width: 750px;
     background: var(--white);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -169,6 +176,33 @@
     font-size: 15px;
     font-weight: 600;
 }
+
+
+.back-to-forms-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 13px;
+    margin-bottom: 18px;
+    border: none;
+    border-radius: 7px;
+    background: none;
+    color: #064e45;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-to-forms-btn:hover {
+    color: #118b7d;
+    transform: translateX(-3px);
+}
+
+.back-to-forms-btn i {
+    font-size: 15px;
+}
+
 
 .package-search-field {
     position: relative;

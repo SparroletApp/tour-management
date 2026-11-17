@@ -1,5 +1,3 @@
-
-
 .create-tour-page {
     width: 100%;
     min-height: 100vh;
@@ -7,8 +5,6 @@
     background: #f5f8f7;
     color: #263c38;
 }
-
-
 
 .create-tour-header {
     display: flex;
@@ -40,12 +36,11 @@
     box-shadow: 0 3px 14px rgba(6, 78, 69, 0.05);
 }
 
-
-.trip-create{
+.trip-create {
     padding: 30px;
 }
 
-.create-tour-page > nav {
+.create-tour-page nav {
     margin-bottom: 15px;
 }
 

@@ -66,7 +66,7 @@ function Sidebar() {
                 showConfirmButton: false,
             });
 
-            router.replace("/login");
+            router.replace("/");
         }
     };
 

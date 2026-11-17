@@ -54,6 +54,7 @@ public class SecurityConfig {
                                 "/uploads/**",
                                 "/api/form-sections/get-by-form",
                                 "/swagger-ui/**",
+                                "api/form-submissions/create",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/api/webhook/**"

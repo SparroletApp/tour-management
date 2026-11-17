@@ -74,13 +74,21 @@ function Sidebar() {
         <aside className={`sidebar ${collapsed ? "collapsed" : "expanded"}`}>
             <div className={`sidebar-logo ${collapsed ? "logo-collapsed" : "logo-expanded"}`}>
                 <div className="bonv-brand">
-                    <div className="bonv-icon">
-                        B
-                    </div>
-                    {!collapsed && (
-                        <span className="bonv-text">bonv</span>
+                    {collapsed ? (
+                        <img
+                            src="/logo-icon.png"
+                            alt="BONV"
+                            className="bonv-logo-icon"
+                        />
+                    ) : (
+                        <img
+                            src="/logo-01.png"
+                            alt="BONV"
+                            className="bonv-logo-full"
+                        />
                     )}
                 </div>
+
                 <button
                     type="button"
                     className="sidebar-toggle"

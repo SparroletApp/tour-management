@@ -481,6 +481,32 @@ height: 30px;
     font-size: 20px;
 }
 
+.sidebar.expanded .bonv-brand{
+    width:130px;
+    height: 50px;
+}
+
+.bonv-logo-full{
+    width: 50px;
+    height: 50pc;
+    object-fit: contain;
+}
+
+.bonv-brand{
+    height: 50px;
+    width: 50px;
+
+}
+
+.bonv-brand img{
+    width: 100%;
+    height: 100%;
+}
+
+.sidebar.expanded .bonv-brand img{
+    width: 100%;
+    height: 100%;
+}
 
 .sidebar-menu::-webkit-scrollbar {
     width: 4px;

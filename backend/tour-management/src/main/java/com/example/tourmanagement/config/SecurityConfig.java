@@ -51,6 +51,7 @@ public class SecurityConfig {
                                 "/public/media/**",
                                 "/api/forms/**",
                                 "/api/tours/**",
+                                "/api/questions/get-by-section",
                                 "/uploads/**",
                                 "/api/form-sections/get-by-form",
                                 "/swagger-ui/**",

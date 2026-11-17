@@ -32,6 +32,7 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
     private final TourPackageRepository packageRepo;
     private final TourDestinationRepository destinationRepo;
     private final TourFlightRepository flightRepo;
+    private final FormsRepository formRepository;
     private final TourHotelRepository hotelRepo;
     private final TourItineraryDayRepository dayRepo;
     private final TourItineraryActivityRepository activityRepo;
@@ -100,9 +101,19 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
 
         TourPackage pkg = findEntity(id);
 
+        if (formRepository.existsByTourPackage_Id(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Cannot delete this tour package because it is already assigned to a form. Please delete the assigned form first."
+            );
+        }
+
         String coverImage = pkg.getCoverImageUrl();
+
         deleteChildren(id);
+
         packageRepo.deleteById(id);
+
         if (coverImage != null && !coverImage.isBlank()) {
             deleteFromGarageAfterCommit(coverImage);
         }

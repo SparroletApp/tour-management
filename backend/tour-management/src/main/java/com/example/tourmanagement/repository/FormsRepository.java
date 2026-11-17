@@ -14,6 +14,7 @@ public interface FormsRepository extends JpaRepository<FormEntity, Long> {
     Optional<FormEntity> findByPublicToken(String publicToken);
 
     boolean existsByPublicToken(String publicToken);
+    boolean existsByTourPackage_Id(Long packageId);
 
     boolean existsByFormTitle(String formTitle);
 

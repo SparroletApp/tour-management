@@ -12,6 +12,7 @@ export default function CreateTourPage() {
 
     return (
         <>
+        <div className="trip-create">
             <Breadcrumb
                 items={[ { label: "Tours", href: "/tours" }, { label: "Create" }]}
             />
@@ -25,6 +26,7 @@ export default function CreateTourPage() {
                     router.push("/tours/view");
                 }}
             />
+            </div>
         </>
     );
 }

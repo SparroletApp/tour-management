@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { tourPackageService } from "../apiservice/tourservice";
 import { TourPackage } from "../types/tour";
 import "./tours.css";
+import Swal from "sweetalert2";
 
 import {
     clearSelectedTourId,
@@ -39,8 +40,18 @@ function Tours() {
             const data = await tourPackageService.getAll();
             setTours(data);
             setCurrentPage(1);
-        } catch (e) {
-            setError("Failed to load tours");
+
+        } catch (e: any) {
+            Swal.fire({
+                icon: "error",
+                title: "Failed to Load Tours",
+                text:
+                    e?.response?.data?.message ||
+                    e?.response?.data?.error ||
+                    e?.message ||
+                    "Unable to load tours. Please try again.",
+                confirmButtonColor: "#064e45",
+            });
         } finally {
             setLoading(false);
         }
@@ -56,15 +67,34 @@ function Tours() {
     };
 
     const handleDelete = async (id: number) => {
-        if (
-            !confirm(
-                "Delete this tour and everything inside it (days, flights, hotels...)?"
-            )
-        ) {
+
+        const result = await Swal.fire({
+            title: "Delete Tour?",
+            text: "Delete this tour and everything inside it (days, flights, hotels...)?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Delete",
+            cancelButtonText: "Cancel",
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#6c757d",
+            reverseButtons: true,
+        });
+
+        if (!result.isConfirmed) {
             return;
         }
 
         try {
+            Swal.fire({
+                title: "Deleting Tour...",
+                text: "Please wait",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
             await tourPackageService.delete(id);
 
             const updatedTours = tours.filter(
@@ -76,15 +106,39 @@ function Tours() {
             if (getSelectedTourId() === String(id)) {
                 clearSelectedTourId();
             }
+
             const updatedTotalPages = Math.ceil(
                 updatedTours.length / pageSize
             );
 
-            if (currentPage > updatedTotalPages && updatedTotalPages > 0) {
+            if (
+                currentPage > updatedTotalPages &&
+                updatedTotalPages > 0
+            ) {
                 setCurrentPage(updatedTotalPages);
             }
-        } catch (e) {
-            alert("Failed to delete tour");
+
+            Swal.fire({
+                icon: "success",
+                title: "Tour Deleted!",
+                text: "Tour has been deleted successfully.",
+                confirmButtonColor: "#064e45",
+                timer: 2000,
+                showConfirmButton: false,
+            });
+
+        } catch (e: any) {
+
+            Swal.fire({
+                icon: "error",
+                title: "Delete Failed",
+                text:
+                    e?.response?.data?.message ||
+                    e?.response?.data?.error ||
+                    e?.message ||
+                    "Unable to delete this tour. Please try again.",
+                confirmButtonColor: "#064e45",
+            });
         }
     };
 
@@ -239,13 +293,12 @@ function Tours() {
 
                                         <td className="tour-status-cell">
                                             <span
-                                                className={`tour-status ${
-                                                    tour.status?.toLowerCase() === "published"
-                                                        ? "published"
-                                                        : tour.status?.toLowerCase() === "archived"
+                                                className={`tour-status ${tour.status?.toLowerCase() === "published"
+                                                    ? "published"
+                                                    : tour.status?.toLowerCase() === "archived"
                                                         ? "archived"
                                                         : "draft"
-                                                }`}
+                                                    }`}
                                             >
                                                 {tour.status ?? "Draft"}
                                             </span>
@@ -340,9 +393,8 @@ function Tours() {
                                     <button
                                         type="button"
                                         key={page}
-                                        className={`pagination-number ${
-                                            currentPage === page ? "active" : ""
-                                        }`}
+                                        className={`pagination-number ${currentPage === page ? "active" : ""
+                                            }`}
                                         onClick={() => setCurrentPage(page)}
                                     >
                                         {page}

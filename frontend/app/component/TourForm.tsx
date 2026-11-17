@@ -57,7 +57,7 @@ const PACKAGE_FIELDS: FieldDef[] = [
 ];
 
 const DESTINATION_FIELDS: FieldDef[] = [
-    { key: "countryName", label: "Country" },
+    { key: "countryName", label: "Title" },
     { key: "cityName", label: "City" },
     {
         key: "imageUrl",

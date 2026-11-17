@@ -1,7 +1,9 @@
+
 "use client";
 
 import { usePathname } from "next/navigation";
 import Sidebar from "../sidebar/page";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function LayoutWrapper({
     children,
@@ -13,6 +15,7 @@ export default function LayoutWrapper({
     const hideLayout =
         pathname === "/" ||
         pathname === "/login" ||
+        pathname === "/form" ||
         pathname.startsWith("/tour-form/") ||
         pathname.startsWith("/tour-details/");
 
@@ -21,12 +24,14 @@ export default function LayoutWrapper({
     }
 
     return (
-        <div className="app-layout">
-            <Sidebar />
+        <ProtectedRoute>
+            <div className="app-layout">
+                <Sidebar />
 
-            <main className="main-content">
-                {children}
-            </main>
-        </div>
+                <main className="main-content">
+                    {children}
+                </main>
+            </div>
+        </ProtectedRoute>
     );
 }

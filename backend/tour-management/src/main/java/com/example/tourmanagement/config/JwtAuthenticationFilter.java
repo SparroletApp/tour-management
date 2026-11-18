@@ -27,6 +27,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+
+        String path = request.getServletPath();
+
+        return path.equals("/api/user/register")
+                || path.equals("/api/user/login")
+                || path.equals("/api/user/send-password-otp")
+                || path.equals("/api/user/verify-password-otp")
+                || path.equals("/api/user/reset-password")
+                || path.equals("/error")
+                || path.startsWith("/swagger-ui/")
+                || path.startsWith("/v3/api-docs/");
+    }
+
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -53,9 +68,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
+
             if (!jwtService.isTokenValid(token)) {
                 SecurityContextHolder.clearContext();
-                writeUnauthorized(response, "Invalid or expired authentication token.");
+
+                writeUnauthorized(
+                        response,
+                        "Invalid or expired authentication token."
+                );
                 return;
             }
 
@@ -83,7 +103,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.clearContext();
 
-            writeUnauthorized(response, "Invalid or expired authentication token.");
+            writeUnauthorized(
+                    response,
+                    "Invalid or expired authentication token."
+            );
             return;
         }
 

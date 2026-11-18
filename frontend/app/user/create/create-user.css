@@ -1,0 +1,356 @@
+
+.create-user-page {
+    padding: 25px;
+    min-height: 100vh;
+    background: #f5f8f7;
+}
+
+/* Header */
+
+.create-user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.create-user-heading {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.create-user-heading h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #263c38;
+    margin: 0 0 5px;
+}
+
+.create-user-heading p {
+    color: #82918d;
+    font-size: 13px;
+    margin: 0;
+}
+
+.create-user-back-btn {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #dce6e2;
+    background: #fff;
+    color: #064e45;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.create-user-back-btn:hover {
+    background: #e8f3f0;
+}
+
+.create-user-company {
+    background: #e8f3f0;
+    color: #064e45;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Form Card */
+
+.create-user-card {
+    background: #fff;
+    border: 1px solid #e5eeeb;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.035);
+}
+
+.create-user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding-bottom: 22px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #edf1ef;
+}
+
+.create-user-card-icon {
+    width: 48px;
+    height: 48px;
+    background: #e8f3f0;
+    color: #064e45;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.create-user-card-header h4 {
+    color: #263c38;
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.create-user-card-header p {
+    color: #82918d;
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Form Grid */
+
+.create-user-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.create-user-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.create-user-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.create-user-form-group label {
+    font-size: 13px;
+    color: #263c38;
+    font-weight: 600;
+}
+
+.create-user-form-group label span {
+    color: #dc3545;
+}
+
+/* Input */
+
+.create-user-input-wrapper {
+    height: 46px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 13px;
+    border: 1px solid #dce6e2;
+    border-radius: 7px;
+    background: #fff;
+    transition: 0.2s ease;
+}
+
+.create-user-input-wrapper:focus-within {
+    border-color: #064e45;
+    box-shadow: 0 0 0 3px rgba(6, 78, 69, 0.08);
+}
+
+.create-user-input-wrapper > i {
+    color: #82918d;
+    font-size: 16px;
+}
+
+.create-user-input-wrapper input,
+.create-user-input-wrapper select {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #263c38;
+    font-size: 13px;
+}
+
+.create-user-input-wrapper input::placeholder {
+    color: #a4afab;
+}
+
+.create-user-input-wrapper select {
+    cursor: pointer;
+}
+
+.create-user-form-group small {
+    color: #82918d;
+    font-size: 11px;
+}
+
+/* Password */
+
+.create-user-password-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+.create-user-password-wrapper .create-user-input-wrapper {
+    flex: 1;
+}
+
+.create-user-eye-btn {
+    border: none;
+    background: transparent;
+    color: #82918d;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.create-user-eye-btn:hover {
+    color: #064e45;
+}
+
+.create-user-generate-btn {
+    height: 46px;
+    padding: 0 15px;
+    background: #e8f3f0;
+    border: 1px solid #cfe3dc;
+    color: #064e45;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.create-user-generate-btn:hover {
+    background: #d5e9e3;
+}
+
+/* Company Info */
+
+.create-user-company-info {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    padding: 13px 15px;
+    background: #f5f8f7;
+    color: #647570;
+    font-size: 12px;
+    border-radius: 7px;
+    margin-top: 25px;
+}
+
+.create-user-company-info i {
+    color: #064e45;
+}
+
+.create-user-company-info strong {
+    color: #064e45;
+}
+
+/* Actions */
+
+.create-user-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 23px;
+    margin-top: 23px;
+    border-top: 1px solid #edf1ef;
+}
+
+.create-user-cancel-btn,
+.create-user-submit-btn {
+    min-width: 125px;
+    height: 43px;
+    padding: 0 18px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.create-user-cancel-btn {
+    background: #fff;
+    border: 1px solid #dce6e2;
+    color: #52635e;
+}
+
+.create-user-cancel-btn:hover {
+    background: #f5f8f7;
+}
+
+.create-user-submit-btn {
+    background: #064e45;
+    border: 1px solid #064e45;
+    color: #fff;
+}
+
+.create-user-submit-btn:hover {
+    background: #043c35;
+}
+
+.create-user-submit-btn:disabled,
+.create-user-cancel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .create-user-page {
+        padding: 16px;
+    }
+
+    .create-user-card {
+        padding: 20px;
+    }
+
+    .create-user-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .create-user-form-group.full-width {
+        grid-column: auto;
+    }
+
+    .create-user-header {
+        align-items: flex-start;
+    }
+
+    .create-user-company {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .create-user-heading h2 {
+        font-size: 20px;
+    }
+
+    .create-user-password-wrapper {
+        flex-direction: column;
+    }
+
+    .create-user-generate-btn {
+        width: 100%;
+    }
+
+    .create-user-actions {
+        flex-direction: column-reverse;
+    }
+
+    .create-user-cancel-btn,
+    .create-user-submit-btn {
+        width: 100%;
+    }
+}

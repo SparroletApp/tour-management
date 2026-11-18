@@ -41,9 +41,8 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
     private final TourOptionalActivityRepository optionalActivityRepo;
     private final TourPriceRuleRepository priceRuleRepo;
     private final TourMediaRepository mediaRepo;
-
-    // ---------- AbstractCrudServiceImpl hooks ----------
-
+    private final CompanyRepository companyRepository;
+    private final TourPackageRepository tourPackageRepository;
     @Override
     protected JpaRepository<TourPackage, Long> repo() {
         return packageRepo;
@@ -130,7 +129,21 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
 
         TourPackage pkg = toEntity(req.getTourPackage());
 
-        // Automatically generate tour code
+        Long companyId = req.getTourPackage().getCompanyId();
+
+        if (companyId == null) {
+            throw bad("Company ID is required");
+        }
+
+        // Find company using company ID
+        CompanyEntity company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Company not found with ID: " + companyId
+                ));
+
+        pkg.setCompany(company);
+
         pkg.setTourCode(generateTourCode());
 
         validate(pkg, null);
@@ -166,7 +179,14 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
         TourPackage pkg = findEntity(id);
 
         TourPackageFullDto full = new TourPackageFullDto();
-        full.setTourPackage(toDto(pkg));
+        TourPackageDto dto = toDto(pkg);
+
+        if (pkg.getCompany() != null) {
+            dto.setCompanyId(pkg.getCompany().getId());
+            dto.setCompanyName(pkg.getCompany().getCompanyName());
+        }
+
+        full.setTourPackage(dto);
         full.setDestinations(destinationRepo.findByTourPackageIdOrderBySequenceNumber(id).stream()
                 .map(e -> copy(e, TourDestinationDto::new)).toList());
         full.setFlights(flightRepo.findByTourPackageIdOrderByDepartureDateTime(id).stream()
@@ -347,6 +367,38 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
         return newImage;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<TourPackageDto> getByCompanyId(TourCompanyIdDto request) {
+
+        if (request == null || request.getCompanyId() == null) {
+            throw bad("Company ID is required");
+        }
+
+        Long companyId = request.getCompanyId();
+
+        companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Company not found with ID: " + companyId
+                ));
+
+        List<TourPackage> packages =
+                packageRepo.findByCompany_Id(companyId);
+
+        return packages.stream().map(pkg -> {
+
+            TourPackageDto dto = toDto(pkg);
+
+            if (pkg.getCompany() != null) {
+                dto.setCompanyId(pkg.getCompany().getId());
+                dto.setCompanyName(pkg.getCompany().getCompanyName());
+            }
+
+            return dto;
+
+        }).toList();
+    }
     private void deleteFromGarageAfterCommit(String objectKey) {
 
         TransactionSynchronizationManager.registerSynchronization(

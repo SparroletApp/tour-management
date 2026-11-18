@@ -167,3 +167,52 @@ databaseChangeLog:
         - sqlFile:
             path: sql/alter_form_add_tour_package_id.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_companies_table
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_companies_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_user_add_company_id
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_user_add_company_id.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_tourpackage_add_company_id
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_tourpackage_add_company_id.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_form_add_company_id
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_form_add_company_id.sql
+            relativeToChangelogFile: true
+
+
+  - changeSet:
+      id: alter_user_drop_default_role
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_user_drop_default_role.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_user_add_otp_expiry
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_user_add_otp_expiry.sql
+            relativeToChangelogFile: true

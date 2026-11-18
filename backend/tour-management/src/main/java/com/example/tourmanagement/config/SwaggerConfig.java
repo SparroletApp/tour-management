@@ -19,17 +19,18 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
+        Server localServer = new Server()
+
+                .url("http://localhost:8080")
+                .description("Local Server");
 
         Server productionServer = new Server()
                 .url("https://tmsapi.rayloop.com")
                 .description("Production HTTPS Server");
 
         return new OpenAPI()
+                .servers(List.of(localServer, productionServer))
 
-                // Production HTTPS URL
-                .servers(List.of(productionServer))
-
-                // API Information
                 .info(new Info()
                         .title("WhatsApp Integration API")
                         .description("API documentation for WhatsApp Business Integration")
@@ -37,11 +38,9 @@ public class SwaggerConfig {
                         .contact(new Contact()
                                 .name("WhatsApp Integration Team")))
 
-                // JWT Authentication
                 .addSecurityItem(new SecurityRequirement()
                         .addList("Bearer Authentication"))
 
-                // Security Scheme Configuration
                 .components(new Components()
                         .addSecuritySchemes("Bearer Authentication",
                                 new SecurityScheme()

@@ -10,7 +10,7 @@ public interface FormsService {
     FormResponseDto createForm(CreateFormDto dto);
 
     List<FormResponseDto> getAllForms();
-
+    List<FormResponseDto> getFormsByCompany(FormCompanyIdDto dto);
     FormResponseDto getFormById(FormIdDto dto);
 
     FormResponseDto updateForm(UpdateFormDto dto);

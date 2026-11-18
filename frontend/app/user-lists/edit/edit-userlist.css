@@ -1,0 +1,247 @@
+
+.edit-user-page {
+    padding: 25px;
+    min-height: 100vh;
+    background: #f5f8f7;
+}
+
+.edit-user-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.edit-user-heading {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.edit-user-heading h2 {
+    font-size: 25px;
+    font-weight: 700;
+    color: #263c38;
+    margin: 0 0 5px;
+}
+
+.edit-user-heading p {
+    font-size: 14px;
+    color: #82918d;
+    margin: 0;
+}
+
+.edit-user-back-btn {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #dce5e2;
+    border-radius: 8px;
+    background: white;
+    color: #064e45;
+    cursor: pointer;
+}
+
+.edit-user-back-btn:hover {
+    background: #064e45;
+    color: white;
+}
+
+.edit-user-id {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 16px;
+    background: white;
+    border: 1px solid #e1e9e6;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #53645f;
+}
+
+.edit-user-id i {
+    color: #064e45;
+}
+
+.edit-user-card {
+
+    background: white;
+    border: 1px solid #e7eeeb;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.edit-user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 22px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #edf1ef;
+}
+
+.edit-user-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8f3f0;
+    color: #064e45;
+    font-size: 22px;
+}
+
+.edit-user-card-header h4 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #263c38;
+    margin: 0 0 5px;
+}
+
+.edit-user-card-header p {
+    font-size: 13px;
+    color: #82918d;
+    margin: 0;
+}
+
+.edit-user-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.edit-user-form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #263c38;
+    margin-bottom: 8px;
+}
+
+.edit-user-form-group label span {
+    color: #dc3545;
+}
+
+.edit-user-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.edit-user-input-wrapper > i {
+    position: absolute;
+    left: 13px;
+    color: #82918d;
+    font-size: 15px;
+}
+
+.edit-user-input-wrapper input {
+    width: 100%;
+    height: 45px;
+    border: 1px solid #dce5e2;
+    border-radius: 8px;
+    padding: 10px 12px 10px 40px;
+    outline: none;
+    font-size: 14px;
+    color: #263c38;
+    background: white;
+}
+
+.edit-user-input-wrapper input:focus {
+    border-color: #064e45;
+    box-shadow: 0 0 0 3px rgba(6, 78, 69, 0.08);
+}
+
+.edit-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px;
+    margin-top: 25px;
+    border-radius: 8px;
+    background: #e8f3f0;
+    color: #064e45;
+    font-size: 13px;
+}
+
+.edit-user-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.edit-user-cancel-btn,
+.edit-user-submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.edit-user-cancel-btn {
+    background: #edf1ef;
+    color: #53645f;
+}
+
+.edit-user-submit-btn {
+    background: #064e45;
+    color: white;
+}
+
+.edit-user-submit-btn:hover {
+    background: #043c35;
+}
+
+.edit-user-submit-btn:disabled,
+.edit-user-cancel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.edit-user-loading {
+    padding: 50px 20px;
+    text-align: center;
+    color: #064e45;
+}
+
+.edit-user-loading p {
+    margin-top: 12px;
+    color: #82918d;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .edit-user-page {
+        padding: 15px;
+    }
+
+    .edit-user-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .edit-user-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-user-card {
+        padding: 18px;
+    }
+
+    .edit-user-actions {
+        flex-direction: column-reverse;
+    }
+
+    .edit-user-actions button {
+        width: 100%;
+    }
+}

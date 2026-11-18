@@ -5,13 +5,16 @@ import com.example.tourmanagement.dto.formdto.CreateFormDto;
 import com.example.tourmanagement.dto.formdto.UpdateFormDto;
 import com.example.tourmanagement.dto.formdto.FormIdDto;
 import com.example.tourmanagement.dto.formdto.FormSlugDto;
+import com.example.tourmanagement.dto.formdto.FormCompanyIdDto;
 import com.example.tourmanagement.dto.formdto.FormResponseDto;
 
 import com.example.tourmanagement.entity.FormEntity;
 import com.example.tourmanagement.entity.TourPackage;
+import com.example.tourmanagement.entity.CompanyEntity;
 
 import com.example.tourmanagement.repository.FormsRepository;
 import com.example.tourmanagement.repository.TourPackageRepository;
+import com.example.tourmanagement.repository.CompanyRepository;
 
 import com.example.tourmanagement.service.FormsService;
 
@@ -34,9 +37,18 @@ public class FormsServiceImpl implements FormsService {
 
     private final FormsRepository formRepository;
     private final TourPackageRepository packageRepository;
+    private final CompanyRepository companyRepository;
 
+    // CREATE FORM
     @Override
     public FormResponseDto createForm(CreateFormDto dto) {
+
+        if (dto.getCompanyId() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Company ID is required"
+            );
+        }
 
         if (dto.getPackageId() == null) {
             throw new ResponseStatusException(
@@ -45,12 +57,29 @@ public class FormsServiceImpl implements FormsService {
             );
         }
 
-        TourPackage tourPackage = packageRepository
-                .findById(dto.getPackageId())
+        // Find company
+        CompanyEntity company = companyRepository.findById(dto.getCompanyId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Company not found with ID: " + dto.getCompanyId()
+                ));
+
+        // Find tour package
+        TourPackage tourPackage = packageRepository.findById(dto.getPackageId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Tour package not found with ID: " + dto.getPackageId()
                 ));
+
+        // Validate package belongs to company
+        if (tourPackage.getCompany() == null ||
+                !tourPackage.getCompany().getId().equals(company.getId())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Selected tour package does not belong to this company"
+            );
+        }
 
         String slug = generateUniqueSlug(dto.getFormTitle());
 
@@ -67,6 +96,7 @@ public class FormsServiceImpl implements FormsService {
                 )
                 .expiryDate(dto.getExpiryDate())
                 .tourPackage(tourPackage)
+                .company(company)
                 .build();
 
         FormEntity savedForm = formRepository.save(form);
@@ -74,6 +104,7 @@ public class FormsServiceImpl implements FormsService {
         return mapToResponse(savedForm);
     }
 
+    // GENERATE UNIQUE SLUG
     private String generateUniqueSlug(String title) {
 
         if (title == null || title.isBlank()) {
@@ -121,6 +152,7 @@ public class FormsServiceImpl implements FormsService {
         return slug;
     }
 
+    // GET ALL FORMS
     @Override
     @Transactional(readOnly = true)
     public List<FormResponseDto> getAllForms() {
@@ -131,6 +163,32 @@ public class FormsServiceImpl implements FormsService {
                 .toList();
     }
 
+    // GET FORMS BY COMPANY ID
+    @Override
+    @Transactional(readOnly = true)
+    public List<FormResponseDto> getFormsByCompany(FormCompanyIdDto dto) {
+
+        if (dto.getCompanyId() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Company ID is required"
+            );
+        }
+
+        if (!companyRepository.existsById(dto.getCompanyId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Company not found with ID: " + dto.getCompanyId()
+            );
+        }
+
+        return formRepository.findByCompany_Id(dto.getCompanyId())
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    // GET FORM BY ID
     @Override
     @Transactional(readOnly = true)
     public FormResponseDto getFormById(FormIdDto dto) {
@@ -140,6 +198,7 @@ public class FormsServiceImpl implements FormsService {
         return mapToResponse(form);
     }
 
+    // GET FORM BY SLUG
     @Override
     @Transactional(readOnly = true)
     public FormResponseDto getFormBySlug(FormSlugDto dto) {
@@ -153,10 +212,18 @@ public class FormsServiceImpl implements FormsService {
         return mapToResponse(form);
     }
 
+    // UPDATE FORM
     @Override
     public FormResponseDto updateForm(UpdateFormDto dto) {
 
         FormEntity form = getForm(dto.getId());
+
+        if (dto.getCompanyId() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Company ID is required"
+            );
+        }
 
         if (dto.getPackageId() == null) {
             throw new ResponseStatusException(
@@ -165,24 +232,56 @@ public class FormsServiceImpl implements FormsService {
             );
         }
 
-        TourPackage tourPackage = packageRepository
-                .findById(dto.getPackageId())
+        // Find company
+        CompanyEntity company = companyRepository.findById(dto.getCompanyId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Company not found with ID: " + dto.getCompanyId()
+                ));
+
+        // Find tour package
+        TourPackage tourPackage = packageRepository.findById(dto.getPackageId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Tour package not found with ID: " + dto.getPackageId()
                 ));
 
+        // Validate package belongs to company
+        if (tourPackage.getCompany() == null ||
+                !tourPackage.getCompany().getId().equals(company.getId())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Selected tour package does not belong to this company"
+            );
+        }
+
+        if (dto.getFormTitle() == null || dto.getFormTitle().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Form title is required"
+            );
+        }
+
         form.setFormTitle(dto.getFormTitle());
         form.setFormDescription(dto.getFormDescription());
+
         form.setAllowMultipleSubmissions(
-                dto.getAllowMultipleSubmissions()
+                dto.getAllowMultipleSubmissions() != null
+                        ? dto.getAllowMultipleSubmissions()
+                        : form.getAllowMultipleSubmissions()
         );
+
         form.setExpiryDate(dto.getExpiryDate());
         form.setTourPackage(tourPackage);
+
+        // Update company ID
+        form.setCompany(company);
 
         return mapToResponse(formRepository.save(form));
     }
 
+    // DELETE FORM
     @Override
     public String deleteForm(FormIdDto dto) {
 
@@ -193,6 +292,7 @@ public class FormsServiceImpl implements FormsService {
         return "Form deleted successfully";
     }
 
+    // PUBLISH FORM
     @Override
     public FormResponseDto publishForm(FormIdDto dto) {
 
@@ -210,6 +310,7 @@ public class FormsServiceImpl implements FormsService {
         return mapToResponse(formRepository.save(form));
     }
 
+    // CLOSE FORM
     @Override
     public FormResponseDto closeForm(FormIdDto dto) {
 
@@ -220,6 +321,7 @@ public class FormsServiceImpl implements FormsService {
         return mapToResponse(formRepository.save(form));
     }
 
+    // GET FORM BY ID
     private FormEntity getForm(Long id) {
 
         return formRepository.findById(id)
@@ -229,6 +331,7 @@ public class FormsServiceImpl implements FormsService {
                 ));
     }
 
+    // MAP ENTITY TO RESPONSE DTO
     private FormResponseDto mapToResponse(FormEntity form) {
 
         return FormResponseDto.builder()
@@ -242,6 +345,11 @@ public class FormsServiceImpl implements FormsService {
                         form.getAllowMultipleSubmissions()
                 )
                 .expiryDate(form.getExpiryDate())
+                .companyId(
+                        form.getCompany() != null
+                                ? form.getCompany().getId()
+                                : null
+                )
                 .createdAt(form.getCreatedAt())
                 .updatedAt(form.getUpdatedAt())
                 .packageId(

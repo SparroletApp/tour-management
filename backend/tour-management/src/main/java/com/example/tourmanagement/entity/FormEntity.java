@@ -45,6 +45,10 @@ public class FormEntity {
 
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private CompanyEntity company;
+
     @PrePersist
     public void onCreate() {
         createdAt = LocalDateTime.now();

@@ -1,5 +1,6 @@
 package com.example.tourmanagement.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface TourPackageRepository extends JpaRepository<TourPackage, Long> {
     Optional<TourPackage> findByTourCode(String tourCode);
+    List<TourPackage> findByCompany_Id(Long companyId);
 
     @Query(value = """
         SELECT nextval(

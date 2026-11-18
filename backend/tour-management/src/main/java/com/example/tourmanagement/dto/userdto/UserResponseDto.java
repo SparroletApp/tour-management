@@ -15,10 +15,14 @@ public class UserResponseDto {
 
     private String email;
 
+    private Long companyId;
+
+    private String companyName;
+
     private String phone;
 
     private String role;
-
+    private String password;
     private Boolean status;
 
     private LocalDateTime createdAt;

@@ -62,6 +62,13 @@ export default function LoginPage() {
                 sessionStorage.setItem("user_role", response.user.role);
             }
 
+            if (response.user.companyId) {
+                sessionStorage.setItem(
+                    "company_id",
+                    String(response.user.companyId)
+                );
+            }
+
             if (rememberMe) {
                 localStorage.setItem("remembered_email", email.trim());
             } else {
@@ -168,8 +175,8 @@ export default function LoginPage() {
                             >
                                 <i
                                     className={`bi ${showPassword
-                                            ? "bi-eye-slash"
-                                            : "bi-eye"
+                                        ? "bi-eye-slash"
+                                        : "bi-eye"
                                         }`}
                                 ></i>
                             </button>

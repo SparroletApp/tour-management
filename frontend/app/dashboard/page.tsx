@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,7 +11,6 @@ import dashboardService, {
 import "./dashboard.css";
 
 function Dashboard() {
-
     const router = useRouter();
 
     const [dashboard, setDashboard] =
@@ -24,8 +24,17 @@ function Dashboard() {
             setLoading(true);
             setError("");
 
+            const companyId = sessionStorage.getItem("company_id");
+
+            if (!companyId || isNaN(Number(companyId))) {
+                setError("Company ID not found. Please login again.");
+                return;
+            }
+
             const response =
-                await dashboardService.getDashboardDetails();
+                await dashboardService.getDashboardDetails({
+                    id: Number(companyId),
+                });
 
             setDashboard(response);
 
@@ -149,10 +158,12 @@ function Dashboard() {
                                 )}
                             </h2>
                         </div>
+
                         <div className={`dashboard-icon ${card.color}`}>
                             <i className={`bi ${card.icon}`}></i>
                         </div>
                     </div>
+
                     <div className="dashboard-card-bottom">
                         <span>{card.description}</span>
                         <i className="bi bi-arrow-up-right"></i>
@@ -255,7 +266,6 @@ function Dashboard() {
 
                 {renderCards(formCards)}
             </section>
-
         </div>
     );
 }

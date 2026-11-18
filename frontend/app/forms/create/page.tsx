@@ -18,7 +18,7 @@ export default function CreateForm() {
     const [formDescription, setFormDescription] = useState("");
     const [allowMultipleSubmissions, setAllowMultipleSubmissions] = useState(true);
     const [expiryDate, setExpiryDate] = useState("");
-
+    const [companyId, setCompanyId] = useState<number | null>(null);
     const [packages, setPackages] = useState<TourPackage[]>([]);
     const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
     const [packageSearch, setPackageSearch] = useState("");
@@ -28,15 +28,29 @@ export default function CreateForm() {
     const [packageLoading, setPackageLoading] = useState(true);
 
     useEffect(() => {
+        const storedCompanyId = sessionStorage.getItem("company_id");
+
+        if (!storedCompanyId || isNaN(Number(storedCompanyId))) {
+            alert("Company ID not found. Please login again.");
+            router.push("/");
+            return;
+        }
+
+        setCompanyId(Number(storedCompanyId));
+    }, [router]);
+
+    useEffect(() => {
+        if (!companyId) return;
+
         const fetchPackages = async () => {
             try {
                 setPackageLoading(true);
 
-                const response = await tourPackageService.getAll();
+                const response = await tourPackageService.getByCompanyId(companyId);
 
                 setPackages(response || []);
             } catch (error) {
-                console.error("Error loading tour packages:", error);
+                console.error("Error loading company tour packages:", error);
                 alert("Unable to load tour packages.");
             } finally {
                 setPackageLoading(false);
@@ -44,7 +58,7 @@ export default function CreateForm() {
         };
 
         fetchPackages();
-    }, []);
+    }, [companyId]);
 
     const filteredPackages = useMemo(() => {
         const search = packageSearch.trim().toLowerCase();
@@ -76,8 +90,15 @@ export default function CreateForm() {
         setShowPackageDropdown(true);
     };
 
+
+
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (!companyId) {
+            alert("Company ID not found. Please login again.");
+            return;
+        }
 
         if (!selectedPackage || !selectedPackage.id) {
             alert("Please select a tour package.");
@@ -93,6 +114,7 @@ export default function CreateForm() {
             setLoading(true);
 
             const response = await formBuilderService.forms.create({
+                companyId: companyId,
                 packageId: selectedPackage.id,
                 formTitle: formTitle.trim(),
                 formDescription: formDescription.trim(),
@@ -189,11 +211,10 @@ export default function CreateForm() {
                                             <button
                                                 type="button"
                                                 key={pkg.id}
-                                                className={`package-option ${
-                                                    selectedPackage?.id === pkg.id
-                                                        ? "selected"
-                                                        : ""
-                                                }`}
+                                                className={`package-option ${selectedPackage?.id === pkg.id
+                                                    ? "selected"
+                                                    : ""
+                                                    }`}
                                                 onClick={() =>
                                                     handlePackageSelect(pkg)
                                                 }

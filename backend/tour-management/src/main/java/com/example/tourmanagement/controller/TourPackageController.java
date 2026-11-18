@@ -1,6 +1,8 @@
 package com.example.tourmanagement.controller;
 
+import com.example.tourmanagement.dto.tourdto.TourCompanyIdDto;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.tourmanagement.dto.tourdto.TourPackageDto;
@@ -9,6 +11,8 @@ import com.example.tourmanagement.service.CrudService;
 import com.example.tourmanagement.service.TourPackageService;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tours")
@@ -36,5 +40,14 @@ public class TourPackageController extends BaseCrudController<TourPackageDto> {
     @PutMapping("/{id}/full")
     public TourPackageFullDto updateFull(@PathVariable Long id, @RequestBody TourPackageFullDto request) {
         return service.updateFull(id, request);
+    }
+
+    @PostMapping("/get-by-company")
+    public ResponseEntity<List<TourPackageDto>> getByCompanyId(
+            @RequestBody TourCompanyIdDto request) {
+
+        return ResponseEntity.ok(
+                service.getByCompanyId(request)
+        );
     }
 }

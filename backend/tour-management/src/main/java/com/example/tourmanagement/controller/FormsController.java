@@ -1,11 +1,7 @@
 
 package com.example.tourmanagement.controller;
 
-import com.example.tourmanagement.dto.formdto.CreateFormDto;
-import com.example.tourmanagement.dto.formdto.UpdateFormDto;
-import com.example.tourmanagement.dto.formdto.FormIdDto;
-import com.example.tourmanagement.dto.formdto.FormSlugDto;
-import com.example.tourmanagement.dto.formdto.FormResponseDto;
+import com.example.tourmanagement.dto.formdto.*;
 import com.example.tourmanagement.service.FormsService;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +25,15 @@ public class FormsController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(formsService.createForm(dto));
+    }
+
+    @PostMapping("/get-by-company")
+    public ResponseEntity<List<FormResponseDto>> getFormsByCompany(
+            @RequestBody FormCompanyIdDto dto) {
+
+        return ResponseEntity.ok(
+                formsService.getFormsByCompany(dto)
+        );
     }
 
     @PostMapping("/get-all")

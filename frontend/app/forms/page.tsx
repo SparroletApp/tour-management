@@ -14,7 +14,7 @@ export default function Forms() {
     const [forms, setForms] = useState<FormResponseDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
+    const [companyId, setCompanyId] = useState<number | null>(null);
     const [openMenu, setOpenMenu] = useState<number | null>(null);
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
     const [mounted, setMounted] = useState(false);
@@ -23,16 +23,30 @@ export default function Forms() {
 
     useEffect(() => {
         setMounted(true);
-        loadForms();
+
+        const storedCompanyId = sessionStorage.getItem("company_id");
+
+        if (!storedCompanyId || isNaN(Number(storedCompanyId))) {
+            setError("Company ID not found. Please login again.");
+            setLoading(false);
+            return;
+        }
+
+        const id = Number(storedCompanyId);
+        setCompanyId(id);
+
+        loadForms(id);
     }, []);
 
-    const loadForms = async () => {
+    const loadForms = async (id: number) => {
         try {
             setLoading(true);
 
-            const data = await formBuilderService.forms.getAll();
+            const data = await formBuilderService.forms.getByCompany({
+                companyId: id
+            });
 
-            setForms(data);
+            setForms(data || []);
             setError("");
             setCurrentPage(1);
         } catch (err) {
@@ -177,7 +191,10 @@ export default function Forms() {
 
         try {
             await formBuilderService.forms.delete({ id });
-            await loadForms();
+
+            if (companyId !== null) {
+                await loadForms(companyId);
+            }
 
             showToast("success", "Form deleted successfully!");
         } catch (err) {
@@ -199,7 +216,10 @@ export default function Forms() {
                 await formBuilderService.forms.close({ id });
             }
 
-            await loadForms();
+            // Reload using company ID
+            if (companyId !== null) {
+                await loadForms(companyId);
+            }
 
             showToast(
                 "success",
@@ -395,9 +415,8 @@ export default function Forms() {
                                                 <div className="forms-more-wrapper">
                                                     <button
                                                         type="button"
-                                                        className={`action-icon-btn more-btn ${
-                                                            openMenu === form.id ? "active" : ""
-                                                        }`}
+                                                        className={`action-icon-btn more-btn ${openMenu === form.id ? "active" : ""
+                                                            }`}
                                                         data-tooltip="More Actions"
                                                         aria-label="More Actions"
                                                         aria-expanded={openMenu === form.id}
@@ -485,9 +504,8 @@ export default function Forms() {
 
                                             <button
                                                 type="button"
-                                                className={`forms-page-btn ${
-                                                    currentPage === page ? "active" : ""
-                                                }`}
+                                                className={`forms-page-btn ${currentPage === page ? "active" : ""
+                                                    }`}
                                                 onClick={() => changePage(page)}
                                             >
                                                 {page}

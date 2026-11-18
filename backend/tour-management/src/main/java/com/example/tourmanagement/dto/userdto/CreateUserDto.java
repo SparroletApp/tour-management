@@ -2,6 +2,7 @@ package com.example.tourmanagement.dto.userdto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import lombok.Getter;
@@ -24,4 +25,9 @@ public class CreateUserDto {
     private String password;
 
     private String phone;
+
+    @NotBlank(message = "Role is required")
+    private String role;
+
+    private Long companyId;
 }

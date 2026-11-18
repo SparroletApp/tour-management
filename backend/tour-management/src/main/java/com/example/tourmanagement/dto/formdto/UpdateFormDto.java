@@ -14,6 +14,7 @@ public class UpdateFormDto {
     private Long id;
 
     private String formTitle;
+    private Long companyId;
 
     private String formDescription;
     private Long packageId;

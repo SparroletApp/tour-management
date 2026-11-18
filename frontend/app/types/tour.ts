@@ -1,5 +1,3 @@
-
-
 interface Audit {
     createdAt?: string;
     updatedAt?: string;
@@ -16,6 +14,11 @@ export interface TourPackage extends Audit {
     maximumTravellers?: number | null;
     currency?: string | null;
     status?: string | null;
+
+    // Company relationship
+    companyId?: number | null;
+    companyName?: string | null;
+
     startDate?: string | null;
     endDate?: string | null;
     coverImageUrl?: string | null;
@@ -152,6 +155,8 @@ export const emptyTourFull = (): TourPackageFull => ({
         currency: "INR",
         status: "DRAFT",
         coverImageUrl: "",
+        companyId: null,
+        companyName: null,
     },
     destinations: [],
     flights: [],

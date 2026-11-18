@@ -22,6 +22,8 @@ public class TourPackageDto {
     private Integer maximumTravellers;
     private String currency;
     private String status;
+    private Long companyId;
+    private String companyName;
     private LocalDate startDate;
     private LocalDate endDate;
     private String coverImageUrl;

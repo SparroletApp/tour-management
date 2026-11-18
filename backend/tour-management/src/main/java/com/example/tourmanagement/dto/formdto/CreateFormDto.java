@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class CreateFormDto {
 
     private String formTitle;
-
+    private Long companyId;
     private String formDescription;
 
     private Boolean allowMultipleSubmissions;

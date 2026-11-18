@@ -21,7 +21,7 @@ export default function EditForm() {
     const slug = String(params.slug || "");
 
     const [form, setForm] = useState<FormResponseDto | null>(null);
-
+    const [companyId, setCompanyId] = useState<number | null>(null);
     const [formTitle, setFormTitle] = useState("");
     const [formDescription, setFormDescription] = useState("");
     const [allowMultipleSubmissions, setAllowMultipleSubmissions] = useState(true);
@@ -36,9 +36,24 @@ export default function EditForm() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
+
     useEffect(() => {
+        const storedCompanyId = sessionStorage.getItem("company_id");
+        const currentCompanyId = storedCompanyId
+            ? Number(storedCompanyId)
+            : null;
+
+        if (!currentCompanyId || !Number.isFinite(currentCompanyId)) {
+            setLoading(false);
+            setPackageLoading(false);
+            return;
+        }
+
+        setCompanyId(currentCompanyId);
+
         if (!slug || slug === "undefined") {
             setLoading(false);
+            setPackageLoading(false);
             return;
         }
 
@@ -49,7 +64,7 @@ export default function EditForm() {
 
                 const [formResponse, packageResponse] = await Promise.all([
                     formBuilderService.forms.getBySlug({ slug }),
-                    tourPackageService.getAll()
+                   tourPackageService.getByCompanyId(currentCompanyId)
                 ]);
 
                 const formData = formResponse;
@@ -60,7 +75,9 @@ export default function EditForm() {
 
                 setFormTitle(formData.formTitle);
                 setFormDescription(formData.formDescription || "");
-                setAllowMultipleSubmissions(formData.allowMultipleSubmissions);
+                setAllowMultipleSubmissions(
+                    formData.allowMultipleSubmissions
+                );
 
                 setExpiryDate(
                     formData.expiryDate
@@ -103,6 +120,7 @@ export default function EditForm() {
 
         loadData();
     }, [slug]);
+
 
     const filteredPackages = useMemo(() => {
         const search = packageSearch.trim().toLowerCase();
@@ -188,6 +206,7 @@ export default function EditForm() {
 
             await formBuilderService.forms.update({
                 id: form.id,
+                companyId: companyId,
                 packageId: selectedPackage.id,
                 formTitle: formTitle.trim(),
                 formDescription: formDescription.trim(),

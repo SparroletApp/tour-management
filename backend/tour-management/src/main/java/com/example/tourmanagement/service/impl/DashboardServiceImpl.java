@@ -1,11 +1,12 @@
 package com.example.tourmanagement.service.impl;
 
-import com.example.tourmanagement.repository.FormsRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.tourmanagement.dto.companydto.CompanyIdDto;
 import com.example.tourmanagement.dto.dashboarddto.DashboardResponseDto;
 import com.example.tourmanagement.repository.DashboardRepository;
+import com.example.tourmanagement.repository.FormsRepository;
 import com.example.tourmanagement.service.DashboardService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,36 +20,37 @@ public class DashboardServiceImpl implements DashboardService {
     private final FormsRepository formRepository;
 
     @Override
-    public DashboardResponseDto getDashboardDetails() {
+    public DashboardResponseDto getDashboardDetails(CompanyIdDto dto) {
+
+        Long companyId = dto.getId();
 
         return DashboardResponseDto.builder()
 
                 // Tour packages
                 .totalTourPackages(
-                        dashboardRepository.getTotalTourPackages()
+                        dashboardRepository.getTotalTourPackages(companyId)
                 )
                 .publishedTourPackages(
-                        dashboardRepository.getPublishedTourPackages()
+                        dashboardRepository.getPublishedTourPackages(companyId)
                 )
                 .draftTourPackages(
-                        dashboardRepository.getDraftTourPackages()
+                        dashboardRepository.getDraftTourPackages(companyId)
                 )
                 .closedTourPackages(
-                        dashboardRepository.getClosedTourPackages()
+                        dashboardRepository.getClosedTourPackages(companyId)
                 )
 
-                // Forms
                 .totalForms(
-                        formRepository.getTotalForms()
+                        formRepository.getTotalForms(companyId)
                 )
                 .publishedForms(
-                        formRepository.getPublishedForms()
+                        formRepository.getPublishedForms(companyId)
                 )
                 .draftForms(
-                        formRepository.getDraftForms()
+                        formRepository.getDraftForms(companyId)
                 )
                 .closedForms(
-                        formRepository.getClosedForms()
+                        formRepository.getClosedForms(companyId)
                 )
 
                 .build();

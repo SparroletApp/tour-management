@@ -1,10 +1,10 @@
 package com.example.tourmanagement.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -25,8 +25,20 @@ public class User extends BaseEntity {
     private String phone;
 
     @Column(length = 30)
-    private String role = "USER";
+    private String role;
+
+    @Column(length = 6)
+    private String otp;
+
+    @Column(nullable = false)
+    private Boolean otp_verify = false;
+
+    private LocalDateTime otp_expiry;
 
     @Column(nullable = false)
     private Boolean status = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private CompanyEntity company;
 }

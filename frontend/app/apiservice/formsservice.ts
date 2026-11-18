@@ -13,8 +13,12 @@ export interface FormSlugDto {
     slug: string;
 }
 
+export interface FormCompanyIdDto {
+    companyId: number;
+}
 
 export interface CreateFormDto {
+    companyId: number;
     packageId: number;
     formTitle: string;
     formDescription?: string;
@@ -24,6 +28,7 @@ export interface CreateFormDto {
 
 export interface UpdateFormDto {
     id: number;
+   companyId: number | null;
     packageId: number;
     formTitle: string;
     formDescription?: string;
@@ -33,6 +38,7 @@ export interface UpdateFormDto {
 
 export interface FormResponseDto {
     id: number;
+    companyId: number;
     formTitle: string;
     formDescription?: string;
     slug: string;
@@ -45,7 +51,6 @@ export interface FormResponseDto {
     packageId: number;
     tourPackageName?: string;
 }
-
 
 export interface CreateSectionDto {
     formId: number;
@@ -117,7 +122,6 @@ export interface QuestionResponseDto {
     displayOrder: number;
 }
 
-
 export interface CreateSubmissionDto {
     formId: number;
     respondentName?: string;
@@ -137,7 +141,7 @@ export interface SubmissionResponseDto {
     createdAt?: string;
 }
 
-
+// ANSWER DTOs
 export interface CreateAnswerDto {
     questionId: number;
     answer?: string;
@@ -156,8 +160,6 @@ export interface AnswerResponseDto {
     answer?: string;
 }
 
-
-
 export const formsService = {
 
     create: (dto: CreateFormDto) =>
@@ -170,6 +172,12 @@ export const formsService = {
         api.post<FormResponseDto[]>(
             "/api/forms/get-all",
             {}
+        ),
+
+    getByCompany: (dto: FormCompanyIdDto) =>
+        api.post<FormResponseDto[]>(
+            "/api/forms/get-by-company",
+            dto
         ),
 
     getByToken: (dto: FormTokenDto) =>
@@ -334,7 +342,6 @@ export const formAnswerService = {
             dto
         ),
 };
-
 
 const formBuilderService = {
     forms: formsService,

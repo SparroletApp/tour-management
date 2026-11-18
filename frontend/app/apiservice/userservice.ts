@@ -5,6 +5,8 @@ export interface UserCreateDto {
     email: string;
     password: string;
     phone?: string;
+    role: string;
+    companyId: number;
 }
 
 export interface LoginUserDto {
@@ -28,9 +30,31 @@ export interface UserResponseDto {
     name: string;
     email: string;
     phone?: string;
+    password:string;
     role: string;
     status: boolean;
+    companyId?: number;
+    companyName?: string;
     createdAt?: string;
+}
+
+export interface SendPasswordOtpDto {
+    email: string;
+}
+
+export interface VerifyPasswordOtpDto {
+    email: string;
+    otp: string;
+}
+
+export interface ResetPasswordDto {
+    email: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
+export interface CompanyIdDto {
+    id: number;
 }
 
 export interface AuthResponseDto {
@@ -57,12 +81,30 @@ const userService = {
         return await api.post("/api/user/get-by-id", data);
     },
 
+        sendPasswordOtp: async (data: SendPasswordOtpDto): Promise<string> => {
+        return await api.post("/api/user/send-password-otp", data);
+    },
+
+    verifyPasswordOtp: async (data: VerifyPasswordOtpDto): Promise<string> => {
+        return await api.post("/api/user/verify-password-otp", data);
+    },
+
+    resetPassword: async (data: ResetPasswordDto): Promise<string> => {
+        return await api.post("/api/user/reset-password", data);
+    },
+
     updateUser: async (data: UserUpdateDto): Promise<UserResponseDto> => {
         return await api.post("/api/user/update", data);
     },
 
     deleteUser: async (data: UserIdDto): Promise<string> => {
         return await api.post("/api/user/delete", data);
+    },
+
+    getUsersByCompany: async (
+        data: CompanyIdDto
+    ): Promise<UserResponseDto[]> => {
+        return await api.post("/api/user/get-by-company", data);
     },
 
 };

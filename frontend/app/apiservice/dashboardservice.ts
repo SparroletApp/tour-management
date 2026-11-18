@@ -12,11 +12,18 @@ export interface DashboardResponse {
     closedForms: number;
 }
 
+export interface CompanyIdDto {
+    id: number;
+}
+
 export const dashboardService = {
 
-    getDashboardDetails: async (): Promise<DashboardResponse> => {
-        return await api.get<DashboardResponse>(
-            "/api/dashboard/get-details"
+    getDashboardDetails: async (
+        data: CompanyIdDto
+    ): Promise<DashboardResponse> => {
+        return await api.post<DashboardResponse>(
+            "/api/dashboard/get-details",
+            data
         );
     },
 

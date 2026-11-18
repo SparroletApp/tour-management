@@ -23,16 +23,57 @@ function Sidebar() {
             document.documentElement.style.removeProperty("--sidebar-width");
         };
     }, [collapsed]);
-
-    const menuItems = [
-        { name: "Dashboard", icon: "bi-graph-up-arrow", path: "/dashboard" },
-        { name: "Tours", icon: "bi-truck", path: "/tours" },
-        { name: "Forms", icon: "bi-file-earmark-richtext", path: "/forms" },
-        // { name: "Responses", icon: "bi-chat-left-dots", path: "/responses" },
-        // { name: "Settings", icon: "bi-gear", path: "/settings" },
-        // { name: "Inbox", icon: "bi-inbox", path: "/inbox" },
-
+    const userRole = sessionStorage.getItem("user_role");
+    const adminMenuItems = [
+        {
+            name: "Dashboard",
+            icon: "bi-speedometer2",
+            path: "/admin/dashboard",
+        },
+        {
+            name: "Companies",
+            icon: "bi-buildings",
+            path: "/admin/companies",
+        },
+        // {
+        //     name: "Users",
+        //     icon: "bi-people",
+        //     path: "/users",
+        // },
     ];
+
+    // OTHER USER SIDEBAR
+    const otherMenuItems = [
+        {
+            name: "Dashboard",
+            icon: "bi-graph-up-arrow",
+            path: "/dashboard",
+        },
+        {
+            name: "Tours",
+            icon: "bi-truck",
+            path: "/tours",
+        },
+        {
+            name: "Forms",
+            icon: "bi-file-earmark-richtext",
+            path: "/forms",
+        },
+        ...(userRole === "MANAGER"
+            ? [
+                {
+                    name: "Users",
+                    icon: "bi-people",
+                    path: "/user-lists",
+                },
+            ]
+            : []),
+    ];
+
+    const menuItems =
+        userRole === "ADMIN"
+            ? adminMenuItems
+            : otherMenuItems;
 
     const isActive = (path: string) => {
         return pathname === path || pathname.startsWith(path + "/");

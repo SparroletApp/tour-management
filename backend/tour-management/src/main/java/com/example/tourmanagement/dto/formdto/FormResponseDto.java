@@ -19,12 +19,15 @@ public class FormResponseDto {
 
     private String publicToken;
 
+
+
     private String status;
     private String slug;
 
     private Boolean allowMultipleSubmissions;
 
     private LocalDateTime expiryDate;
+    private Long companyId;
 
     private LocalDateTime createdAt;
 

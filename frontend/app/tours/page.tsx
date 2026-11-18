@@ -14,7 +14,6 @@ import {
     setSelectedTourId,
 } from "../utils/tourStorage";
 
-import Breadcrumb from "../component/BreadCrumb";
 
 function Tours() {
     const router = useRouter();
@@ -37,11 +36,27 @@ function Tours() {
             setLoading(true);
             setError("");
 
-            const data = await tourPackageService.getAll();
-            setTours(data);
+            const companyId = sessionStorage.getItem("company_id");
+
+            if (!companyId || isNaN(Number(companyId))) {
+                throw new Error("Company ID not found. Please login again.");
+            }
+
+            const response = await tourPackageService.getByCompanyId(
+                Number(companyId)
+            );
+
+            setTours(response);
             setCurrentPage(1);
 
         } catch (e: any) {
+            setError(
+                e?.response?.data?.message ||
+                e?.response?.data?.error ||
+                e?.message ||
+                "Unable to load tours. Please try again."
+            );
+
             Swal.fire({
                 icon: "error",
                 title: "Failed to Load Tours",
@@ -67,7 +82,6 @@ function Tours() {
     };
 
     const handleDelete = async (id: number) => {
-
         const result = await Swal.fire({
             title: "Delete Tour?",
             text: "Delete this tour and everything inside it (days, flights, hotels...)?",
@@ -80,9 +94,7 @@ function Tours() {
             reverseButtons: true,
         });
 
-        if (!result.isConfirmed) {
-            return;
-        }
+        if (!result.isConfirmed) return;
 
         try {
             Swal.fire({
@@ -90,9 +102,7 @@ function Tours() {
                 text: "Please wait",
                 allowOutsideClick: false,
                 allowEscapeKey: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                },
+                didOpen: () => Swal.showLoading(),
             });
 
             await tourPackageService.delete(id);
@@ -128,7 +138,6 @@ function Tours() {
             });
 
         } catch (e: any) {
-
             Swal.fire({
                 icon: "error",
                 title: "Delete Failed",
@@ -179,10 +188,12 @@ function Tours() {
                         Manage and organize all your tour packages.
                     </p>
                 </div>
+
                 <button
                     type="button"
                     className="create-tour-btn"
-                    onClick={() => router.push("/tours/create")}>
+                    onClick={() => router.push("/tours/create")}
+                >
                     <i className="bi bi-plus-lg"></i>
                     <span>Create Tour</span>
                 </button>
@@ -203,7 +214,8 @@ function Tours() {
                     <button
                         type="button"
                         className="tours-retry-btn"
-                        onClick={loadTours}>
+                        onClick={loadTours}
+                    >
                         Retry
                     </button>
                 </div>
@@ -256,9 +268,7 @@ function Tours() {
                                     <th>Duration</th>
                                     <th>Travel Dates</th>
                                     <th>Status</th>
-                                    <th className="actions-heading">
-                                        Actions
-                                    </th>
+                                    <th className="actions-heading">Actions</th>
                                 </tr>
                             </thead>
 
@@ -293,12 +303,13 @@ function Tours() {
 
                                         <td className="tour-status-cell">
                                             <span
-                                                className={`tour-status ${tour.status?.toLowerCase() === "published"
-                                                    ? "published"
-                                                    : tour.status?.toLowerCase() === "archived"
+                                                className={`tour-status ${
+                                                    tour.status?.toLowerCase() === "published"
+                                                        ? "published"
+                                                        : tour.status?.toLowerCase() === "archived"
                                                         ? "archived"
                                                         : "draft"
-                                                    }`}
+                                                }`}
                                             >
                                                 {tour.status ?? "Draft"}
                                             </span>
@@ -348,7 +359,6 @@ function Tours() {
                     </div>
 
                     <div className="tours-pagination">
-
                         <div className="pagination-info">
                             <span>Showing</span>
                             <strong>{startIndex + 1}-{endIndex}</strong>
@@ -358,7 +368,6 @@ function Tours() {
                         </div>
 
                         <div className="pagination-controls">
-
                             <div className="pagination-size">
                                 <label htmlFor="tourPageSize">
                                     Rows per page
@@ -393,8 +402,9 @@ function Tours() {
                                     <button
                                         type="button"
                                         key={page}
-                                        className={`pagination-number ${currentPage === page ? "active" : ""
-                                            }`}
+                                        className={`pagination-number ${
+                                            currentPage === page ? "active" : ""
+                                        }`}
                                         onClick={() => setCurrentPage(page)}
                                     >
                                         {page}

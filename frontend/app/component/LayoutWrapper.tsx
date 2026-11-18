@@ -15,7 +15,9 @@ export default function LayoutWrapper({
     const hideLayout =
         pathname === "/" ||
         pathname === "/login" ||
+        pathname === "/super-admin/login" ||
         pathname === "/form" ||
+           pathname === "/forgot-password" ||
         pathname.startsWith("/tour-form/") ||
         pathname.startsWith("/tour-details/");
 

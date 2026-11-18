@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
 import {
@@ -32,6 +32,7 @@ interface FieldDef {
     options?: string[];
     wide?: boolean;
 }
+
 const PACKAGE_FIELDS: FieldDef[] = [
     { key: "tourName", label: "Tour name *" },
     {
@@ -206,6 +207,8 @@ function addDays(
 
     return d.toISOString().slice(0, 10);
 }
+
+
 
 function clean<T>(value: T): T {
     if (value === "") return null as unknown as T;
@@ -501,6 +504,20 @@ export default function TourForm({
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
 
+    useEffect(() => {
+        const storedCompanyId = sessionStorage.getItem("company_id");
+
+        if (storedCompanyId) {
+            setData((previous) => ({
+                ...previous,
+                tourPackage: {
+                    ...previous.tourPackage,
+                    companyId: Number(storedCompanyId),
+                },
+            }));
+        }
+    }, []);
+
     const setPkg = (key: string, value: any) => {
         setData((previous) => ({
             ...previous,
@@ -558,7 +575,12 @@ export default function TourForm({
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const companyId = Number(sessionStorage.getItem("company_id"));
 
+        if (!companyId || Number.isNaN(companyId)) {
+            setError("Company ID not found in session. Please log in again.");
+            return;
+        }
         if (!data.tourPackage.tourName?.trim()) {
             setError("Tour name is required.");
             setTab("basic");
@@ -569,7 +591,15 @@ export default function TourForm({
             setSaving(true);
             setError("");
 
-            await onSubmit(prepareForSubmit(data));
+            await onSubmit(
+                prepareForSubmit({
+                    ...data,
+                    tourPackage: {
+                        ...data.tourPackage,
+                        companyId,
+                    },
+                })
+            );
         } catch (err: any) {
             setError(
                 err?.response?.data?.message ||

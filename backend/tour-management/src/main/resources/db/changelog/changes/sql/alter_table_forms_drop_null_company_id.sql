@@ -1,0 +1,5 @@
+ALTER TABLE forms
+    ALTER COLUMN company_id DROP NOT NULL;
+
+ALTER TABLE forms
+    ALTER COLUMN tour_package_id DROP NOT NULL;

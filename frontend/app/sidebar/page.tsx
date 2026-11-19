@@ -35,11 +35,11 @@ function Sidebar() {
             icon: "bi-buildings",
             path: "/admin/companies",
         },
-        // {
-        //     name: "Users",
-        //     icon: "bi-people",
-        //     path: "/users",
-        // },
+        {
+            name: "Public Form",
+            icon: "bi-ui-radios",
+            path: "/admin/public-forms",
+        },
     ];
 
     // OTHER USER SIDEBAR

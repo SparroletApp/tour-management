@@ -18,8 +18,8 @@ export interface FormCompanyIdDto {
 }
 
 export interface CreateFormDto {
-    companyId: number;
-    packageId: number;
+    companyId: number | null;
+    packageId: number | null;
     formTitle: string;
     formDescription?: string;
     allowMultipleSubmissions?: boolean;
@@ -28,17 +28,16 @@ export interface CreateFormDto {
 
 export interface UpdateFormDto {
     id: number;
-   companyId: number | null;
-    packageId: number;
+    companyId: number | null;
+    packageId: number | null;
     formTitle: string;
     formDescription?: string;
     allowMultipleSubmissions?: boolean;
     expiryDate?: string | null;
 }
-
 export interface FormResponseDto {
     id: number;
-    companyId: number;
+    companyId: number | null;
     formTitle: string;
     formDescription?: string;
     slug: string;
@@ -48,8 +47,8 @@ export interface FormResponseDto {
     expiryDate?: string | null;
     createdAt?: string;
     updatedAt?: string;
-    packageId: number;
-    tourPackageName?: string;
+    packageId: number | null;
+    tourPackageName?: string | null;
 }
 
 export interface CreateSectionDto {
@@ -214,6 +213,12 @@ export const formsService = {
         api.post<FormResponseDto>(
             "/api/forms/publish",
             dto
+        ),
+
+    getPublicForms: () =>
+        api.post<FormResponseDto[]>(
+            "/api/forms/get-public-forms",
+            {}
         ),
 
     close: (dto: IdDto) =>

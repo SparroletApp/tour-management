@@ -315,7 +315,7 @@ export default function CreateForm() {
                         <button
                             type="button"
                             className="form-secondary-btn"
-                            onClick={() => router.push("/forms")}
+                           onClick={() => router.back()}
                             disabled={loading}
                         >
                             Cancel

@@ -39,46 +39,41 @@ public class FormsServiceImpl implements FormsService {
     private final TourPackageRepository packageRepository;
     private final CompanyRepository companyRepository;
 
-    // CREATE FORM
     @Override
     public FormResponseDto createForm(CreateFormDto dto) {
 
-        if (dto.getCompanyId() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Company ID is required"
-            );
+        CompanyEntity company = null;
+        TourPackage tourPackage = null;
+
+        // Find company only when company ID is provided
+        if (dto.getCompanyId() != null) {
+            company = companyRepository.findById(dto.getCompanyId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Company not found with ID: " + dto.getCompanyId()
+                    ));
         }
 
-        if (dto.getPackageId() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Tour package is required"
-            );
+        // Find tour package only when package ID is provided
+        if (dto.getPackageId() != null) {
+            tourPackage = packageRepository.findById(dto.getPackageId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Tour package not found with ID: " + dto.getPackageId()
+                    ));
         }
 
-        // Find company
-        CompanyEntity company = companyRepository.findById(dto.getCompanyId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Company not found with ID: " + dto.getCompanyId()
-                ));
+        // Validate package belongs to company only when both are provided
+        if (company != null && tourPackage != null) {
 
-        // Find tour package
-        TourPackage tourPackage = packageRepository.findById(dto.getPackageId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Tour package not found with ID: " + dto.getPackageId()
-                ));
+            if (tourPackage.getCompany() == null ||
+                    !tourPackage.getCompany().getId().equals(company.getId())) {
 
-        // Validate package belongs to company
-        if (tourPackage.getCompany() == null ||
-                !tourPackage.getCompany().getId().equals(company.getId())) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Selected tour package does not belong to this company"
-            );
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Selected tour package does not belong to this company"
+                );
+            }
         }
 
         String slug = generateUniqueSlug(dto.getFormTitle());
@@ -212,55 +207,47 @@ public class FormsServiceImpl implements FormsService {
         return mapToResponse(form);
     }
 
-    // UPDATE FORM
     @Override
     public FormResponseDto updateForm(UpdateFormDto dto) {
 
         FormEntity form = getForm(dto.getId());
-
-        if (dto.getCompanyId() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Company ID is required"
-            );
-        }
-
-        if (dto.getPackageId() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Tour package is required"
-            );
-        }
-
-        // Find company
-        CompanyEntity company = companyRepository.findById(dto.getCompanyId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Company not found with ID: " + dto.getCompanyId()
-                ));
-
-        // Find tour package
-        TourPackage tourPackage = packageRepository.findById(dto.getPackageId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Tour package not found with ID: " + dto.getPackageId()
-                ));
-
-        // Validate package belongs to company
-        if (tourPackage.getCompany() == null ||
-                !tourPackage.getCompany().getId().equals(company.getId())) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Selected tour package does not belong to this company"
-            );
-        }
 
         if (dto.getFormTitle() == null || dto.getFormTitle().isBlank()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Form title is required"
             );
+        }
+
+        CompanyEntity company = null;
+        TourPackage tourPackage = null;
+
+        if (dto.getCompanyId() != null) {
+            company = companyRepository.findById(dto.getCompanyId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Company not found with ID: " + dto.getCompanyId()
+                    ));
+        }
+
+        if (dto.getPackageId() != null) {
+            tourPackage = packageRepository.findById(dto.getPackageId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Tour package not found with ID: " + dto.getPackageId()
+                    ));
+        }
+
+        if (company != null && tourPackage != null) {
+
+            if (tourPackage.getCompany() == null ||
+                    !tourPackage.getCompany().getId().equals(company.getId())) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Selected tour package does not belong to this company"
+                );
+            }
         }
 
         form.setFormTitle(dto.getFormTitle());
@@ -273,9 +260,8 @@ public class FormsServiceImpl implements FormsService {
         );
 
         form.setExpiryDate(dto.getExpiryDate());
-        form.setTourPackage(tourPackage);
 
-        // Update company ID
+        form.setTourPackage(tourPackage);
         form.setCompany(company);
 
         return mapToResponse(formRepository.save(form));
@@ -331,7 +317,16 @@ public class FormsServiceImpl implements FormsService {
                 ));
     }
 
-    // MAP ENTITY TO RESPONSE DTO
+    @Override
+    @Transactional(readOnly = true)
+    public List<FormResponseDto> getPublicForms() {
+
+        return formRepository.findByCompanyIsNull()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
     private FormResponseDto mapToResponse(FormEntity form) {
 
         return FormResponseDto.builder()

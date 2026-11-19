@@ -1,0 +1,417 @@
+
+.public-forms-page {
+    padding: 25px;
+    min-height: 100vh;
+    background: #f5f8f7;
+    color: #263c38;
+}
+
+.public-forms-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.public-forms-header h2 {
+    font-size: 25px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: #064e45;
+}
+
+.public-forms-header p {
+    color: #82918d;
+    font-size: 14px;
+    margin: 0;
+}
+
+.public-form-add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    background: #064e45;
+    color: #fff;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    transition: 0.2s;
+}
+
+.public-form-add-btn:hover {
+    background: #043c35;
+    color: #fff;
+}
+
+.public-forms-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5eeeb;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.035);
+    overflow: hidden;
+}
+
+.public-forms-card-header {
+    padding: 20px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #edf1ef;
+}
+
+.public-forms-card-header h5 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 5px;
+    color: #263c38;
+}
+
+.public-forms-card-header span {
+    font-size: 12px;
+    color: #82918d;
+}
+
+.public-form-refresh-btn {
+    background: #e8f3f0;
+    color: #064e45;
+    border: 1px solid #d6e8e2;
+    border-radius: 6px;
+    padding: 8px 13px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.public-form-refresh-btn:disabled {
+    opacity: 0.6;
+}
+
+.public-forms-table {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.public-forms-table thead th {
+    background: #f7faf9;
+    color: #62746f;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 15px 16px;
+    border-bottom: 1px solid #e8efec;
+}
+
+.public-forms-table tbody td {
+    padding: 15px 16px;
+    vertical-align: middle;
+    font-size: 13px;
+    color: #52635e;
+    border-bottom: 1px solid #edf1ef;
+}
+
+.public-forms-table tbody tr:hover {
+    background: #fafcfb;
+}
+
+.public-form-title {
+    font-weight: 600;
+    color: #263c38;
+    margin-bottom: 4px;
+}
+
+.public-forms-table td small {
+    display: block;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #929f9b;
+}
+
+.public-form-slug {
+    background: #f0f5f3;
+    color: #064e45;
+    padding: 5px 9px;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.public-form-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.public-form-status.published {
+    background: #e2f5e9;
+    color: #21834a;
+}
+
+.public-form-status.draft {
+    background: #fff4dc;
+    color: #a87918;
+}
+
+.public-form-status.closed {
+    background: #fde8e8;
+    color: #c03939;
+}
+
+.public-form-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.public-form-actions button {
+    width: 33px;
+    height: 33px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.public-form-edit-btn {
+    background: #e7f0ff;
+    color: #2763b5;
+}
+
+.public-form-edit-btn:hover {
+    background: #d2e3ff;
+}
+
+.public-form-delete-btn {
+    background: #fff0f0;
+    color: #d43d3d;
+}
+
+.public-form-delete-btn:hover {
+    background: #ffdddd;
+}
+
+.public-form-loading,
+.public-form-empty {
+    padding: 65px 20px;
+    text-align: center;
+}
+
+.public-form-loading p {
+    margin-top: 12px;
+    color: #82918d;
+    font-size: 14px;
+}
+
+.public-form-empty > i {
+    font-size: 45px;
+    color: #9aada7;
+}
+
+.public-form-empty h5 {
+    margin-top: 15px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #263c38;
+}
+
+.public-form-empty p {
+    color: #82918d;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.public-form-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 35, 30, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.public-form-modal {
+    background: #fff;
+    width: 100%;
+    max-width: 550px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.18);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.public-form-modal-header {
+    padding: 20px 24px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 1px solid #edf1ef;
+}
+
+.public-form-modal-header h5 {
+    margin: 0 0 5px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #064e45;
+}
+
+.public-form-modal-header p {
+    margin: 0;
+    color: #82918d;
+    font-size: 13px;
+}
+
+.public-form-modal-header button {
+    border: none;
+    background: transparent;
+    color: #82918d;
+    font-size: 17px;
+}
+
+.public-form-modal-body {
+    padding: 24px;
+}
+
+.public-form-field {
+    margin-bottom: 20px;
+}
+
+.public-form-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #344b45;
+}
+
+.public-form-field input,
+.public-form-field textarea {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid #dce6e2;
+    border-radius: 7px;
+    outline: none;
+    font-size: 14px;
+    color: #263c38;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.public-form-field input:focus,
+.public-form-field textarea:focus {
+    border-color: #064e45;
+    box-shadow: 0 0 0 3px rgba(6, 78, 69, 0.08);
+}
+
+.public-form-field textarea {
+    resize: vertical;
+}
+
+.public-form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 5px;
+}
+
+.public-form-checkbox input {
+    width: 16px;
+    height: 16px;
+    accent-color: #064e45;
+}
+
+.public-form-checkbox label {
+    font-size: 13px;
+    color: #52635e;
+}
+
+.public-form-modal-footer {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid #edf1ef;
+}
+
+.public-form-modal-footer button {
+    border: none;
+    border-radius: 6px;
+    padding: 10px 17px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.public-form-cancel-btn {
+    background: #edf1ef;
+    color: #52635e;
+}
+
+.public-form-save-btn {
+    background: #064e45;
+    color: #fff;
+}
+
+.public-form-builder-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dce5e3;
+    border-radius: 7px;
+    background: #d1f6ea;
+    color: #064e45;
+    text-decoration: none;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.public-form-builder-btn:hover {
+    background: #064e45;
+    color: #ffffff;
+    border-color: #064e45;
+}
+
+.public-form-save-btn:hover {
+    background: #043c35;
+}
+
+.public-form-save-btn:disabled,
+.public-form-cancel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .public-forms-page {
+        padding: 15px;
+    }
+
+    .public-forms-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .public-forms-card-header {
+        padding: 15px;
+    }
+
+    .public-forms-table thead th,
+    .public-forms-table tbody td {
+        padding: 12px;
+    }
+}

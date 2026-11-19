@@ -14,14 +14,21 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.web.cors.CorsConfigurationSource;
+
 @Configuration
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    private final CorsConfigurationSource corsConfigurationSource;
+
     public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter) {
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            CorsConfigurationSource corsConfigurationSource) {
+
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
@@ -29,19 +36,22 @@ public class SecurityConfig {
             throws Exception {
 
         http
+                // CORS configuration
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+
+                // Disable CSRF
                 .csrf(AbstractHttpConfigurer::disable)
 
-                .cors(cors -> {})
-
+                // Stateless authentication
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
+                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
 
-                        // Allow Spring Boot error dispatch
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
 
                         .requestMatchers(
@@ -64,14 +74,16 @@ public class SecurityConfig {
                                 "/api/webhook/**"
                         ).permitAll()
 
-                        // All other APIs require authentication
                         .anyRequest().authenticated()
                 )
 
+                // Custom exception responses
                 .exceptionHandling(exception -> exception
 
                         .authenticationEntryPoint((request, response, ex) -> {
+
                             response.setStatus(HttpStatus.UNAUTHORIZED.value());
+
                             response.setContentType(
                                     MediaType.APPLICATION_JSON_VALUE
                             );
@@ -82,7 +94,9 @@ public class SecurityConfig {
                         })
 
                         .accessDeniedHandler((request, response, ex) -> {
+
                             response.setStatus(HttpStatus.FORBIDDEN.value());
+
                             response.setContentType(
                                     MediaType.APPLICATION_JSON_VALUE
                             );

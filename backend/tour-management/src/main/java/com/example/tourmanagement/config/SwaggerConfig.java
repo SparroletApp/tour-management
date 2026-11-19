@@ -20,16 +20,17 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
 
-        Server localServer = new Server()
-                .url("http://localhost:8080")
-                .description("Local Development Server");
-
         Server productionServer = new Server()
                 .url("https://tmsapi.rayloop.com")
                 .description("Production HTTPS Server");
 
+        Server localServer = new Server()
+                .url("http://localhost:8080")
+                .description("Local Development Server");
+
         return new OpenAPI()
-                .servers(List.of(localServer, productionServer))
+                // Production server first (default)
+                .servers(List.of(productionServer, localServer))
 
                 .info(new Info()
                         .title("Tour Management API")

@@ -19,10 +19,10 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        Server localServer = new Server()
 
+        Server localServer = new Server()
                 .url("http://localhost:8080")
-                .description("Local Server");
+                .description("Local Development Server");
 
         Server productionServer = new Server()
                 .url("https://tmsapi.rayloop.com")
@@ -32,11 +32,11 @@ public class SwaggerConfig {
                 .servers(List.of(localServer, productionServer))
 
                 .info(new Info()
-                        .title("WhatsApp Integration API")
-                        .description("API documentation for WhatsApp Business Integration")
+                        .title("Tour Management API")
+                        .description("API documentation for Tour Management")
                         .version("1.0")
                         .contact(new Contact()
-                                .name("WhatsApp Integration Team")))
+                                .name("Rayloop Team")))
 
                 .addSecurityItem(new SecurityRequirement()
                         .addList("Bearer Authentication"))

@@ -27,6 +27,12 @@ public class FormsController {
                 .body(formsService.createForm(dto));
     }
 
+    @PostMapping("/get-public-forms")
+    public ResponseEntity<List<FormResponseDto>> getPublicForms() {
+
+        return ResponseEntity.ok(formsService.getPublicForms());
+    }
+
     @PostMapping("/get-by-company")
     public ResponseEntity<List<FormResponseDto>> getFormsByCompany(
             @RequestBody FormCompanyIdDto dto) {

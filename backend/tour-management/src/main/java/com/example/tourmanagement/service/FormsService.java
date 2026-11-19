@@ -14,7 +14,7 @@ public interface FormsService {
     FormResponseDto getFormById(FormIdDto dto);
 
     FormResponseDto updateForm(UpdateFormDto dto);
-
+    List<FormResponseDto> getPublicForms();
     String deleteForm(FormIdDto dto);
 
     FormResponseDto publishForm(FormIdDto dto);

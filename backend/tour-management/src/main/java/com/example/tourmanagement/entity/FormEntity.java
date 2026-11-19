@@ -23,8 +23,9 @@ public class FormEntity {
 
     @Column(nullable = false, length = 100)
     private String slug;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tour_package_id", nullable = false)
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "tour_package_id", nullable = true)
     private TourPackage tourPackage;
 
     @Column(columnDefinition = "TEXT")
@@ -45,8 +46,8 @@ public class FormEntity {
 
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "company_id", nullable = true)
     private CompanyEntity company;
 
     @PrePersist

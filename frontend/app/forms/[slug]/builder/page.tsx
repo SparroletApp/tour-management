@@ -10,6 +10,7 @@ import formBuilderService, {
     FormResponseDto,
     QuestionResponseDto,
     SectionResponseDto,
+    UpdateQuestionDto,
 } from "@/app/apiservice/formsservice";
 
 import Swal from "sweetalert2";
@@ -27,43 +28,36 @@ const FIELD_TYPES: FieldType[] = [
     "FILE",
 ];
 
+const CHOICE_TYPES: FieldType[] = [
+    "DROPDOWN",
+    "RADIO",
+    "CHECKBOX",
+];
+
 const Toast = Swal.mixin({
     toast: true,
     position: "top-end",
     showConfirmButton: false,
     timer: 3000,
     timerProgressBar: true,
-    didOpen: (toast) => {
-        toast.onmouseenter = Swal.stopTimer;
-        toast.onmouseleave = Swal.resumeTimer;
-    },
 });
 
 const showSuccess = (message: string) => {
-    Toast.fire({
-        icon: "success",
-        title: message,
-    });
+    Toast.fire({ icon: "success", title: message });
 };
 
 const showError = (message: string) => {
-    Toast.fire({
-        icon: "error",
-        title: message,
-    });
+    Toast.fire({ icon: "error", title: message });
 };
 
 const showWarning = (message: string) => {
-    Toast.fire({
-        icon: "warning",
-        title: message,
-    });
+    Toast.fire({ icon: "warning", title: message });
 };
 
 const showConfirm = async (
     title: string,
     message: string,
-    confirmText: string = "Yes, Continue"
+    confirmText = "Yes, Continue"
 ) => {
     const result = await Swal.fire({
         title,
@@ -80,6 +74,47 @@ const showConfirm = async (
     return result.isConfirmed;
 };
 
+interface QuestionDraft {
+    questionTitle: string;
+    fieldType: FieldType;
+    required: boolean;
+    placeholder: string;
+    helpText: string;
+    options: string;
+}
+
+const emptyQuestion: QuestionDraft = {
+    questionTitle: "",
+    fieldType: "TEXT",
+    required: false,
+    placeholder: "",
+    helpText: "",
+    options: "",
+};
+
+const getOptionsText = (options?: string) => {
+    if (!options) return "";
+
+    try {
+        const parsed = JSON.parse(options);
+
+        if (Array.isArray(parsed)) {
+            return parsed.join("\n");
+        }
+
+        return options;
+    } catch {
+        return options;
+    }
+};
+
+const parseOptions = (value: string) => {
+    return value
+        .split("\n")
+        .map((item) => item.trim())
+        .filter(Boolean);
+};
+
 export default function FormBuilder() {
     const params = useParams();
     const router = useRouter();
@@ -87,13 +122,16 @@ export default function FormBuilder() {
     const slug = params.slug as string;
 
     const [form, setForm] = useState<FormResponseDto | null>(null);
+
     const [sections, setSections] = useState<SectionResponseDto[]>([]);
+
     const [questions, setQuestions] = useState<
         Record<number, QuestionResponseDto[]>
     >({});
 
     const [sectionTitle, setSectionTitle] = useState("");
     const [sectionDescription, setSectionDescription] = useState("");
+
     const [activeSection, setActiveSection] = useState<number | null>(null);
 
     const [questionTitle, setQuestionTitle] = useState("");
@@ -103,9 +141,24 @@ export default function FormBuilder() {
     const [helpText, setHelpText] = useState("");
     const [options, setOptions] = useState("");
 
+    // Expanded question
+    const [expandedQuestionId, setExpandedQuestionId] = useState<number | null>(
+        null
+    );
+
+    // Editing question
+    const [editingQuestionId, setEditingQuestionId] = useState<number | null>(
+        null
+    );
+
+    const [editDraft, setEditDraft] = useState<QuestionDraft>({
+        ...emptyQuestion,
+    });
+
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
+    // LOAD FORM
     const loadBuilder = async () => {
         try {
             setLoading(true);
@@ -116,11 +169,9 @@ export default function FormBuilder() {
 
             setForm(formData);
 
-            const formId = formData.id;
-
             const sectionData =
                 await formBuilderService.sections.getByForm({
-                    id: formId,
+                    id: formData.id,
                 });
 
             setSections(sectionData);
@@ -143,7 +194,16 @@ export default function FormBuilder() {
             setQuestions(questionMap);
 
             if (sectionData.length > 0) {
-                setActiveSection(sectionData[0].id);
+                setActiveSection((current) => {
+                    if (
+                        current &&
+                        sectionData.some((section) => section.id === current)
+                    ) {
+                        return current;
+                    }
+
+                    return sectionData[0].id;
+                });
             } else {
                 setActiveSection(null);
             }
@@ -164,6 +224,7 @@ export default function FormBuilder() {
 
     const formId = form?.id;
 
+    // ADD SECTION
     const addSection = async (event: FormEvent) => {
         event.preventDefault();
 
@@ -195,6 +256,7 @@ export default function FormBuilder() {
             }));
 
             setActiveSection(section.id);
+
             setSectionTitle("");
             setSectionDescription("");
 
@@ -207,6 +269,7 @@ export default function FormBuilder() {
         }
     };
 
+    // ADD QUESTION
     const addQuestion = async (event: FormEvent) => {
         event.preventDefault();
 
@@ -222,11 +285,8 @@ export default function FormBuilder() {
 
         let parsedOptions: string | undefined;
 
-        if (["DROPDOWN", "RADIO", "CHECKBOX"].includes(fieldType)) {
-            const optionList = options
-                .split("\n")
-                .map((item) => item.trim())
-                .filter(Boolean);
+        if (CHOICE_TYPES.includes(fieldType)) {
+            const optionList = parseOptions(options);
 
             if (optionList.length === 0) {
                 showWarning("Enter at least one option.");
@@ -275,6 +335,116 @@ export default function FormBuilder() {
         }
     };
 
+    // EXPAND / COLLAPSE QUESTION
+    const toggleQuestion = (questionId: number) => {
+        setExpandedQuestionId((previous) =>
+            previous === questionId ? null : questionId
+        );
+
+        if (editingQuestionId !== questionId) {
+            setEditingQuestionId(null);
+        }
+    };
+
+    // OPEN QUESTION EDIT
+    const startEditingQuestion = (question: QuestionResponseDto) => {
+        setExpandedQuestionId(question.id);
+        setEditingQuestionId(question.id);
+
+        setEditDraft({
+            questionTitle: question.questionTitle,
+            fieldType: question.fieldType,
+            required: question.required,
+            placeholder: question.placeholder || "",
+            helpText: question.helpText || "",
+            options: getOptionsText(question.options),
+        });
+    };
+
+    // UPDATE EDIT FORM
+    const updateEditDraft = (
+        field: keyof QuestionDraft,
+        value: string | boolean
+    ) => {
+        setEditDraft((previous) => ({
+            ...previous,
+            [field]: value,
+        }));
+    };
+
+    // CANCEL EDIT
+    const cancelEditing = () => {
+        setEditingQuestionId(null);
+        setEditDraft({ ...emptyQuestion });
+    };
+
+    // SAVE QUESTION
+    const saveQuestion = async (
+        event: FormEvent,
+        questionId: number
+    ) => {
+        event.preventDefault();
+
+        if (!editDraft.questionTitle.trim()) {
+            showWarning("Enter a question title.");
+            return;
+        }
+
+        let parsedOptions: string | undefined;
+
+        if (CHOICE_TYPES.includes(editDraft.fieldType)) {
+            const optionList = parseOptions(editDraft.options);
+
+            if (optionList.length === 0) {
+                showWarning("Enter at least one option.");
+                return;
+            }
+
+            parsedOptions = JSON.stringify(optionList);
+        }
+
+        const dto: UpdateQuestionDto = {
+            id: questionId,
+            questionTitle: editDraft.questionTitle.trim(),
+            fieldType: editDraft.fieldType,
+            required: editDraft.required,
+            placeholder: editDraft.placeholder.trim(),
+            helpText: editDraft.helpText.trim(),
+            options: parsedOptions,
+        };
+
+        try {
+            setSaving(true);
+
+            const updatedQuestion =
+                await formBuilderService.questions.update(dto);
+
+            if (activeSection) {
+                setQuestions((previous) => ({
+                    ...previous,
+                    [activeSection]: (
+                        previous[activeSection] || []
+                    ).map((question) =>
+                        question.id === questionId
+                            ? updatedQuestion
+                            : question
+                    ),
+                }));
+            }
+
+            setEditingQuestionId(null);
+            setEditDraft({ ...emptyQuestion });
+
+            showSuccess("Question updated successfully.");
+        } catch (error) {
+            console.error("Update question error:", error);
+            showError("Unable to update question.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // DELETE SECTION
     const deleteSection = async (id: number) => {
         const confirmed = await showConfirm(
             "Delete Section?",
@@ -308,6 +478,7 @@ export default function FormBuilder() {
         }
     };
 
+    // DELETE QUESTION
     const deleteQuestion = async (questionId: number) => {
         if (!activeSection) return;
 
@@ -328,10 +499,16 @@ export default function FormBuilder() {
                 ...previous,
                 [activeSection]: (
                     previous[activeSection] || []
-                ).filter(
-                    (question) => question.id !== questionId
-                ),
+                ).filter((question) => question.id !== questionId),
             }));
+
+            if (expandedQuestionId === questionId) {
+                setExpandedQuestionId(null);
+            }
+
+            if (editingQuestionId === questionId) {
+                cancelEditing();
+            }
 
             showSuccess("Question deleted successfully.");
         } catch (error) {
@@ -340,6 +517,7 @@ export default function FormBuilder() {
         }
     };
 
+    // PUBLISH FORM
     const publishForm = async () => {
         if (!formId) return;
 
@@ -381,8 +559,12 @@ export default function FormBuilder() {
         );
     }
 
+    const isClosed = form.status === "CLOSED";
+
     return (
         <main className="builder-page">
+
+            {/* HEADER */}
             <header className="builder-header">
                 <div>
                     <h1>{form.formTitle}</h1>
@@ -397,9 +579,9 @@ export default function FormBuilder() {
                 </div>
 
                 <div className="builder-header-actions">
-                    <button
-                        onClick={() => router.push("/forms")}
-                    >
+
+                    <button onClick={() => router.back()}>
+                        <i className="bi bi-arrow-left"></i>
                         Back to Forms
                     </button>
 
@@ -410,11 +592,13 @@ export default function FormBuilder() {
                             )
                         }
                     >
+                        <i className="bi bi-eye"></i>
                         View Responses
                     </button>
 
                     {form.status === "DRAFT" && (
                         <button onClick={publishForm}>
+                            <i className="bi bi-send"></i>
                             Publish Form
                         </button>
                     )}
@@ -422,7 +606,10 @@ export default function FormBuilder() {
             </header>
 
             <div className="builder-layout">
+
+                {/* SIDEBAR */}
                 <aside className="builder-sidebar">
+
                     <h3>Sections</h3>
 
                     {sections.map((section) => (
@@ -435,69 +622,62 @@ export default function FormBuilder() {
                             }`}
                         >
                             <button
-                                onClick={() =>
-                                    setActiveSection(section.id)
-                                }
+                                onClick={() => {
+                                    setActiveSection(section.id);
+                                    setExpandedQuestionId(null);
+                                    cancelEditing();
+                                }}
                             >
                                 {section.sectionTitle}
                             </button>
 
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    deleteSection(section.id)
-                                }
-                                aria-label="Delete section"
-                            >
-                                ×
-                            </button>
+                            {!isClosed && (
+                                <button
+                                    type="button"
+                                    onClick={() => deleteSection(section.id)}
+                                    aria-label="Delete section"
+                                >
+                                    <i className="bi bi-trash"></i>
+                                </button>
+                            )}
                         </div>
                     ))}
 
-                    <form
-                        onSubmit={addSection}
-                        className="builder-add-section"
-                    >
-                        <h4>Add Section</h4>
-
-                        <input
-                            value={sectionTitle}
-                            onChange={(e) => setSectionTitle(e.target.value)}
-                            placeholder="Section title"
-                            disabled={form.status === "CLOSED"}
-                        />
-
-                        <textarea
-                            value={sectionDescription}
-                            onChange={(e) =>
-                                setSectionDescription(e.target.value)
-                            }
-                            placeholder="Section description"
-                            rows={2}
-                            disabled={form.status === "CLOSED"}
-                        />
-
-                        <button
-                            type="submit"
-                            disabled={saving || form.status === "CLOSED"}
+                    {!isClosed && (
+                        <form
+                            onSubmit={addSection}
+                            className="builder-add-section"
                         >
-                            {form.status === "CLOSED"
-                                ? "Form Closed"
-                                : saving
-                                    ? "Adding..."
-                                    : "Add Section"}
-                        </button>
+                            <h4>Add Section</h4>
 
-                        {form.status === "CLOSED" && (
-                            <small className="builder-closed-message">
-                                <i className="bi bi-lock-fill"></i>
-                                This form is closed. You cannot add sections.
-                            </small>
-                        )}
-                    </form>
+                            <input
+                                value={sectionTitle}
+                                onChange={(e) =>
+                                    setSectionTitle(e.target.value)
+                                }
+                                placeholder="Section title"
+                            />
+
+                            <textarea
+                                value={sectionDescription}
+                                onChange={(e) =>
+                                    setSectionDescription(e.target.value)
+                                }
+                                placeholder="Section description"
+                                rows={2}
+                            />
+
+                            <button type="submit" disabled={saving}>
+                                {saving ? "Adding..." : "Add Section"}
+                            </button>
+                        </form>
+                    )}
+
                 </aside>
 
+                {/* MAIN CONTENT */}
                 <section className="builder-content">
+
                     {!activeSection ? (
                         <div className="builder-empty">
                             <h2>Create your first section</h2>
@@ -507,7 +687,9 @@ export default function FormBuilder() {
                         </div>
                     ) : (
                         <>
+
                             <div className="builder-content-header">
+
                                 <h2>
                                     {
                                         sections.find(
@@ -518,164 +700,525 @@ export default function FormBuilder() {
                                 </h2>
 
                                 <span>
-                                    {
-                                        questions[activeSection]?.length || 0
-                                    }{" "}
-                                    questions
+                                    {questions[activeSection]?.length || 0}
+                                    {" "}questions
                                 </span>
+
                             </div>
 
+                            {/* QUESTION CARDS */}
                             <div className="builder-question-list">
+
                                 {(questions[activeSection] || []).map(
-                                    (question, index) => (
-                                        <article
-                                            className="builder-question-card"
-                                            key={question.id}
-                                        >
-                                            <div>
-                                                <strong>
-                                                    {index + 1}.{" "}
-                                                    {question.questionTitle}
-                                                </strong>
+                                    (question, index) => {
 
-                                                <p>
-                                                    {question.fieldType}
-                                                    {question.required
-                                                        ? " • Required"
-                                                        : " • Optional"}
-                                                </p>
+                                        const isExpanded =
+                                            expandedQuestionId === question.id;
 
-                                                {question.options && (
-                                                    <small>
-                                                        {question.options}
-                                                    </small>
-                                                )}
-                                            </div>
+                                        const isEditing =
+                                            editingQuestionId === question.id;
 
-                                            <button
+                                        const questionOptions =
+                                            getOptionsText(question.options)
+                                                .split("\n")
+                                                .filter(Boolean);
+
+                                        return (
+                                            <article
+                                                key={question.id}
+                                                className={`builder-question-card ${
+                                                    isExpanded ? "expanded" : ""
+                                                }`}
                                                 onClick={() =>
-                                                    deleteQuestion(
-                                                        question.id
-                                                    )
+                                                    toggleQuestion(question.id)
                                                 }
                                             >
-                                                Delete
-                                            </button>
-                                        </article>
-                                    )
+
+                                                {/* CARD HEADER */}
+                                                <div className="question-card-header">
+
+                                                    <div className="question-card-info">
+
+                                                        <div className="question-number">
+                                                            {index + 1}
+                                                        </div>
+
+                                                        <div>
+                                                            <strong>
+                                                                {question.questionTitle}
+                                                            </strong>
+
+                                                            <div className="question-meta">
+
+                                                                <span className="question-type">
+                                                                    {question.fieldType}
+                                                                </span>
+
+                                                                <span
+                                                                    className={
+                                                                        question.required
+                                                                            ? "required-badge"
+                                                                            : "optional-badge"
+                                                                    }
+                                                                >
+                                                                    {question.required
+                                                                        ? "Required"
+                                                                        : "Optional"}
+                                                                </span>
+
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+
+                                                    {/* <div className="question-card-actions">
+
+                                                        <span className="expand-icon">
+                                                            <i
+                                                                className={`bi ${
+                                                                    isExpanded
+                                                                        ? "bi-chevron-up"
+                                                                        : "bi-chevron-down"
+                                                                }`}
+                                                            ></i>
+                                                        </span>
+
+                                                    </div> */}
+
+                                                </div>
+
+                                                {/* EXPANDED CONTENT */}
+                                                {isExpanded && (
+
+                                                    <div
+                                                        className="question-expanded-content"
+                                                        onClick={(e) =>
+                                                            e.stopPropagation()
+                                                        }
+                                                    >
+
+                                                        {!isEditing ? (
+
+                                                            <>
+
+                                                                <div className="question-detail-grid">
+
+                                                                    <div>
+                                                                        <label>Question Title</label>
+                                                                        <p>{question.questionTitle}</p>
+                                                                    </div>
+
+                                                                    <div>
+                                                                        <label>Answer Type</label>
+                                                                        <p>{question.fieldType}</p>
+                                                                    </div>
+
+                                                                    <div>
+                                                                        <label>Placeholder</label>
+                                                                        <p>
+                                                                            {question.placeholder || "Not specified"}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <div>
+                                                                        <label>Help Text</label>
+                                                                        <p>
+                                                                            {question.helpText || "Not specified"}
+                                                                        </p>
+                                                                    </div>
+
+                                                                </div>
+
+                                                                {CHOICE_TYPES.includes(
+                                                                    question.fieldType
+                                                                ) && (
+
+                                                                    <div className="question-options-preview">
+
+                                                                        <label>Answer Options</label>
+
+                                                                        <div className="question-option-list">
+
+                                                                            {questionOptions.map(
+                                                                                (option, optionIndex) => (
+                                                                                    <div
+                                                                                        key={optionIndex}
+                                                                                        className="question-option-item"
+                                                                                    >
+                                                                                        <span>
+                                                                                            {question.fieldType === "RADIO" && (
+                                                                                                <i className="bi bi-circle"></i>
+                                                                                            )}
+
+                                                                                            {question.fieldType === "CHECKBOX" && (
+                                                                                                <i className="bi bi-square"></i>
+                                                                                            )}
+
+                                                                                            {question.fieldType === "DROPDOWN" && (
+                                                                                                <i className="bi bi-list-ul"></i>
+                                                                                            )}
+                                                                                        </span>
+
+                                                                                        {option}
+                                                                                    </div>
+                                                                                )
+                                                                            )}
+
+                                                                        </div>
+
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="question-expanded-actions">
+
+                                                                    {!isClosed && (
+                                                                        <>
+                                                                            <button
+                                                                                type="button"
+                                                                                className="question-edit-btn"
+                                                                                onClick={() =>
+                                                                                    startEditingQuestion(question)
+                                                                                }
+                                                                            >
+                                                                                <i className="bi bi-pencil-square"></i>
+                                                                                Edit Question
+                                                                            </button>
+
+                                                                            <button
+                                                                                type="button"
+                                                                                className="question-delete-btn"
+                                                                                onClick={() =>
+                                                                                    deleteQuestion(question.id)
+                                                                                }
+                                                                            >
+                                                                                <i className="bi bi-trash"></i>
+                                                                                Delete
+                                                                            </button>
+                                                                        </>
+                                                                    )}
+
+                                                                </div>
+
+                                                            </>
+
+                                                        ) : (
+
+                                                            /* EDIT QUESTION FORM */
+                                                            <form
+                                                                className="question-edit-form"
+                                                                onSubmit={(e) =>
+                                                                    saveQuestion(
+                                                                        e,
+                                                                        question.id
+                                                                    )
+                                                                }
+                                                            >
+
+                                                                <div className="question-edit-heading">
+                                                                    <h3>
+                                                                        <i className="bi bi-pencil-square"></i>
+                                                                        Edit Question
+                                                                    </h3>
+                                                                    <span>Update question details</span>
+                                                                </div>
+
+                                                                <div className="form-field">
+
+                                                                    <label>Question Title *</label>
+
+                                                                    <input
+                                                                        value={editDraft.questionTitle}
+                                                                        onChange={(e) =>
+                                                                            updateEditDraft(
+                                                                                "questionTitle",
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                        placeholder="Enter your question"
+                                                                        required
+                                                                    />
+
+                                                                </div>
+
+                                                                <div className="form-field">
+
+                                                                    <label>Answer Type *</label>
+
+                                                                    <select
+                                                                        value={editDraft.fieldType}
+                                                                        onChange={(e) =>
+                                                                            updateEditDraft(
+                                                                                "fieldType",
+                                                                                e.target.value as FieldType
+                                                                            )
+                                                                        }
+                                                                    >
+
+                                                                        {FIELD_TYPES.map((type) => (
+                                                                            <option
+                                                                                value={type}
+                                                                                key={type}
+                                                                            >
+                                                                                {type}
+                                                                            </option>
+                                                                        ))}
+
+                                                                    </select>
+
+                                                                </div>
+
+                                                                <div className="form-field">
+
+                                                                    <label>Placeholder</label>
+
+                                                                    <input
+                                                                        value={editDraft.placeholder}
+                                                                        onChange={(e) =>
+                                                                            updateEditDraft(
+                                                                                "placeholder",
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                        placeholder="Enter placeholder"
+                                                                    />
+
+                                                                </div>
+
+                                                                <div className="form-field">
+
+                                                                    <label>Help Text</label>
+
+                                                                    <input
+                                                                        value={editDraft.helpText}
+                                                                        onChange={(e) =>
+                                                                            updateEditDraft(
+                                                                                "helpText",
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                        placeholder="Enter help text"
+                                                                    />
+
+                                                                </div>
+
+                                                                {CHOICE_TYPES.includes(
+                                                                    editDraft.fieldType
+                                                                ) && (
+
+                                                                    <div className="form-field">
+
+                                                                        <label>
+                                                                            Answer Options *
+                                                                        </label>
+
+                                                                        <textarea
+                                                                            rows={5}
+                                                                            value={editDraft.options}
+                                                                            onChange={(e) =>
+                                                                                updateEditDraft(
+                                                                                    "options",
+                                                                                    e.target.value
+                                                                                )
+                                                                            }
+                                                                            placeholder={"Option 1\nOption 2\nOption 3"}
+                                                                        />
+
+                                                                        <small>
+                                                                            Enter one option per line.
+                                                                        </small>
+
+                                                                    </div>
+                                                                )}
+
+                                                                <label className="builder-required">
+
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={editDraft.required}
+                                                                        onChange={(e) =>
+                                                                            updateEditDraft(
+                                                                                "required",
+                                                                                e.target.checked
+                                                                            )
+                                                                        }
+                                                                    />
+
+                                                                    Required question
+
+                                                                </label>
+
+                                                                <div className="question-edit-actions">
+
+                                                                    <button
+                                                                        type="button"
+                                                                        className="question-cancel-btn"
+                                                                        onClick={cancelEditing}
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+
+                                                                    <button
+                                                                        type="submit"
+                                                                        className="question-save-btn"
+                                                                        disabled={saving}
+                                                                    >
+                                                                        <i className="bi bi-check-lg"></i>
+
+                                                                        {saving
+                                                                            ? "Saving..."
+                                                                            : "Save Changes"}
+                                                                    </button>
+
+                                                                </div>
+
+                                                            </form>
+
+                                                        )}
+
+                                                    </div>
+
+                                                )}
+
+                                            </article>
+                                        );
+                                    }
                                 )}
+
                             </div>
 
-                            <form
-                                onSubmit={addQuestion}
-                                className="builder-question-form"
-                            >
-                                <h3>Add Question</h3>
+                            {/* ADD QUESTION FORM */}
+                            {!isClosed && (
+                                <form
+                                    onSubmit={addQuestion}
+                                    className="builder-question-form"
+                                >
 
-                                <div className="form-field">
-                                    <label>Question *</label>
+                                    <h3>
+                                        <i className="bi bi-plus-circle"></i>
+                                        Add Question
+                                    </h3>
 
-                                    <input
-                                        value={questionTitle}
-                                        onChange={(e) =>
-                                            setQuestionTitle(e.target.value)
-                                        }
-                                        placeholder="Enter your question"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="form-field">
-                                    <label>Answer Type</label>
-
-                                    <select
-                                        value={fieldType}
-                                        onChange={(e) =>
-                                            setFieldType(
-                                                e.target.value as FieldType
-                                            )
-                                        }
-                                    >
-                                        {FIELD_TYPES.map((type) => (
-                                            <option
-                                                value={type}
-                                                key={type}
-                                            >
-                                                {type}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="form-field">
-                                    <label>Placeholder</label>
-
-                                    <input
-                                        value={placeholder}
-                                        onChange={(e) =>
-                                            setPlaceholder(e.target.value)
-                                        }
-                                    />
-                                </div>
-
-                                <div className="form-field">
-                                    <label>Help Text</label>
-
-                                    <input
-                                        value={helpText}
-                                        onChange={(e) =>
-                                            setHelpText(e.target.value)
-                                        }
-                                    />
-                                </div>
-
-                                {[
-                                    "DROPDOWN",
-                                    "RADIO",
-                                    "CHECKBOX",
-                                ].includes(fieldType) && (
                                     <div className="form-field">
-                                        <label>
-                                            Options (one option per line)
-                                        </label>
 
-                                        <textarea
-                                            rows={4}
-                                            value={options}
+                                        <label>Question *</label>
+
+                                        <input
+                                            value={questionTitle}
                                             onChange={(e) =>
-                                                setOptions(e.target.value)
+                                                setQuestionTitle(e.target.value)
                                             }
-                                            placeholder={
-                                                "Option 1\nOption 2\nOption 3"
+                                            placeholder="Enter your question"
+                                            required
+                                        />
+
+                                    </div>
+
+                                    <div className="form-field">
+
+                                        <label>Answer Type</label>
+
+                                        <select
+                                            value={fieldType}
+                                            onChange={(e) =>
+                                                setFieldType(
+                                                    e.target.value as FieldType
+                                                )
+                                            }
+                                        >
+
+                                            {FIELD_TYPES.map((type) => (
+                                                <option value={type} key={type}>
+                                                    {type}
+                                                </option>
+                                            ))}
+
+                                        </select>
+
+                                    </div>
+
+                                    <div className="form-field">
+
+                                        <label>Placeholder</label>
+
+                                        <input
+                                            value={placeholder}
+                                            onChange={(e) =>
+                                                setPlaceholder(e.target.value)
                                             }
                                         />
+
                                     </div>
-                                )}
 
-                                <label className="builder-required">
-                                    <input
-                                        type="checkbox"
-                                        checked={required}
-                                        onChange={(e) =>
-                                            setRequired(e.target.checked)
-                                        }
-                                    />
-                                    Required question
-                                </label>
+                                    <div className="form-field">
 
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                >
-                                    {saving
-                                        ? "Adding..."
-                                        : "Add Question"}
-                                </button>
-                            </form>
+                                        <label>Help Text</label>
+
+                                        <input
+                                            value={helpText}
+                                            onChange={(e) =>
+                                                setHelpText(e.target.value)
+                                            }
+                                        />
+
+                                    </div>
+
+                                    {CHOICE_TYPES.includes(fieldType) && (
+
+                                        <div className="form-field">
+
+                                            <label>
+                                                Options (one option per line)
+                                            </label>
+
+                                            <textarea
+                                                rows={4}
+                                                value={options}
+                                                onChange={(e) =>
+                                                    setOptions(e.target.value)
+                                                }
+                                                placeholder={"Option 1\nOption 2\nOption 3"}
+                                            />
+
+                                        </div>
+                                    )}
+
+                                    <label className="builder-required">
+
+                                        <input
+                                            type="checkbox"
+                                            checked={required}
+                                            onChange={(e) =>
+                                                setRequired(e.target.checked)
+                                            }
+                                        />
+
+                                        Required question
+
+                                    </label>
+
+                                    <button type="submit" disabled={saving}>
+                                        {saving
+                                            ? "Adding..."
+                                            : "Add Question"}
+                                    </button>
+
+                                </form>
+                            )}
+
+                            {isClosed && (
+                                <div className="builder-closed-message">
+                                    <i className="bi bi-lock-fill"></i>
+                                    This form is closed. Questions cannot be added or edited.
+                                </div>
+                            )}
+
                         </>
                     )}
+
                 </section>
+
             </div>
+
         </main>
     );
 }

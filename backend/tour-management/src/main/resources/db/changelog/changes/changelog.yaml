@@ -216,3 +216,11 @@ databaseChangeLog:
         - sqlFile:
             path: sql/alter_user_add_otp_expiry.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_table_forms_drop_null_company_id
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_table_forms_drop_null_company_id.sql
+            relativeToChangelogFile: true

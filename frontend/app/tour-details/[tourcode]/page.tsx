@@ -581,6 +581,38 @@ const handleBookNow = async () => {
                                                     </p>
                                                 )}
 
+                                                {/* Day-specific image gallery */}
+{Array.isArray(day.images) && day.images.length > 0 && (
+    <div className="td-day-gallery">
+        <div className="td-day-gallery-heading">
+            <i className="bi bi-images"></i>
+            <h4>Day {day.dayNumber ?? index + 1} Photos</h4>
+            <span>{day.images.length} Photos</span>
+        </div>
+
+        <div className="td-day-gallery-grid">
+            {day.images.map((image, imageIndex) => (
+                <a
+                    key={`${day.id}-${imageIndex}`}
+                    href={imageUrl(image)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="td-day-gallery-image"
+                >
+                    <img
+                        src={imageUrl(image)}
+                        alt={`Day ${day.dayNumber ?? index + 1} - Photo ${imageIndex + 1}`}
+                        loading="lazy"
+                    />
+                    <span>
+                        <i className="bi bi-zoom-in"></i>
+                    </span>
+                </a>
+            ))}
+        </div>
+    </div>
+)}
+
                                                 <div className="td-day-info">
 
                                                     <span>

@@ -33,6 +33,16 @@ interface FieldDef {
     wide?: boolean;
 }
 
+
+const CURRENCY_OPTIONS = ["AED", "INR"];
+
+const currencyField = (key = "currency"): FieldDef => ({
+    key,
+    label: "Currency",
+    type: "select",
+    options: CURRENCY_OPTIONS,
+});
+
 const PACKAGE_FIELDS: FieldDef[] = [
     { key: "tourName", label: "Tour name *" },
     {
@@ -41,7 +51,7 @@ const PACKAGE_FIELDS: FieldDef[] = [
         type: "select",
         options: ["DRAFT", "PUBLISHED", "ARCHIVED"],
     },
-    { key: "currency", label: "Currency" },
+    currencyField(),
     { key: "startDate", label: "Start date", type: "date" },
     { key: "endDate", label: "End date", type: "date" },
     { key: "durationDays", label: "Duration (days)", type: "number" },
@@ -135,7 +145,7 @@ const ACTIVITY_FIELDS: FieldDef[] = [
         ],
     },
     { key: "additionalPrice", label: "Extra price", type: "number" },
-    { key: "currency", label: "Currency" },
+       currencyField(),
     { key: "included", label: "Included", type: "checkbox" },
     { key: "optional", label: "Optional", type: "checkbox" },
     { key: "description", label: "Description", type: "textarea", wide: true },
@@ -148,7 +158,7 @@ const TEXT_ITEM_FIELDS: FieldDef[] = [
 const OPTIONAL_ACTIVITY_FIELDS: FieldDef[] = [
     { key: "activityName", label: "Activity name" },
     { key: "price", label: "Price", type: "number" },
-    { key: "currency", label: "Currency" },
+    currencyField(),
     { key: "availabilityType", label: "Availability" },
     { key: "active", label: "Active", type: "checkbox" },
     { key: "description", label: "Description", type: "textarea", wide: true },
@@ -168,7 +178,7 @@ const PRICE_FIELDS: FieldDef[] = [
         options: ["SINGLE", "DOUBLE", "TRIPLE", "QUAD"],
     },
     { key: "price", label: "Price", type: "number" },
-    { key: "currency", label: "Currency" },
+    currencyField(),
     { key: "validFrom", label: "Valid from", type: "date" },
     { key: "validUntil", label: "Valid until", type: "date" },
     { key: "remarks", label: "Remarks", wide: true },

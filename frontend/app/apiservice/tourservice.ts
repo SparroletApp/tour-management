@@ -14,4 +14,12 @@ export const tourPackageService = {
         api.post<TourPackage[]>("/api/tours/get-by-company", {
             companyId,
         }),
+
+    getUnassignedByCompanyId: (companyId: number) =>
+        api.post<TourPackage[]>(
+            "/api/tours/get-unassigned-by-company",
+            {
+                companyId,
+            }
+        ),
 };

@@ -104,13 +104,18 @@ const HOTEL_FIELDS: FieldDef[] = [
     },
     { key: "remarks", label: "Remarks", wide: true },
 ];
-
 const DAY_FIELDS: FieldDef[] = [
     { key: "dayNumber", label: "Day number", type: "number" },
     { key: "tourDate", label: "Date", type: "date" },
     { key: "title", label: "Day title" },
     { key: "overnightCity", label: "Overnight city" },
     { key: "mealPlan", label: "Meal plan" },
+    {
+        key: "images",
+        label: "Itinerary day images (multiple)",
+        type: "images",
+        wide: true,
+    },
     { key: "description", label: "Description", type: "textarea", wide: true },
 ];
 
@@ -568,6 +573,7 @@ export default function TourForm({
                 description: "",
                 overnightCity: "",
                 mealPlan: "",
+                images: [],
                 activities: [],
             },
         ]);

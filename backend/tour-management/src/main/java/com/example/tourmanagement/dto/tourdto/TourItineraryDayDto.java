@@ -17,6 +17,7 @@ public class TourItineraryDayDto {
     private Long tourPackageId;
     private Integer dayNumber;
     private LocalDate tourDate;
+    private String[] images;
     private String title;
     private String description;
     private String overnightCity;

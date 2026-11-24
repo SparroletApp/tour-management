@@ -8,6 +8,7 @@ import com.example.tourmanagement.dto.formdto.FormSlugDto;
 import com.example.tourmanagement.dto.formdto.FormCompanyIdDto;
 import com.example.tourmanagement.dto.formdto.FormResponseDto;
 
+import com.example.tourmanagement.dto.tourdto.TourCodeRequestDto;
 import com.example.tourmanagement.entity.FormEntity;
 import com.example.tourmanagement.entity.TourPackage;
 import com.example.tourmanagement.entity.CompanyEntity;
@@ -145,6 +146,30 @@ public class FormsServiceImpl implements FormsService {
         }
 
         return slug;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FormResponseDto getPublishedByTourCode(TourCodeRequestDto dto) {
+
+        if (dto.getTourCode() == null || dto.getTourCode().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Tour code is required"
+            );
+        }
+
+        FormEntity form = formRepository
+                .findFirstByTourPackage_TourCodeAndStatus(
+                        dto.getTourCode().trim(),
+                        "PUBLISHED"
+                )
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No published form found for tour code: " + dto.getTourCode()
+                ));
+
+        return mapToResponse(form);
     }
 
     // GET ALL FORMS

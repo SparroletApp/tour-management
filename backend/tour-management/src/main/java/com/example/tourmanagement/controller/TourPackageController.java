@@ -42,6 +42,15 @@ public class TourPackageController extends BaseCrudController<TourPackageDto> {
         return service.updateFull(id, request);
     }
 
+    @PostMapping("/get-unassigned-by-company")
+    public ResponseEntity<List<TourPackageDto>> getUnassignedPackagesByCompanyId(
+            @RequestBody TourCompanyIdDto request) {
+
+        return ResponseEntity.ok(
+                service.getUnassignedPackagesByCompanyId(request)
+        );
+    }
+
     @PostMapping("/get-by-company")
     public ResponseEntity<List<TourPackageDto>> getByCompanyId(
             @RequestBody TourCompanyIdDto request) {

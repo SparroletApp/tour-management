@@ -336,7 +336,7 @@
         display: none;
 
         position: absolute;
-        top: 72px;
+        bottom: 0px;
         left: 0;
 
         width: 100%;
@@ -357,6 +357,10 @@
         flex: 1;
         height: 44px;
         padding: 0 12px;
+    }
+
+    .main-header{
+        position: static;
     }
 }
 

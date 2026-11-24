@@ -18,7 +18,10 @@ public interface FormsRepository extends JpaRepository<FormEntity, Long> {
     List<FormEntity> findByCompanyIsNull();
     boolean existsByTourPackage_Id(Long packageId);
     List<FormEntity> findByCompany_Id(Long companyId);
-
+    Optional<FormEntity> findFirstByTourPackage_TourCodeAndStatus(
+            String tourCode,
+            String status
+    );
     boolean existsByFormTitle(String formTitle);
 
     boolean existsBySlug(String slug);

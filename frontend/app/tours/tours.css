@@ -57,7 +57,7 @@
 
 .tours-table-container {
     width: 100%;
-    overflow-x: auto;
+    overflow: visible;
     background: #ffffff;
     border: 1px solid #e1eae7;
     border-radius: 10px;
@@ -310,6 +310,117 @@
         padding: 6px 9px;
         font-size: 11px;
     }
+}
+
+/* More Actions Menu */
+
+.tour-actions {
+    text-align: center;
+    position: relative;
+}
+
+.tour-action-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.tour-more-btn {
+    width: 38px;
+    height: 38px;
+    border: 1px solid #e1e9e6;
+    background: #ffffff;
+    color: #064e45;
+    border-radius: 9px;
+    font-size: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tour-more-btn:hover {
+    background: #e8f3f0;
+    border-color: #064e45;
+}
+
+.tour-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 7px);
+    right: 0;
+    width: 205px;
+    background: #ffffff;
+    border: 1px solid #e6ece9;
+    border-radius: 11px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    padding: 6px;
+    z-index: 100;
+    display: none;
+    text-align: left;
+}
+
+.tour-dropdown-menu.show {
+    display: block;
+    animation: tourMenuFade 0.15s ease;
+}
+
+@keyframes tourMenuFade {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tour-dropdown-menu button {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 10px 11px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #344740;
+    border-radius: 7px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s ease;
+}
+
+.tour-dropdown-menu button i {
+    font-size: 16px;
+    width: 18px;
+}
+
+.tour-dropdown-menu button:hover {
+    background: #f0f6f3;
+}
+
+.tour-dropdown-divider {
+    height: 1px;
+    background: #edf0ee;
+    margin: 5px 4px;
+}
+
+.tour-dropdown-menu .tour-whatsapp-option {
+    color: #128c50;
+}
+
+.tour-dropdown-menu .tour-whatsapp-option:hover {
+    background: #e9f8ef;
+}
+
+.tour-dropdown-menu .tour-delete-option {
+    color: #dc3545;
+}
+
+.tour-dropdown-menu .tour-delete-option:hover {
+    background: #fff0f0;
 }
 
 .tours-pagination {

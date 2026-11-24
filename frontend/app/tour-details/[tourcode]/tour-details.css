@@ -1254,6 +1254,92 @@
     }
 }
 
+/* Sticky bottom booking bar */
+.td-sticky-booking {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px 6%;
+    background: #ffffff;
+    border-top: 1px solid #e5ece9;
+    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.08);
+}
+
+.td-sticky-booking-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.td-sticky-booking-info span {
+    color: #82918d;
+    font-size: 12px;
+}
+
+.td-sticky-booking-info strong {
+    color: #064e45;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.td-sticky-booking-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-width: 170px;
+    padding: 13px 25px;
+    border: none;
+    border-radius: 9px;
+    background: #064e45;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.td-sticky-booking-btn:hover {
+    background: #043c35;
+}
+
+.td-sticky-booking-btn i {
+    font-size: 17px;
+}
+
+/* Prevent sticky bar from covering page content */
+.td-page {
+    padding-bottom: 90px;
+}
+
+@media (max-width: 576px) {
+    .td-sticky-booking {
+        padding: 10px 15px;
+        gap: 10px;
+    }
+
+    .td-sticky-booking-info strong {
+        font-size: 16px;
+    }
+
+    .td-sticky-booking-btn {
+        min-width: 135px;
+        padding: 12px 15px;
+        font-size: 13px;
+    }
+}
+
+.td-sticky-booking-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
 @media (max-width: 480px) {
     .td-destinations {
         grid-template-columns: 1fr;

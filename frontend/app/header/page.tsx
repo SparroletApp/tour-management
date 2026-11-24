@@ -7,7 +7,7 @@ import "./header.css";
 
 function Header() {
     const router = useRouter();
-    const [menuOpen, setMenuOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(true);
 
     const handleLogout = () => {
         sessionStorage.clear();
@@ -42,18 +42,7 @@ function Header() {
                 </div>
 
                 {/* MOBILE MENU BUTTON */}
-                <button
-                    className="mobile-menu-btn"
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    aria-label="Toggle navigation"
-                    aria-expanded={menuOpen}
-                >
-                    <i
-                        className={`bi ${
-                            menuOpen ? "bi-x-lg" : "bi-list"
-                        }`}
-                    ></i>
-                </button>
+            
 
                 {/* CENTER - NAVIGATION */}
                 {/* <nav className={`header-nav ${menuOpen ? "active" : ""}`}>
@@ -79,24 +68,7 @@ function Header() {
                 {/* RIGHT SIDE - AUTH BUTTONS */}
                 <div className={`header-right ${menuOpen ? "active" : ""}`}>
 
-                    <button
-                        className="header-login-btn"
-                        onClick={() => {
-                            setMenuOpen(false);
-                            router.push("/login");
-                        }}
-                    >
-                        <i className="bi bi-box-arrow-in-right"></i>
-                        <span>Login</span>
-                    </button>
-
-                    <button
-                        className="header-logout-btn"
-                        onClick={handleLogout}
-                    >
-                        <i className="bi bi-box-arrow-right"></i>
-                        <span>Logout</span>
-                    </button>
+                   
 
                 </div>
 

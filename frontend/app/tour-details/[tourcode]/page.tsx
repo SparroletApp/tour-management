@@ -12,6 +12,8 @@ import {
 import { getSelectedTourId } from "../../utils/tourStorage";
 import "./tour-details.css";
 import Header from "@/app/header/page";
+import Swal from "sweetalert2";
+import formBuilderService from "@/app/apiservice/formsservice";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
@@ -88,7 +90,7 @@ const isDirectVideo = (url: string) =>
 
 function TourDetails() {
     const router = useRouter();
-
+    const [findingForm, setFindingForm] = useState(false);
     const [tour, setTour] = useState<TourPackageFull | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -196,6 +198,61 @@ function TourDetails() {
         (a, b) => (a.dayNumber || 0) - (b.dayNumber || 0)
     );
 
+const handleBookNow = async () => {
+    if (!p?.tourCode) {
+        Swal.fire({
+            icon: "error",
+            title: "Tour Code Missing",
+            text: "Unable to identify this tour.",
+            confirmButtonColor: "#064e45",
+        });
+        return;
+    }
+
+    try {
+        setFindingForm(true);
+
+        const response =
+            await formBuilderService.forms.getPublishedByTourCode({
+                tourCode: p.tourCode,
+            });
+
+        const publishedForm = response;
+
+        if (!publishedForm || !publishedForm.slug) {
+            await Swal.fire({
+                icon: "info",
+                title: "Booking Form Not Available",
+                text: "No published booking form is assigned to this tour.",
+                confirmButtonColor: "#064e45",
+            });
+            return;
+        }
+
+        // Navigate to the assigned published form using its slug
+        router.push(
+            `/tour-form/${encodeURIComponent(publishedForm.slug)}`
+        );
+
+    } catch (error: any) {
+        console.error("Booking form lookup error:", error);
+
+        const errorMessage =
+            error?.response?.data?.message ||
+            "No published booking form is assigned to this tour.";
+
+        await Swal.fire({
+            icon: "info",
+            title: "Booking Form Not Available",
+            text: errorMessage,
+            confirmButtonColor: "#064e45",
+        });
+
+    } finally {
+        setFindingForm(false);
+    }
+};
+
     const flights = tour?.flights || [];
     const hotels = tour?.hotels || [];
     const inclusions = tour?.inclusions || [];
@@ -257,18 +314,10 @@ function TourDetails() {
 
     return (
         <div className="td-site">
-
-
-            <Header/>
-
+            <Header />
             <main className="td-page">
-
-
-
                 <section className="td-hero">
-
                     <div className="td-hero-image">
-
                         {coverImage ? (
                             <img
                                 src={coverImage}
@@ -1224,7 +1273,7 @@ function TourDetails() {
                                 </small>
                             </div>
 
-                           
+
 
                             <div className="td-trust-note">
                                 <i className="bi bi-shield-check" />
@@ -1239,7 +1288,30 @@ function TourDetails() {
 
             </main>
 
-
+            <div className="td-sticky-booking">
+                <div className="td-sticky-booking-info">
+                    <span>Starting Price</span>
+                    <strong>
+                        {startingPrice != null
+                            ? money(
+                                startingPrice,
+                                p.currency || priceRules[0]?.currency
+                            )
+                            : "On Request"}
+                    </strong>
+                </div>
+                <button
+                    type="button"
+                    onClick={handleBookNow}
+                    disabled={findingForm}
+                    className="td-sticky-booking-btn"
+                >
+                    <i className="bi bi-calendar-check"></i>
+                    <span>
+                        {findingForm ? "Finding Form..." : "Book Now"}
+                    </span>
+                </button>
+            </div>
         </div>
     );
 }

@@ -86,6 +86,7 @@ export interface TourItineraryDay extends Audit {
     description?: string | null;
     overnightCity?: string | null;
     mealPlan?: string | null;
+    images?: string[] | null;
     activities?: TourItineraryActivity[];
 }
 

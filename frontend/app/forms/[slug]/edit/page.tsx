@@ -62,13 +62,13 @@ export default function EditForm() {
                 setLoading(true);
                 setPackageLoading(true);
 
-                const [formResponse, packageResponse] = await Promise.all([
-                    formBuilderService.forms.getBySlug({ slug }),
-                   tourPackageService.getByCompanyId(currentCompanyId)
-                ]);
+                const formResponse =
+                    await formBuilderService.forms.getBySlug({ slug });
 
+                const packageResponse =
+                    await tourPackageService.getUnassignedByCompanyId(currentCompanyId);
                 const formData = formResponse;
-                const packageData = packageResponse || [];
+                const packageData: TourPackage[] = packageResponse || [];
 
                 setForm(formData);
                 setPackages(packageData);
@@ -175,15 +175,7 @@ export default function EditForm() {
             return;
         }
 
-        if (!selectedPackage?.id) {
-            Swal.fire({
-                icon: "warning",
-                title: "Tour Package Required",
-                text: "Please select a tour package.",
-                confirmButtonColor: "#064e45"
-            });
-            return;
-        }
+
 
         const result = await Swal.fire({
             title: "Update Form?",
@@ -207,7 +199,7 @@ export default function EditForm() {
             await formBuilderService.forms.update({
                 id: form.id,
                 companyId: companyId,
-                packageId: selectedPackage.id,
+                packageId: selectedPackage?.id ?? null,
                 formTitle: formTitle.trim(),
                 formDescription: formDescription.trim(),
                 allowMultipleSubmissions,

@@ -31,6 +31,75 @@ function Tours() {
 
     const currentTours = tours.slice(startIndex, endIndex);
 
+    useEffect(() => {
+        const handleOutsideClick = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+
+            if (!target.closest(".tour-action-menu")) {
+                document
+                    .querySelectorAll(".tour-dropdown-menu.show")
+                    .forEach((menu) => {
+                        menu.classList.remove("show");
+                    });
+            }
+        };
+
+        document.addEventListener("click", handleOutsideClick);
+
+        return () => {
+            document.removeEventListener("click", handleOutsideClick);
+        };
+    }, []);
+
+    const showToast = (
+        icon: "success" | "error" | "warning" | "info",
+        title: string
+    ) => {
+        Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon,
+            title,
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true,
+            background: "#ffffff",
+            color: "#263c38",
+            customClass: {
+                popup: "tour-swal-toast",
+            },
+        });
+    };
+
+    const getTourShareLink = (tour: TourPackage) => {
+        const baseUrl = window.location.origin;
+        const tourCode = encodeURIComponent(tour.tourCode ?? "");
+
+        return `${baseUrl}/tour-details/${tourCode}`;
+    };
+
+    const handleCopyLink = async (tour: TourPackage) => {
+        try {
+            const link = getTourShareLink(tour);
+
+            await navigator.clipboard.writeText(link);
+
+            showToast("success", "Tour link copied successfully!");
+        } catch {
+            showToast("error", "Unable to copy tour link!");
+        }
+    };
+
+    const handleWhatsAppShare = (tour: TourPackage) => {
+        const link = getTourShareLink(tour);
+
+        const message = `Check out our tour package: ${tour.tourName}\n\n${link}`;
+
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    };
+
     const loadTours = async () => {
         try {
             setLoading(true);
@@ -303,54 +372,90 @@ function Tours() {
 
                                         <td className="tour-status-cell">
                                             <span
-                                                className={`tour-status ${
-                                                    tour.status?.toLowerCase() === "published"
-                                                        ? "published"
-                                                        : tour.status?.toLowerCase() === "archived"
+                                                className={`tour-status ${tour.status?.toLowerCase() === "published"
+                                                    ? "published"
+                                                    : tour.status?.toLowerCase() === "archived"
                                                         ? "archived"
                                                         : "draft"
-                                                }`}
+                                                    }`}
                                             >
                                                 {tour.status ?? "Draft"}
                                             </span>
                                         </td>
 
                                         <td className="tour-actions">
-                                            <button
-                                                type="button"
-                                                className="tour-action-btn tour-view-btn"
-                                                onClick={() =>
-                                                    openTour(tour.id as number, "view")
-                                                }
-                                                title="View tour"
-                                            >
-                                                <i className="bi bi-eye"></i>
-                                                <span>View</span>
-                                            </button>
+                                            <div className="tour-action-menu">
 
-                                            <button
-                                                type="button"
-                                                className="tour-action-btn tour-edit-btn"
-                                                onClick={() =>
-                                                    openTour(tour.id as number, "edit")
-                                                }
-                                                title="Edit tour"
-                                            >
-                                                <i className="bi bi-pencil-square"></i>
-                                                <span>Edit</span>
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    className="tour-more-btn"
+                                                    title="More actions"
+                                                    onClick={(e) => {
+                                                        const menu = e.currentTarget.nextElementSibling;
+                                                        document
+                                                            .querySelectorAll(".tour-dropdown-menu.show")
+                                                            .forEach((item) => {
+                                                                if (item !== menu) {
+                                                                    item.classList.remove("show");
+                                                                }
+                                                            });
 
-                                            <button
-                                                type="button"
-                                                className="tour-action-btn tour-delete-btn"
-                                                onClick={() =>
-                                                    handleDelete(tour.id as number)
-                                                }
-                                                title="Delete tour"
-                                            >
-                                                <i className="bi bi-trash"></i>
-                                                <span>Delete</span>
-                                            </button>
+                                                        menu?.classList.toggle("show");
+                                                    }}
+                                                >
+                                                    <i className="bi bi-three-dots-vertical"></i>
+                                                </button>
+
+                                                <div className="tour-dropdown-menu">
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openTour(tour.id as number, "view")}
+                                                    >
+                                                        <i className="bi bi-eye"></i>
+                                                        <span>View Tour</span>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openTour(tour.id as number, "edit")}
+                                                    >
+                                                        <i className="bi bi-pencil-square"></i>
+                                                        <span>Edit Tour</span>
+                                                    </button>
+
+                                                    <div className="tour-dropdown-divider"></div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleCopyLink(tour)}
+                                                    >
+                                                        <i className="bi bi-link-45deg"></i>
+                                                        <span>Copy Tour Link</span>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        className="tour-whatsapp-option"
+                                                        onClick={() => handleWhatsAppShare(tour)}
+                                                    >
+                                                        <i className="bi bi-whatsapp"></i>
+                                                        <span>Share on WhatsApp</span>
+                                                    </button>
+
+                                                    <div className="tour-dropdown-divider"></div>
+
+                                                    <button
+                                                        type="button"
+                                                        className="tour-delete-option"
+                                                        onClick={() => handleDelete(tour.id as number)}
+                                                    >
+                                                        <i className="bi bi-trash"></i>
+                                                        <span>Delete Tour</span>
+                                                    </button>
+
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -402,9 +507,8 @@ function Tours() {
                                     <button
                                         type="button"
                                         key={page}
-                                        className={`pagination-number ${
-                                            currentPage === page ? "active" : ""
-                                        }`}
+                                        className={`pagination-number ${currentPage === page ? "active" : ""
+                                            }`}
                                         onClick={() => setCurrentPage(page)}
                                     >
                                         {page}

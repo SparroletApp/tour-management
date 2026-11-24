@@ -224,3 +224,11 @@ databaseChangeLog:
         - sqlFile:
             path: sql/alter_table_forms_drop_null_company_id.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_iteranary_days_add_images
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_iteranary_days_add_images.sql
+            relativeToChangelogFile: true

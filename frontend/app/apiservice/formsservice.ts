@@ -98,6 +98,10 @@ export interface CreateQuestionDto {
     displayOrder?: number;
 }
 
+export interface TourCodeDto {
+    tourCode: string;
+}
+
 export interface UpdateQuestionDto {
     id: number;
     questionTitle?: string;
@@ -224,6 +228,12 @@ export const formsService = {
     close: (dto: IdDto) =>
         api.post<FormResponseDto>(
             "/api/forms/close",
+            dto
+        ),
+
+    getPublishedByTourCode: (dto: TourCodeDto) =>
+        api.post<FormResponseDto>(
+            "/api/forms/get-published-by-tour-code",
             dto
         ),
 };
@@ -354,6 +364,12 @@ const formBuilderService = {
     questions: formQuestionService,
     submissions: formSubmissionService,
     answers: formAnswerService,
+
+
 };
+
+
+
+
 
 export default formBuilderService;

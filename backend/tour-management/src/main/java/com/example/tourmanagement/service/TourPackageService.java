@@ -15,4 +15,7 @@ public interface TourPackageService extends CrudService<TourPackageDto> {
     String uploadCoverImage(Long id, MultipartFile file);
     TourPackageFullDto updateFull(Long id, TourPackageFullDto request);
     List<TourPackageDto> getByCompanyId(TourCompanyIdDto request);
+    List<TourPackageDto> getUnassignedPackagesByCompanyId(
+            TourCompanyIdDto request
+    );
 }

@@ -216,6 +216,8 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
         return full;
     }
 
+
+
     // ---------- helpers ----------
 
     private void saveChildren(Long pid, TourPackageFullDto req) {
@@ -411,6 +413,40 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
                 }
         );
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TourPackageDto> getUnassignedPackagesByCompanyId(
+            TourCompanyIdDto request) {
+
+        if (request == null || request.getCompanyId() == null) {
+            throw bad("Company ID is required");
+        }
+
+        Long companyId = request.getCompanyId();
+
+        companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Company not found with ID: " + companyId
+                ));
+
+        List<TourPackage> packages =
+                packageRepo.findUnassignedPackagesByCompanyId(companyId);
+
+        return packages.stream().map(pkg -> {
+            TourPackageDto dto = toDto(pkg);
+
+            if (pkg.getCompany() != null) {
+                dto.setCompanyId(pkg.getCompany().getId());
+                dto.setCompanyName(pkg.getCompany().getCompanyName());
+            }
+
+            return dto;
+        }).toList();
+    }
+
+
 
     private static <T> List<T> orEmpty(List<T> list) {
         return list == null ? List.of() : list;

@@ -2,6 +2,7 @@
 package com.example.tourmanagement.controller;
 
 import com.example.tourmanagement.dto.formdto.*;
+import com.example.tourmanagement.dto.tourdto.TourCodeRequestDto;
 import com.example.tourmanagement.service.FormsService;
 
 import lombok.RequiredArgsConstructor;
@@ -81,6 +82,15 @@ public class FormsController {
             @RequestBody FormIdDto dto) {
 
         return ResponseEntity.ok(formsService.publishForm(dto));
+    }
+
+    @PostMapping("/get-published-by-tour-code")
+    public ResponseEntity<FormResponseDto> getPublishedByTourCode(
+            @RequestBody TourCodeRequestDto dto) {
+
+        return ResponseEntity.ok(
+                formsService.getPublishedByTourCode(dto)
+        );
     }
 
     @PostMapping("/close")

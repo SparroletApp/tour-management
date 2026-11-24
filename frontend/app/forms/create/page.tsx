@@ -39,6 +39,7 @@ export default function CreateForm() {
         setCompanyId(Number(storedCompanyId));
     }, [router]);
 
+
     useEffect(() => {
         if (!companyId) return;
 
@@ -46,12 +47,13 @@ export default function CreateForm() {
             try {
                 setPackageLoading(true);
 
-                const response = await tourPackageService.getByCompanyId(companyId);
+                const response =
+                    await tourPackageService.getUnassignedByCompanyId(companyId);
 
                 setPackages(response || []);
             } catch (error) {
-                console.error("Error loading company tour packages:", error);
-                alert("Unable to load tour packages.");
+                console.error("Error loading unassigned tour packages:", error);
+                alert("Unable to load available tour packages.");
             } finally {
                 setPackageLoading(false);
             }
@@ -59,6 +61,7 @@ export default function CreateForm() {
 
         fetchPackages();
     }, [companyId]);
+
 
     const filteredPackages = useMemo(() => {
         const search = packageSearch.trim().toLowerCase();
@@ -315,7 +318,7 @@ export default function CreateForm() {
                         <button
                             type="button"
                             className="form-secondary-btn"
-                           onClick={() => router.back()}
+                            onClick={() => router.back()}
                             disabled={loading}
                         >
                             Cancel

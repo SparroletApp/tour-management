@@ -53,7 +53,6 @@ public class TourItineraryDayServiceImpl extends AbstractCrudServiceImpl<TourIti
         return repository.findByTourPackageIdOrderByDayNumber(tourPackageId).stream().map(this::toDto).toList();
     }
 
-    /** Deleting a day also deletes its activities (there is no JPA cascade, only plain ids). */
     @Override
     @Transactional
     public void delete(Long id) {

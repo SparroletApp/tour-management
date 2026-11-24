@@ -21,6 +21,9 @@ public class TourItineraryDay {
     private String overnightCity;
     private String mealPlan;
 
+    @Column(name = "images", columnDefinition = "text[]", nullable = true)
+    private String[] images;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

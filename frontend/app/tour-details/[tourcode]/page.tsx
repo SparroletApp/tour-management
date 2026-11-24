@@ -96,7 +96,15 @@ function TourDetails() {
     const [error, setError] = useState("");
     const [activeImage, setActiveImage] = useState("");
     const [hotelImages, setHotelImages] = useState<Record<number, number>>({});
+    const [expandedDestinations, setExpandedDestinations] = useState<number[]>([]);
 
+    const toggleDestination = (index: number) => {
+        setExpandedDestinations((prev) =>
+            prev.includes(index)
+                ? prev.filter((id) => id !== index)
+                : [...prev, index]
+        );
+    };
     useEffect(() => {
         const selectedId = getSelectedTourId();
 
@@ -198,60 +206,60 @@ function TourDetails() {
         (a, b) => (a.dayNumber || 0) - (b.dayNumber || 0)
     );
 
-const handleBookNow = async () => {
-    if (!p?.tourCode) {
-        Swal.fire({
-            icon: "error",
-            title: "Tour Code Missing",
-            text: "Unable to identify this tour.",
-            confirmButtonColor: "#064e45",
-        });
-        return;
-    }
-
-    try {
-        setFindingForm(true);
-
-        const response =
-            await formBuilderService.forms.getPublishedByTourCode({
-                tourCode: p.tourCode,
-            });
-
-        const publishedForm = response;
-
-        if (!publishedForm || !publishedForm.slug) {
-            await Swal.fire({
-                icon: "info",
-                title: "Booking Form Not Available",
-                text: "No published booking form is assigned to this tour.",
+    const handleBookNow = async () => {
+        if (!p?.tourCode) {
+            Swal.fire({
+                icon: "error",
+                title: "Tour Code Missing",
+                text: "Unable to identify this tour.",
                 confirmButtonColor: "#064e45",
             });
             return;
         }
 
-        // Navigate to the assigned published form using its slug
-        router.push(
-            `/tour-form/${encodeURIComponent(publishedForm.slug)}`
-        );
+        try {
+            setFindingForm(true);
 
-    } catch (error: any) {
-        console.error("Booking form lookup error:", error);
+            const response =
+                await formBuilderService.forms.getPublishedByTourCode({
+                    tourCode: p.tourCode,
+                });
 
-        const errorMessage =
-            error?.response?.data?.message ||
-            "No published booking form is assigned to this tour.";
+            const publishedForm = response;
 
-        await Swal.fire({
-            icon: "info",
-            title: "Booking Form Not Available",
-            text: errorMessage,
-            confirmButtonColor: "#064e45",
-        });
+            if (!publishedForm || !publishedForm.slug) {
+                await Swal.fire({
+                    icon: "info",
+                    title: "Booking Form Not Available",
+                    text: "No published booking form is assigned to this tour.",
+                    confirmButtonColor: "#064e45",
+                });
+                return;
+            }
 
-    } finally {
-        setFindingForm(false);
-    }
-};
+            // Navigate to the assigned published form using its slug
+            router.push(
+                `/tour-form/${encodeURIComponent(publishedForm.slug)}`
+            );
+
+        } catch (error: any) {
+            console.error("Booking form lookup error:", error);
+
+            const errorMessage =
+                error?.response?.data?.message ||
+                "No published booking form is assigned to this tour.";
+
+            await Swal.fire({
+                icon: "info",
+                title: "Booking Form Not Available",
+                text: errorMessage,
+                confirmButtonColor: "#064e45",
+            });
+
+        } finally {
+            setFindingForm(false);
+        }
+    };
 
     const flights = tour?.flights || [];
     const hotels = tour?.hotels || [];
@@ -511,14 +519,56 @@ const handleBookNow = async () => {
                                                 </h4>
 
                                                 {destination.countryName && (
-                                                    <span className="td-destination-country">
-                                                        {destination.countryName}
-                                                    </span>
-                                                )}
+                                                    <div className="td-destination-country-wrapper">
+                                                        <span
+                                                            className={`td-destination-country ${expandedDestinations.includes(index) ? "expanded" : ""
+                                                                }`}
+                                                        >
+                                                            {destination.countryName}
+                                                        </span>
 
-                                                {destination.description && (
-                                                    <p>{destination.description}</p>
+                                                        {destination.countryName.length > 60 && (
+                                                            <button
+                                                                type="button"
+                                                                className="td-country-toggle"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleDestination(index);
+                                                                }}
+                                                            >
+                                                                {expandedDestinations.includes(index)
+                                                                    ? "See Less"
+                                                                    : "See More"}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 )}
+                                               {destination.description && (
+    <div className="td-destination-description-wrapper">
+        <p
+            className={`td-destination-description ${
+                expandedDestinations.includes(index) ? "expanded" : ""
+            }`}
+        >
+            {destination.description}
+        </p>
+
+        {destination.description.length > 100 && (
+            <button
+                type="button"
+                className="td-country-toggle"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    toggleDestination(index);
+                }}
+            >
+                {expandedDestinations.includes(index)
+                    ? "See Less"
+                    : "See More"}
+            </button>
+        )}
+    </div>
+)}
                                             </div>
                                         </article>
                                     ))}
@@ -579,6 +629,38 @@ const handleBookNow = async () => {
                                                     <p className="td-day-description">
                                                         {day.description}
                                                     </p>
+                                                )}
+
+                                                {/* Day-specific image gallery */}
+                                                {Array.isArray(day.images) && day.images.length > 0 && (
+                                                    <div className="td-day-gallery">
+                                                        <div className="td-day-gallery-heading">
+                                                            <i className="bi bi-images"></i>
+                                                            <h4>Day {day.dayNumber ?? index + 1} Photos</h4>
+                                                            <span>{day.images.length} Photos</span>
+                                                        </div>
+
+                                                        <div className="td-day-gallery-grid">
+                                                            {day.images.map((image, imageIndex) => (
+                                                                <a
+                                                                    key={`${day.id}-${imageIndex}`}
+                                                                    href={imageUrl(image)}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="td-day-gallery-image"
+                                                                >
+                                                                    <img
+                                                                        src={imageUrl(image)}
+                                                                        alt={`Day ${day.dayNumber ?? index + 1} - Photo ${imageIndex + 1}`}
+                                                                        loading="lazy"
+                                                                    />
+                                                                    <span>
+                                                                        <i className="bi bi-zoom-in"></i>
+                                                                    </span>
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                 )}
 
                                                 <div className="td-day-info">

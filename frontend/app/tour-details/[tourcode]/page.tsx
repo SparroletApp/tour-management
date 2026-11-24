@@ -644,9 +644,7 @@ function TourDetails() {
                                                             {day.images.map((image, imageIndex) => (
                                                                 <a
                                                                     key={`${day.id}-${imageIndex}`}
-                                                                    href={imageUrl(image)}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
+                                                            
                                                                     className="td-day-gallery-image"
                                                                 >
                                                                     <img

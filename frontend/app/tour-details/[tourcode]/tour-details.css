@@ -1431,6 +1431,97 @@
     }
 }
 
+/* Destination country See More / See Less */
+
+.td-destination-country-wrapper {
+    margin-top: 4px;
+}
+
+.td-destination-country {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+    font-size: 11px;
+    color: #84938d;
+    overflow-wrap: anywhere;
+}
+
+.td-destination-country.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+}
+
+.td-country-toggle {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #087262;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Destination description See More / See Less */
+
+.td-destination-description-wrapper {
+    margin-top: 8px;
+}
+
+.td-destination-description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.6;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.td-destination-description.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+}
+
+.td-destination-description-wrapper .td-country-toggle {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #087262;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.td-destination-description-wrapper .td-country-toggle:hover {
+    color: #064e45;
+    text-decoration: underline;
+}
+
+.td-country-toggle:hover {
+    color: #064e45;
+    text-decoration: underline;
+}
+
+.td-destination-country {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+    max-height: 33px;
+}
+
 .td-sticky-booking-btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;

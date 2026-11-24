@@ -15,7 +15,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const [isAuthorized, setIsAuthorized] = useState(false);
 
     useEffect(() => {
-        const publicRoutes = ["/", "/form"];
+        const publicRoutes = ["/", "/form", "/tour-list"];
 
         const isPublicRoute =
             publicRoutes.includes(pathname) ||

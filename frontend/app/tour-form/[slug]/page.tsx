@@ -18,7 +18,7 @@ export default function PublicFormPage() {
     const params = useParams();
     const router = useRouter();
     const slug = params.slug as string;
-
+    const [companyId, setCompanyId] = useState<number | null>(null);
     const [formCoverImage, setFormCoverImage] = useState("");
     const [tourCode, setTourCode] = useState("");
 
@@ -78,7 +78,12 @@ export default function PublicFormPage() {
                         setFormCoverImage(
                             imageUrl(packageData.coverImageUrl)
                         );
+
                         setTourCode(packageData.tourCode || "");
+
+                        if (packageData.companyId) {
+                            setCompanyId(Number(packageData.companyId));
+                        }
                     }
                 } catch (tourError) {
                     console.error("Unable to load tour package:", tourError);
@@ -383,22 +388,16 @@ export default function PublicFormPage() {
 
                     <button
                         type="button"
-                        className="view-tour-btn"
-                        disabled={!((form as FormResponseDto & { packageId?: number })?.packageId) || !tourCode}
+                        className="view-other-tours-btn"
                         onClick={() => {
-                            const packageId = (
-                                form as FormResponseDto & { packageId?: number }
-                            )?.packageId;
+                            if (companyId) {
+                                localStorage.setItem("companyId", String(companyId));
+                            }
 
-                            if (!packageId || !tourCode) return;
-
-                            setSelectedTourId(packageId);
-                            router.push(
-                                `/tour-details/${encodeURIComponent(tourCode)}`
-                            );
+                            router.push("/tour-list");
                         }}
                     >
-                        View Tour Details
+                        View Other Tour Packages
                         <i className="bi bi-arrow-right"></i>
                     </button>
                 </div>

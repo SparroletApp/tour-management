@@ -18,6 +18,7 @@ export default function LayoutWrapper({
         pathname === "/super-admin/login" ||
         pathname === "/form" ||
            pathname === "/forgot-password" ||
+           pathname === "/tour-list" ||
         pathname.startsWith("/tour-form/") ||
         pathname.startsWith("/tour-details/");
 

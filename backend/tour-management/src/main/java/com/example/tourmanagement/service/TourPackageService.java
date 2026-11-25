@@ -18,4 +18,6 @@ public interface TourPackageService extends CrudService<TourPackageDto> {
     List<TourPackageDto> getUnassignedPackagesByCompanyId(
             TourCompanyIdDto request
     );
+
+    TourPackageFullDto getFullByTourCode(String tourCode);
 }

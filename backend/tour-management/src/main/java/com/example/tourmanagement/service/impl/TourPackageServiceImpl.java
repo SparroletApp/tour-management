@@ -370,6 +370,18 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
     }
 
     @Override
+    public TourPackageFullDto getFullByTourCode(String tourCode) {
+
+        TourPackage tour = tourPackageRepository
+                .findByTourCodeIgnoreCase(tourCode)
+                .orElseThrow(() ->
+                        new RuntimeException("Tour not found: " + tourCode)
+                );
+
+        return getFull(tour.getId());
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<TourPackageDto> getByCompanyId(TourCompanyIdDto request) {
 

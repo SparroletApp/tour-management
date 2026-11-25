@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { importImage, OnlineImage, searchImages } from "../apiservice/imageservice";
+import "./image-upload.css";
 
 export default function ImageSearchModal({
     open,
@@ -69,88 +70,134 @@ export default function ImageSearchModal({
         }
     };
 
-    return (
-        <div
-            style={{
-                position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 2000,
-                display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-        >
-            <div
-                style={{
-                    background: "#fff", borderRadius: 12, width: "min(900px, 94vw)",
-                    maxHeight: "88vh", overflow: "auto", padding: 20,
-                }}
-            >
-                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                    <input
-                        style={{ flex: 1, padding: 8 }}
-                        value={query}
-                        placeholder="Search images (e.g. Dubai skyline)"
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                e.preventDefault();
-                                runSearch(query);
-                            }
-                        }}
-                    />
-                    <button type="button" onClick={() => runSearch(query)} disabled={loading}>
-                        {loading ? "Searching..." : "Search"}
-                    </button>
-                    <button type="button" onClick={onClose}>Close</button>
-                </div>
+   
+return (
+    <div className="image-search-overlay">
+        <div className="image-search-modal">
 
-                {!loading && results.length === 0 && (
-                    <p style={{ color: "#666" }}>Type a place or hotel name and press Search.</p>
-                )}
-
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-                        gap: 8,
-                    }}
+            <div className="image-search-header">
+                <h3>Search Images</h3>
+                <button
+                    type="button"
+                    className="image-search-close"
+                    onClick={onClose}
                 >
-                    {results.map((img) => {
-                        const isSel = selected.some((s) => s.id === img.id);
-                        return (
-                            <img
+                    ×
+                </button>
+            </div>
+
+            <div className="image-search-toolbar">
+                <input
+                    className="image-search-input"
+                    value={query}
+                    placeholder="Search images (e.g. Bali beaches)"
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            runSearch(query);
+                        }
+                    }}
+                />
+
+                <button
+                    type="button"
+                    className="image-search-btn"
+                    onClick={() => runSearch(query)}
+                    disabled={loading}
+                >
+                    {loading ? "Searching..." : "Search"}
+                </button>
+            </div>
+
+            {loading && (
+                <div className="image-search-empty">
+                    Searching images...
+                </div>
+            )}
+
+            {!loading && results.length === 0 && (
+                <div className="image-search-empty">
+                    No images found. Search for a destination or activity.
+                </div>
+            )}
+
+            <div className="image-search-grid">
+                {results.map((img) => {
+                    const isSelected = selected.some(
+                        (s) => s.id === img.id
+                    );
+
+                    return (
+                        <div
+                            key={img.id}
+                            className={`image-search-card ${
+                                isSelected ? "selected" : ""
+                            }`}
+                            onClick={() => toggle(img)}
+                        >
+                            <img src={img.thumb} alt={img.credit} />
+                        </div>
+                    );
+                })}
+            </div>
+
+            {selected.length > 0 && (
+                <div className="image-selected-section">
+                    <h4>Selected Images ({selected.length})</h4>
+
+                    <div className="image-selected-grid">
+                        {selected.map((img) => (
+                            <div
+                                className="image-selected-card"
                                 key={img.id}
-                                src={img.thumb}
-                                alt={img.credit}
-                                onClick={() => toggle(img)}
-                                style={{
-                                    width: "100%", height: 110, objectFit: "cover",
-                                    cursor: "pointer", borderRadius: 6,
-                                    outline: isSel ? "3px solid #2563eb" : "none",
-                                }}
-                            />
-                        );
-                    })}
+                            >
+                                <img src={img.full} alt={img.credit} />
+
+                                <button
+                                    type="button"
+                                    className="image-remove-btn"
+                                    onClick={() => toggle(img)}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
+            )}
 
-                {error && <p style={{ color: "crimson" }}>{error}</p>}
+            {error && (
+                <div className="image-search-error">
+                    {error}
+                </div>
+            )}
 
-                <div
-                    style={{
-                        display: "flex", justifyContent: "space-between",
-                        alignItems: "center", marginTop: 12,
-                    }}
-                >
-                    <small>
-                        Images from{" "}
-                        <a href="https://pixabay.com" target="_blank" rel="noreferrer">Pixabay</a>
-                    </small>
-                    <button
-                        type="button"
-                        onClick={confirm}
-                        disabled={!selected.length || importing}
+            <div className="image-search-footer">
+                <small>
+                    Images from{" "}
+                    <a
+                        href="https://pixabay.com"
+                        target="_blank"
+                        rel="noreferrer"
                     >
-                        {importing ? "Importing..." : `Use ${selected.length || ""} selected`}
-                    </button>
-                </div>
+                        Pixabay
+                    </a>
+                </small>
+
+                <button
+                    type="button"
+                    className="image-use-btn"
+                    onClick={confirm}
+                    disabled={!selected.length || importing}
+                >
+                    {importing
+                        ? "Importing..."
+                        : `Use ${selected.length} selected`}
+                </button>
             </div>
         </div>
-    );
+    </div>
+);
+
 }

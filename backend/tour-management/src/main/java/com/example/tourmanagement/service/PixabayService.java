@@ -4,11 +4,9 @@ package com.example.tourmanagement.service;
 import com.example.tourmanagement.dto.imageupload.ImageResultDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +36,8 @@ public class PixabayService {
                 .build()
                 .encode()
                 .toUriString();
-
         Map<String, Object> body =
                 restTemplate.getForObject(url, Map.class);
-
         if (body == null || body.get("hits") == null) {
             return List.of();
         }

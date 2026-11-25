@@ -22,6 +22,11 @@ spring:
       max-file-size: 10MB
       max-request-size: 50MB
 
+  cache:
+    type: caffeine
+    caffeine:
+      spec: expireAfterWrite=24h,maximumSize=500
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -37,24 +42,21 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
 
-
 garage:
   endpoint: ${GARAGE_ENDPOINT}
   bucket: ${GARAGE_BUCKET}
   access-key: ${GARAGE_ACCESS_KEY}
   secret-key: ${GARAGE_SECRET_KEY}
+  public-base-url: ${GARAGE_PUBLIC_BASE_URL}
   region: garage
 
 app:
   base-url: ${APP_BASE_URL}
 
-
-pexels:
+pixabay:
   api-key: 58820019-cd75a1f5e134a39fa8760175d
 
 logging:
   level:
     org.springframework.security: INFO
     com.example.tourmanagement.config: DEBUG
-
-

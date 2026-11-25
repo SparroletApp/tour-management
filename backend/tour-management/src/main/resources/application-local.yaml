@@ -55,3 +55,6 @@ logging:
     org.springframework.security: TRACE
     com.example.tourmanagement.config: DEBUG
 
+pixabay:
+  api-key: ${PIXABAY_API_KEY}
+

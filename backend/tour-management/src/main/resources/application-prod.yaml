@@ -48,10 +48,13 @@ garage:
 app:
   base-url: ${APP_BASE_URL}
 
+
+pexels:
+  api-key: 58820019-cd75a1f5e134a39fa8760175d
+
 logging:
   level:
     org.springframework.security: INFO
     com.example.tourmanagement.config: DEBUG
 
-pixabay:
-  api-key: 58820019-a25c103cf768e48794aaa95ed
+

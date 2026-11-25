@@ -61,8 +61,6 @@ function LandingPage() {
 
     return (
         <main className="landing-page">
-
-            {/* HERO SECTION */}
             <section className="landing-hero">
 
                 <div className="landing-hero-overlay"></div>
@@ -116,8 +114,6 @@ function LandingPage() {
                     </div>
 
                 </div>
-
-                {/* FLOATING CARD */}
                 <div className="landing-floating-card">
                     <div className="landing-floating-icon">
                         <i className="bi bi-map"></i>
@@ -135,8 +131,6 @@ function LandingPage() {
                 </div>
 
             </section>
-
-            {/* FEATURES */}
             <section className="landing-features">
 
                 <div className="landing-feature">
@@ -173,8 +167,6 @@ function LandingPage() {
                 </div>
 
             </section>
-
-            {/* TOUR PACKAGES */}
             <section
                 className="landing-tours-section"
                 id="available-tours"
@@ -212,8 +204,6 @@ function LandingPage() {
                     </div>
 
                 </div>
-
-                {/* LOADING */}
                 {loading && (
                     <div className="landing-loading">
                         <span className="landing-spinner"></span>
@@ -221,8 +211,6 @@ function LandingPage() {
                         <p>Loading tour packages. Please wait.</p>
                     </div>
                 )}
-
-                {/* ERROR */}
                 {!loading && error && (
                     <div className="landing-error">
                         <i className="bi bi-exclamation-circle"></i>
@@ -230,8 +218,6 @@ function LandingPage() {
                         <p>{error}</p>
                     </div>
                 )}
-
-                {/* EMPTY */}
                 {!loading && !error && tours.length === 0 && (
                     <div className="landing-empty">
                         <div className="landing-empty-icon">
@@ -246,8 +232,6 @@ function LandingPage() {
                         </p>
                     </div>
                 )}
-
-                {/* TOUR GRID */}
                 {!loading && !error && tours.length > 0 && (
                     <div className="landing-tours-grid">
 
@@ -257,8 +241,6 @@ function LandingPage() {
                                 key={tour.id}
                                 onClick={() => openTour(tour)}
                             >
-
-                                {/* IMAGE */}
                                 <div className="landing-tour-image">
 
                                     {tour.coverImageUrl ? (
@@ -284,8 +266,6 @@ function LandingPage() {
                                     </span>
 
                                 </div>
-
-                                {/* CONTENT */}
                                 <div className="landing-tour-content">
 
                                     <div className="landing-tour-title-row">
@@ -344,8 +324,6 @@ function LandingPage() {
                 )}
 
             </section>
-
-            {/* BOTTOM CTA */}
             <section className="landing-bottom-cta">
 
                 <div className="landing-cta-content">

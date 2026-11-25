@@ -447,9 +447,6 @@
     cursor: pointer;
 }
 
-
-/* QUESTION CARD */
-
 .builder-question-card {
     background: #ffffff;
     border: 1px solid #e5ece9;
@@ -470,8 +467,6 @@
     flex-direction: column;
     box-shadow: 0 5px 18px rgba(6, 78, 69, 0.08);
 }
-
-/* CARD HEADER */
 
 .question-card-header {
     display: flex;
@@ -547,8 +542,6 @@
     font-size: 18px;
 }
 
-/* EXPANDED DETAILS */
-
 .question-expanded-content {
     border-top: 1px solid #edf1ef;
     padding: 22px;
@@ -609,8 +602,6 @@
     color: #064e45;
 }
 
-/* ACTION BUTTONS */
-
 .question-expanded-actions {
     display: flex;
     justify-content: flex-end;
@@ -669,8 +660,6 @@
 .question-delete-btn:hover {
     background: #ffe1dc;
 }
-
-/* EDIT FORM */
 
 .question-edit-form {
     display: flex;
@@ -775,8 +764,6 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
-
-/* RESPONSIVE */
 
 @media (max-width: 768px) {
     .question-detail-grid {

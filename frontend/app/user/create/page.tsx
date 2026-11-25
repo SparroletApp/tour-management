@@ -148,8 +148,6 @@ function CreateUser() {
 
     return (
         <section className="create-user-page">
-
-            {/* Page Header */}
             <div className="create-user-header">
                 <div className="create-user-heading">
                     <button
@@ -173,8 +171,6 @@ function CreateUser() {
                     Company ID: <strong>{companyId ?? "Loading..."}</strong>
                 </div>
             </div>
-
-            {/* Form Card */}
             <div className="create-user-card">
 
                 <div className="create-user-card-header">
@@ -191,8 +187,6 @@ function CreateUser() {
                 <form onSubmit={handleSubmit}>
 
                     <div className="create-user-form-grid">
-
-                        {/* Name */}
                         <div className="create-user-form-group">
                             <label htmlFor="name">
                                 Full Name <span>*</span>
@@ -212,8 +206,6 @@ function CreateUser() {
                                 />
                             </div>
                         </div>
-
-                        {/* Email */}
                         <div className="create-user-form-group">
                             <label htmlFor="email">
                                 Email Address <span>*</span>
@@ -233,8 +225,6 @@ function CreateUser() {
                                 />
                             </div>
                         </div>
-
-                        {/* Phone */}
                         <div className="create-user-form-group">
                             <label htmlFor="phone">
                                 Phone Number
@@ -253,8 +243,6 @@ function CreateUser() {
                                 />
                             </div>
                         </div>
-
-                        {/* Role */}
                         <div className="create-user-form-group">
                             <label htmlFor="role">
                                 Select Role <span>*</span>
@@ -275,8 +263,6 @@ function CreateUser() {
                                 </select>
                             </div>
                         </div>
-
-                        {/* Password */}
                         <div className="create-user-form-group full-width">
                             <label htmlFor="password">
                                 Password <span>*</span>
@@ -325,15 +311,11 @@ function CreateUser() {
                         </div>
 
                     </div>
-
-                    {/* Company ID */}
                     <div className="create-user-company-info">
                         <i className="bi bi-info-circle"></i>
                         This user will automatically be registered under company
                         <strong> #{companyId ?? "-"}</strong>.
                     </div>
-
-                    {/* Buttons */}
                     <div className="create-user-actions">
 
                         <button

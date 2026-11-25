@@ -18,8 +18,6 @@ function TourList() {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(9);
     const [search, setSearch] = useState("");
-
-    // Search only within published tours
     const filteredTours = tours.filter((tour) => {
         const value = search.trim().toLowerCase();
 
@@ -39,7 +37,6 @@ function TourList() {
         startIndex + pageSize
     );
 
-    // Load published tours
     const loadTours = async () => {
         try {
             setLoading(true);
@@ -56,8 +53,6 @@ function TourList() {
             const response = await tourPackageService.getByCompanyId(
                 Number(companyId)
             );
-
-            // Only show tours with status PUBLISHED
             const publishedTours: TourPackage[] = Array.isArray(response)
                 ? response.filter(
                     (tour: TourPackage) =>
@@ -93,8 +88,6 @@ function TourList() {
     useEffect(() => {
         loadTours();
     }, []);
-
-    // View tour details
     const handleViewTour = (tour: TourPackage) => {
         if (!tour.id) return;
 
@@ -104,8 +97,6 @@ function TourList() {
             `/tour-details/${encodeURIComponent(tour.tourCode ?? "")}`
         );
     };
-
-    // Pagination numbers
     const getPageNumbers = () => {
         const pages: number[] = [];
 
@@ -126,8 +117,6 @@ function TourList() {
 
         return pages;
     };
-
-    // Format date
     const formatDate = (date?: string | null) => {
         if (!date) return "Flexible";
 
@@ -144,8 +133,6 @@ function TourList() {
 
     return (
         <div className="tour-list-page">
-
-            {/* Header */}
             <div className="tour-list-header">
                 <div>
                     <span className="tour-list-eyebrow">
@@ -161,7 +148,6 @@ function TourList() {
                 </div>
             </div>
 
-            {/* Search and Count */}
             {!loading && !error && (
                 <div className="tour-list-toolbar">
 
@@ -202,7 +188,6 @@ function TourList() {
                 </div>
             )}
 
-            {/* Loading */}
             {loading && (
                 <div className="tour-list-loading">
                     <span className="tour-list-spinner"></span>
@@ -210,7 +195,6 @@ function TourList() {
                 </div>
             )}
 
-            {/* Error */}
             {!loading && error && (
                 <div className="tour-list-error">
                     <i className="bi bi-exclamation-circle"></i>
@@ -224,8 +208,6 @@ function TourList() {
                     </button>
                 </div>
             )}
-
-            {/* Empty */}
             {!loading && !error && filteredTours.length === 0 && (
                 <div className="tour-list-empty">
 
@@ -247,16 +229,12 @@ function TourList() {
 
                 </div>
             )}
-
-            {/* Tour Cards */}
             {!loading && !error && filteredTours.length > 0 && (
                 <>
 
                     <div className="tour-list-grid">
 
                         {currentTours.map((tour) => {
-
-                            // API cover image
                             const image = tour.coverImageUrl ||
                                 (tour as TourPackage & {
                                     coverImage?: string;
@@ -275,8 +253,6 @@ function TourList() {
                                     className="tour-card"
                                     key={tour.id}
                                 >
-
-                                    {/* Image */}
                                     <div className="tour-card-image">
 
                                         {image ? (
@@ -303,7 +279,6 @@ function TourList() {
 
                                     </div>
 
-                                    {/* Content */}
                                     <div className="tour-card-content">
 
                                         <div className="tour-card-duration">
@@ -320,11 +295,7 @@ function TourList() {
                                             {tour.description ||
                                                 "Discover beautiful destinations and enjoy an unforgettable travel experience."}
                                         </p>
-
-                                        {/* Tour Details */}
                                         <div className="tour-card-details">
-
-                                            {/* Start Date */}
                                             <div>
                                                 <i className="bi bi-calendar-event"></i>
 
@@ -336,8 +307,6 @@ function TourList() {
                                                     </strong>
                                                 </span>
                                             </div>
-
-                                            {/* End Date */}
                                             <div>
                                                 <i className="bi bi-calendar-check"></i>
 
@@ -349,8 +318,6 @@ function TourList() {
                                                     </strong>
                                                 </span>
                                             </div>
-
-                                            {/* Travellers */}
                                             <div>
                                                 <i className="bi bi-people"></i>
 
@@ -365,10 +332,7 @@ function TourList() {
                                                     </strong>
                                                 </span>
                                             </div>
-
                                         </div>
-
-                                        {/* Explore Button */}
                                         <button
                                             type="button"
                                             className="tour-card-view-btn"
@@ -386,8 +350,6 @@ function TourList() {
                         })}
 
                     </div>
-
-                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="tour-list-pagination">
 

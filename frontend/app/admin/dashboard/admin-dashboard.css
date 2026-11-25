@@ -5,8 +5,6 @@
     background: #f5f8f7;
 }
 
-/* Dashboard Header */
-
 .super-dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -36,8 +34,6 @@
     font-size: 14px;
     margin: 0;
 }
-
-/* Refresh Button */
 
 .dashboard-refresh-btn {
     display: flex;
@@ -72,8 +68,6 @@
         transform: rotate(360deg);
     }
 }
-
-/* Company Statistics */
 
 .super-dashboard-stats {
     display: grid;
@@ -149,8 +143,6 @@
 .super-stat-footer i {
     color: #064e45;
 }
-
-/* Quick Actions */
 
 .super-dashboard-section {
     margin-bottom: 30px;
@@ -242,8 +234,6 @@
     color: #d47b32;
 }
 
-/* Platform Information */
-
 .super-dashboard-bottom {
     margin-top: 25px;
 }
@@ -284,8 +274,6 @@
     margin: 0;
     line-height: 1.6;
 }
-
-/* Responsive */
 
 @media (max-width: 900px) {
     .super-quick-actions {

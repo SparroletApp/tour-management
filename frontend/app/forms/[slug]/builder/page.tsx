@@ -141,12 +141,10 @@ export default function FormBuilder() {
     const [helpText, setHelpText] = useState("");
     const [options, setOptions] = useState("");
 
-    // Expanded question
     const [expandedQuestionId, setExpandedQuestionId] = useState<number | null>(
         null
     );
 
-    // Editing question
     const [editingQuestionId, setEditingQuestionId] = useState<number | null>(
         null
     );
@@ -157,8 +155,6 @@ export default function FormBuilder() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-
-    // LOAD FORM
     const loadBuilder = async () => {
         try {
             setLoading(true);
@@ -224,7 +220,6 @@ export default function FormBuilder() {
 
     const formId = form?.id;
 
-    // ADD SECTION
     const addSection = async (event: FormEvent) => {
         event.preventDefault();
 
@@ -268,8 +263,6 @@ export default function FormBuilder() {
             setSaving(false);
         }
     };
-
-    // ADD QUESTION
     const addQuestion = async (event: FormEvent) => {
         event.preventDefault();
 
@@ -334,8 +327,6 @@ export default function FormBuilder() {
             setSaving(false);
         }
     };
-
-    // EXPAND / COLLAPSE QUESTION
     const toggleQuestion = (questionId: number) => {
         setExpandedQuestionId((previous) =>
             previous === questionId ? null : questionId
@@ -346,7 +337,6 @@ export default function FormBuilder() {
         }
     };
 
-    // OPEN QUESTION EDIT
     const startEditingQuestion = (question: QuestionResponseDto) => {
         setExpandedQuestionId(question.id);
         setEditingQuestionId(question.id);
@@ -361,7 +351,6 @@ export default function FormBuilder() {
         });
     };
 
-    // UPDATE EDIT FORM
     const updateEditDraft = (
         field: keyof QuestionDraft,
         value: string | boolean
@@ -371,14 +360,11 @@ export default function FormBuilder() {
             [field]: value,
         }));
     };
-
-    // CANCEL EDIT
     const cancelEditing = () => {
         setEditingQuestionId(null);
         setEditDraft({ ...emptyQuestion });
     };
 
-    // SAVE QUESTION
     const saveQuestion = async (
         event: FormEvent,
         questionId: number
@@ -443,8 +429,6 @@ export default function FormBuilder() {
             setSaving(false);
         }
     };
-
-    // DELETE SECTION
     const deleteSection = async (id: number) => {
         const confirmed = await showConfirm(
             "Delete Section?",
@@ -478,7 +462,6 @@ export default function FormBuilder() {
         }
     };
 
-    // DELETE QUESTION
     const deleteQuestion = async (questionId: number) => {
         if (!activeSection) return;
 
@@ -516,8 +499,6 @@ export default function FormBuilder() {
             showError("Unable to delete question.");
         }
     };
-
-    // PUBLISH FORM
     const publishForm = async () => {
         if (!formId) return;
 
@@ -563,8 +544,6 @@ export default function FormBuilder() {
 
     return (
         <main className="builder-page">
-
-            {/* HEADER */}
             <header className="builder-header">
                 <div>
                     <h1>{form.formTitle}</h1>
@@ -606,8 +585,6 @@ export default function FormBuilder() {
             </header>
 
             <div className="builder-layout">
-
-                {/* SIDEBAR */}
                 <aside className="builder-sidebar">
 
                     <h3>Sections</h3>
@@ -674,8 +651,6 @@ export default function FormBuilder() {
                     )}
 
                 </aside>
-
-                {/* MAIN CONTENT */}
                 <section className="builder-content">
 
                     {!activeSection ? (
@@ -705,8 +680,6 @@ export default function FormBuilder() {
                                 </span>
 
                             </div>
-
-                            {/* QUESTION CARDS */}
                             <div className="builder-question-list">
 
                                 {(questions[activeSection] || []).map(
@@ -733,8 +706,6 @@ export default function FormBuilder() {
                                                     toggleQuestion(question.id)
                                                 }
                                             >
-
-                                                {/* CARD HEADER */}
                                                 <div className="question-card-header">
 
                                                     <div className="question-card-info">
@@ -786,8 +757,6 @@ export default function FormBuilder() {
                                                     </div> */}
 
                                                 </div>
-
-                                                {/* EXPANDED CONTENT */}
                                                 {isExpanded && (
 
                                                     <div
@@ -902,8 +871,6 @@ export default function FormBuilder() {
                                                             </>
 
                                                         ) : (
-
-                                                            /* EDIT QUESTION FORM */
                                                             <form
                                                                 className="question-edit-form"
                                                                 onSubmit={(e) =>
@@ -1085,8 +1052,6 @@ export default function FormBuilder() {
                                 )}
 
                             </div>
-
-                            {/* ADD QUESTION FORM */}
                             {!isClosed && (
                                 <form
                                     onSubmit={addQuestion}

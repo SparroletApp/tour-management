@@ -237,7 +237,6 @@ function TourDetails() {
                 return;
             }
 
-            // Navigate to the assigned published form using its slug
             router.push(
                 `/tour-form/${encodeURIComponent(publishedForm.slug)}`
             );
@@ -630,8 +629,6 @@ function TourDetails() {
                                                         {day.description}
                                                     </p>
                                                 )}
-
-                                                {/* Day-specific image gallery */}
                                                 {Array.isArray(day.images) && day.images.length > 0 && (
                                                     <div className="td-day-gallery">
                                                         <div className="td-day-gallery-heading">

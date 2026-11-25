@@ -42,7 +42,6 @@ function Sidebar() {
         },
     ];
 
-    // OTHER USER SIDEBAR
     const otherMenuItems = [
         {
             name: "Dashboard",

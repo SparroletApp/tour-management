@@ -27,7 +27,7 @@
     max-width: 1440px;
     height: 100%;
     margin: 0 auto;
-    padding: 0 55px;
+    padding: 0 35px;
 
     display: flex;
     align-items: center;
@@ -340,7 +340,6 @@
 .header-call-text {
     display: flex;
     flex-direction: column;
-    gap: 3px;
 }
 
 .header-call-text small {

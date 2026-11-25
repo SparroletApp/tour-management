@@ -50,8 +50,6 @@ export default function Forms() {
         loadForms(id);
         loadPublicForms();
     }, []);
-
-    // COMPANY FORMS
     const loadForms = async (id: number) => {
         try {
             setLoading(true);
@@ -70,8 +68,6 @@ export default function Forms() {
             setLoading(false);
         }
     };
-
-    // PUBLIC TEMPLATE FORMS
     const loadPublicForms = async () => {
         try {
             setPublicLoading(true);
@@ -565,8 +561,6 @@ export default function Forms() {
                     )}
 
                 </aside>
-
-                {/* RIGHT FORMS TABLE */}
                 <main className="forms-main-content">
 
                     <div className="forms-main-heading">
@@ -709,8 +703,6 @@ export default function Forms() {
                                     </tbody>
                                 </table>
                             </div>
-
-                            {/* PAGINATION */}
                             <div className="forms-pagination">
 
                                 <div className="forms-pagination-info">
@@ -796,8 +788,6 @@ export default function Forms() {
 
                 </main>
             </div>
-
-            {/* ACTION DROPDOWN */}
             {mounted && openMenu !== null && selectedForm &&
                 createPortal(
                     <>

@@ -1,19 +1,27 @@
-
 package com.example.tourmanagement.service;
 
 import com.example.tourmanagement.dto.imageupload.ImageResultDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class PixabayService {
+
+    private static final Logger log = LoggerFactory.getLogger(PixabayService.class);
 
     @Value("${pixabay.api-key}")
     private String apiKey;
@@ -36,26 +44,23 @@ public class PixabayService {
                 .build()
                 .encode()
                 .toUriString();
-        Map<String, Object> body =
-                restTemplate.getForObject(url, Map.class);
+
+        Map<String, Object> body = restTemplate.getForObject(url, Map.class);
+
         if (body == null || body.get("hits") == null) {
             return List.of();
         }
 
-        List<Map<String, Object>> hits =
-                (List<Map<String, Object>>) body.get("hits");
+        List<Map<String, Object>> hits = (List<Map<String, Object>>) body.get("hits");
 
         return hits.stream().map(h -> new ImageResultDto(
                 ((Number) h.get("id")).longValue(),
-                (String) h.get("webformatURL"),
-                (String) h.get("largeImageURL"),
+                (String) h.get("previewURL"),      // small thumbnail for the grid
+                (String) h.get("webformatURL"),    // 640px image that gets imported
                 (String) h.get("user"),
                 (String) h.get("pageURL")
         )).toList();
     }
-
-    private static final org.slf4j.Logger log =
-            org.slf4j.LoggerFactory.getLogger(PixabayService.class);
 
     public byte[] download(String imageUrl) {
 
@@ -77,35 +82,54 @@ public class PixabayService {
             throw new IllegalArgumentException("Invalid image source");
         }
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                        + "(KHTML, like Gecko) Chrome/124.0 Safari/537.36");
+        headers.set("Accept", "image/avif,image/webp,image/*,*/*;q=0.8");
+        headers.set("Referer", "https://pixabay.com/");
+
         try {
-            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            headers.set("User-Agent",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                            + "(KHTML, like Gecko) Chrome/124.0 Safari/537.36");
-            headers.set("Accept", "image/avif,image/webp,image/*,*/*;q=0.8");
-            headers.set("Referer", "https://pixabay.com/");
+            for (int attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    byte[] bytes = restTemplate.exchange(
+                            uri, HttpMethod.GET, new HttpEntity<>(headers), byte[].class
+                    ).getBody();
 
-            org.springframework.http.ResponseEntity<byte[]> response = restTemplate.exchange(
-                    uri,
-                    org.springframework.http.HttpMethod.GET,
-                    new org.springframework.http.HttpEntity<>(headers),
-                    byte[].class);
+                    if (bytes == null || bytes.length == 0) {
+                        throw new IllegalArgumentException("Downloaded image was empty");
+                    }
+                    return bytes;
 
-            byte[] bytes = response.getBody();
-
-            if (bytes == null || bytes.length == 0) {
-                throw new IllegalArgumentException("Downloaded image was empty");
+                } catch (HttpStatusCodeException e) {
+                    if (e.getStatusCode().value() == 429 && attempt < 3) {
+                        log.warn("Pixabay 429, retry {} for {}", attempt, uri);
+                        sleep(2000L * attempt);
+                        continue;
+                    }
+                    throw e;
+                }
             }
-            return bytes;
+            throw new IllegalArgumentException("Unable to download selected image");
 
-        } catch (org.springframework.web.client.HttpStatusCodeException e) {
-            log.error("Pixabay download failed: {} for {}", e.getStatusCode(), uri, e);
+        } catch (HttpStatusCodeException e) {
+            log.error("Pixabay download failed: {} for {}", e.getStatusCode(), uri);
             throw new IllegalArgumentException(
                     "Pixabay refused the download (HTTP " + e.getStatusCode().value() + ")");
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Pixabay download failed for {}", uri, e);
             throw new IllegalArgumentException(
                     "Unable to download selected image: " + e.getMessage());
+        }
+    }
+
+    private void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
         }
     }
 }

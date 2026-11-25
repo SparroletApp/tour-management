@@ -53,13 +53,19 @@ public class PixabayService {
 
         List<Map<String, Object>> hits = (List<Map<String, Object>>) body.get("hits");
 
-        return hits.stream().map(h -> new ImageResultDto(
-                ((Number) h.get("id")).longValue(),
-                (String) h.get("previewURL"),      // small thumbnail for the grid
-                (String) h.get("webformatURL"),    // 640px image that gets imported
-                (String) h.get("user"),
-                (String) h.get("pageURL")
-        )).toList();
+        return hits.stream().map(h -> {
+            String preview = (String) h.get("previewURL");   // https://cdn.pixabay.com/photo/.../name_150.jpg
+            String full = (preview != null && preview.contains("_150"))
+                    ? preview.replace("_150", "_640")         // same CDN path, 640px
+                    : (String) h.get("webformatURL");         // fallback
+
+            return new ImageResultDto(
+                    ((Number) h.get("id")).longValue(),
+                    preview,                                  // grid thumbnail
+                    full,                                     // image that gets imported
+                    (String) h.get("user"),
+                    (String) h.get("pageURL"));
+        }).toList();
     }
 
     public byte[] download(String imageUrl) {

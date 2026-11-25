@@ -14,11 +14,8 @@ export interface TourPackage extends Audit {
     maximumTravellers?: number | null;
     currency?: string | null;
     status?: string | null;
-
-    // Company relationship
     companyId?: number | null;
     companyName?: string | null;
-
     startDate?: string | null;
     endDate?: string | null;
     coverImageUrl?: string | null;

@@ -1,16 +1,9 @@
-
-/* ================================
-   COMPANIES PAGE
-================================ */
-
 .companies-page {
     width: 100%;
     min-height: 100vh;
     padding: 25px;
     background: #f5f8f7;
 }
-
-/* Header */
 
 .companies-header {
     display: flex;
@@ -55,10 +48,6 @@
     transform: translateY(-1px);
 }
 
-/* ================================
-   STATISTICS
-================================ */
-
 .company-stats {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -102,10 +91,6 @@
     margin: 0;
 }
 
-/* ================================
-   TABLE CARD
-================================ */
-
 .companies-table-card {
     background: #fff;
     border: 1px solid #edf1ef;
@@ -134,8 +119,6 @@
     color: #82918d;
     font-size: 12px;
 }
-
-/* Search */
 
 .company-search {
     width: 270px;
@@ -167,10 +150,6 @@
 .company-search input::placeholder {
     color: #a2afaa;
 }
-
-/* ================================
-   COMPANY TABLE
-================================ */
 
 .companies-table {
     margin: 0;
@@ -205,8 +184,6 @@
     border-bottom: none;
 }
 
-/* Company Name */
-
 .company-name-cell {
     display: flex;
     align-items: center;
@@ -233,10 +210,6 @@
     font-size: 15px;
     font-weight: 700;
 }
-
-/* ================================
-   ACTION BUTTONS
-================================ */
 
 .company-actions {
     display: flex;
@@ -288,10 +261,6 @@
     color: #fff;
 }
 
-/* ================================
-   EMPTY STATE
-================================ */
-
 .company-empty {
     padding: 55px 15px;
     text-align: center;
@@ -315,18 +284,12 @@
     margin: 0;
 }
 
-/* Footer */
-
 .companies-table-footer {
     padding: 14px 20px;
     border-top: 1px solid #edf1ef;
     color: #82918d;
     font-size: 12px;
 }
-
-/* ================================
-   COMPANY MODAL
-================================ */
 
 .company-modal-overlay {
     position: fixed;
@@ -365,8 +328,6 @@
         transform: translateY(0);
     }
 }
-
-/* Modal Header */
 
 .company-modal-header {
     padding: 21px 24px;
@@ -407,8 +368,6 @@
     background: #fff0f0;
     color: #dc3545;
 }
-
-/* Modal Body */
 
 .company-modal form {
     display: flex;
@@ -475,15 +434,11 @@
     cursor: not-allowed;
 }
 
-/* Form Grid */
-
 .company-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 15px;
 }
-
-/* Modal Footer */
 
 .company-modal-footer {
     padding: 17px 24px;
@@ -526,10 +481,6 @@
 .company-save-btn:hover {
     background: #043c35;
 }
-
-/* ================================
-   RESPONSIVE DESIGN
-================================ */
 
 @media (max-width: 768px) {
     .companies-page {

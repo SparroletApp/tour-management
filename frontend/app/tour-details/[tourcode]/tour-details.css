@@ -333,7 +333,7 @@
 }
 
 .td-day-marker span {
-    font-size: 9px;
+    font-size: 7px;
     letter-spacing: 1px;
 }
 
@@ -1243,6 +1243,10 @@
         gap: 10px;
     }
 
+    .td-description{
+        margin-bottom: 5px;
+    }
+
     .td-status {
         padding: 4px 10px;
         font-size: 9px;
@@ -1254,8 +1258,6 @@
         margin: 0px 0px 7px;
     }
 }
-
-/* Sticky bottom booking bar */
 .td-sticky-booking {
     position: fixed;
     bottom: 0;
@@ -1266,7 +1268,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    padding: 12px 6%;
+    padding: 12px 5%;
     background: #ffffff;
     border-top: 1px solid #e5ece9;
     box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.08);
@@ -1314,7 +1316,6 @@
     font-size: 17px;
 }
 
-/* Prevent sticky bar from covering page content */
 .td-page {
     padding-bottom: 90px;
 }
@@ -1432,8 +1433,6 @@
     }
 }
 
-/* Destination country See More / See Less */
-
 .td-destination-country-wrapper {
     margin-top: 4px;
 }
@@ -1466,8 +1465,6 @@
     font-weight: 700;
     cursor: pointer;
 }
-
-/* Destination description See More / See Less */
 
 .td-destination-description-wrapper {
     margin-top: 8px;
@@ -2343,12 +2340,13 @@
     }
 
     .td-day-marker {
-        width: 48px;
-        height: 55px;
+        width: 40px;
+        border-radius: 7px;
+        height: 40px;
     }
 
     .td-day-marker strong {
-        font-size: 20px;
+        font-size: 11px;
     }
 
     .td-day-card:not(:last-child)::before {
@@ -2410,6 +2408,7 @@
 
     .td-section-heading {
         align-items: flex-start;
+        margin-bottom: 12px;
     }
 
     .td-footer-inner {
@@ -2509,7 +2508,7 @@
     }
 
     .td-section-heading h2 {
-        font-size: 22px;
+        font-size: 18px;
     }
 
     .td-highlights,
@@ -2523,17 +2522,9 @@
 
     .td-day-card {
         grid-template-columns: 48px minmax(0, 1fr);
-        gap: 10px;
+        gap: 0px;
     }
 
-    .td-day-marker {
-        width: 48px;
-        height: 55px;
-    }
-
-    .td-day-marker strong {
-        font-size: 20px;
-    }
 
     .td-day-card:not(:last-child)::before {
         left: 23px;

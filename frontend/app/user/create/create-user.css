@@ -5,8 +5,6 @@
     background: #f5f8f7;
 }
 
-/* Header */
-
 .create-user-header {
     display: flex;
     justify-content: space-between;
@@ -61,8 +59,6 @@
     gap: 8px;
 }
 
-/* Form Card */
-
 .create-user-card {
     background: #fff;
     border: 1px solid #e5eeeb;
@@ -105,8 +101,6 @@
     margin: 0;
 }
 
-/* Form Grid */
-
 .create-user-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -132,8 +126,6 @@
 .create-user-form-group label span {
     color: #dc3545;
 }
-
-/* Input */
 
 .create-user-input-wrapper {
     height: 46px;
@@ -184,8 +176,6 @@
     font-size: 11px;
 }
 
-/* Password */
-
 .create-user-password-wrapper {
     display: flex;
     gap: 10px;
@@ -228,8 +218,6 @@
     background: #d5e9e3;
 }
 
-/* Company Info */
-
 .create-user-company-info {
     display: flex;
     align-items: center;
@@ -250,8 +238,6 @@
 .create-user-company-info strong {
     color: #064e45;
 }
-
-/* Actions */
 
 .create-user-actions {
     display: flex;
@@ -303,8 +289,6 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
-
-/* Responsive */
 
 @media (max-width: 768px) {
     .create-user-page {

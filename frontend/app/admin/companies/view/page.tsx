@@ -58,13 +58,11 @@ function CompanyView() {
         timerProgressBar: true,
     });
 
-    // EDIT USER
     const handleEdit = (user: UserResponseDto) => {
         localStorage.setItem("edit_user_id", String(user.id));
         router.push("/user/edit");
     };
 
-    // DELETE USER
     const handleDelete = async (user: UserResponseDto) => {
         const result = await Swal.fire({
             title: "Delete User?",
@@ -313,8 +311,6 @@ function CompanyView() {
                                         </td>
                                         <td>
                                             <div className="company-user-actions">
-
-                                                {/* Edit */}
                                                 <button
                                                     type="button"
                                                     className="company-user-edit-btn"
@@ -323,8 +319,6 @@ function CompanyView() {
                                                 >
                                                     <i className="bi bi-pencil-square"></i>
                                                 </button>
-
-                                                {/* Delete */}
                                                 <button
                                                     type="button"
                                                     className="company-user-delete-btn"

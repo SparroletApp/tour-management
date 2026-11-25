@@ -493,11 +493,6 @@
     background: transparent;
 }
 
-
-/* =====================================
-   TWO COLUMN GOOGLE FORMS STYLE LAYOUT
-===================================== */
-
 .forms-dashboard-layout {
     display: grid;
     grid-template-columns: 275px minmax(0, 1fr);
@@ -505,9 +500,6 @@
     align-items: start;
 }
 
-/* =====================================
-   LEFT PUBLIC TEMPLATES
-===================================== */
 
 .public-templates-sidebar {
     background: #fff;
@@ -718,10 +710,6 @@
     margin-top: 10px;
 }
 
-/* =====================================
-   RIGHT MY FORMS SECTION
-===================================== */
-
 .forms-main-content {
     min-width: 0;
 }
@@ -756,10 +744,6 @@
     font-weight: 700;
     white-space: nowrap;
 }
-
-/* =====================================
-   RESPONSIVE
-===================================== */
 
 @media (max-width: 1100px) {
     .forms-dashboard-layout {

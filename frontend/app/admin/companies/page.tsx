@@ -27,7 +27,6 @@ function Companies() {
          companyName: "",
     });
 
-    // Get exact backend error message
     const getErrorMessage = (error: any): string => {
         const data = error?.response?.data;
 
@@ -38,7 +37,6 @@ function Companies() {
         return error?.message || "Something went wrong. Please try again.";
     };
 
-    // Fetch all companies
     const fetchCompanies = useCallback(async () => {
         try {
             setLoading(true);
@@ -66,7 +64,6 @@ function Companies() {
         fetchCompanies();
     }, [fetchCompanies]);
 
-    // Reset form
     const resetForm = () => {
         setFormData({
             companyName: "",
@@ -76,13 +73,11 @@ function Companies() {
         setViewMode(false);
     };
 
-    // Open add modal
     const openAddModal = () => {
         resetForm();
         setShowModal(true);
     };
 
-    // Open edit modal
     const openEditModal = (company: CompanyResponseDto) => {
         setFormData({
              companyName: company. companyName,
@@ -92,8 +87,6 @@ function Companies() {
         setViewMode(false);
         setShowModal(true);
     };
-
-    // Open view details modal
     const openViewModal = (company: CompanyResponseDto) => {
         setFormData({
              companyName: company. companyName,
@@ -104,20 +97,16 @@ function Companies() {
         setShowModal(true);
     };
 
-    // View company users
     const handleViewCompany = (company: CompanyResponseDto) => {
         localStorage.setItem("company_view_id", company.id.toString());
         router.push("/admin/companies/view");
     };
 
-    // Handle input change
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
              companyName: e.target.value,
         });
     };
-
-    // Create / Update company
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -181,7 +170,6 @@ function Companies() {
         }
     };
 
-    // Delete company
     const handleDelete = async (id: number) => {
         const result = await Swal.fire({
             title: "Are you sure?",
@@ -220,8 +208,6 @@ function Companies() {
             });
         }
     };
-
-    // Search companies
     const filteredCompanies = useMemo(() => {
         return companies.filter((company) =>
             company. companyName?.toLowerCase().includes(search.toLowerCase())
@@ -230,8 +216,6 @@ function Companies() {
 
     return (
         <section className="companies-page">
-
-            {/* Header */}
             <div className="companies-header">
                 <div>
                     <h2>Companies</h2>
@@ -247,8 +231,6 @@ function Companies() {
                     Add Company
                 </button>
             </div>
-
-            {/* Total Companies */}
             <div className="company-stats">
                 <div className="company-stat-card">
                     <div className="company-stat-icon">
@@ -261,8 +243,6 @@ function Companies() {
                     </div>
                 </div>
             </div>
-
-            {/* Companies Table */}
             <div className="companies-table-card">
 
                 <div className="companies-table-header">
@@ -333,8 +313,6 @@ function Companies() {
 
                                         <td>
                                             <div className="company-actions">
-
-                                                {/* View Users */}
                                                 <button
                                                     type="button"
                                                     title="View Users"
@@ -345,8 +323,6 @@ function Companies() {
                                                 >
                                                     <i className="bi bi-people"></i>
                                                 </button>
-
-                                                {/* View Details */}
                                                 <button
                                                     type="button"
                                                     title="View Details"
@@ -357,8 +333,6 @@ function Companies() {
                                                 >
                                                     <i className="bi bi-eye"></i>
                                                 </button>
-
-                                                {/* Edit */}
                                                 <button
                                                     type="button"
                                                     title="Edit"
@@ -370,7 +344,6 @@ function Companies() {
                                                     <i className="bi bi-pencil-square"></i>
                                                 </button>
 
-                                                {/* Delete */}
                                                 <button
                                                     type="button"
                                                     title="Delete"
@@ -409,8 +382,6 @@ function Companies() {
                     Showing {filteredCompanies.length} of {companies.length} companies
                 </div>
             </div>
-
-            {/* Add / Edit / View Modal */}
             {showModal && (
                 <div
                     className="company-modal-overlay"

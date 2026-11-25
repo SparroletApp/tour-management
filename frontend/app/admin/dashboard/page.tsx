@@ -39,8 +39,6 @@ function AdminDashboard() {
 
     return (
         <section className="admin-dashboard">
-
-            {/* Dashboard Header */}
             <div className="super-dashboard-header">
                 <div>
                     <span className="dashboard-welcome">
@@ -65,7 +63,6 @@ function AdminDashboard() {
                 </button>
             </div>
 
-            {/* Company Statistics */}
             <div className="super-dashboard-stats">
 
                 <div className="super-stat-card companies-card">
@@ -96,8 +93,6 @@ function AdminDashboard() {
                 </div>
 
             </div>
-
-            {/* Quick Actions */}
             <div className="super-dashboard-section">
 
                 <div className="super-section-header">
@@ -164,8 +159,6 @@ function AdminDashboard() {
 
                 </div>
             </div>
-
-            {/* Platform Information */}
             <div className="super-dashboard-bottom">
 
                 <div className="super-info-card">

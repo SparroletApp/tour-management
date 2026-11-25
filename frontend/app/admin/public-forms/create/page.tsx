@@ -18,8 +18,6 @@ export default function CreatePublicForm() {
         useState(true);
     const [expiryDate, setExpiryDate] = useState("");
     const [loading, setLoading] = useState(false);
-
-    // Reusable Toast Configuration
     const Toast = Swal.mixin({
         toast: true,
         position: "top-end",

@@ -8,6 +8,7 @@ import com.example.tourmanagement.service.PixabayService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +28,9 @@ public class ImageSearchController {
 
     private final PixabayService pixabayService;
     private final GarageStorageService storageService;
+
+    @Value("${app.base-url}")
+    private String appBaseUrl;
 
     public ImageSearchController(PixabayService pixabayService,
                                  GarageStorageService storageService) {
@@ -49,9 +53,11 @@ public class ImageSearchController {
             MultipartFile file = new ByteArrayMultipartFile(
                     "file", "pixabay.jpg", "image/jpeg", bytes);
 
-            String objectKey = storageService.uploadImage(file, "tours");
-            String savedUrl = storageService.getPublicUrl(objectKey);
-            log.info("Saved image to Garage: {}", savedUrl);
+            // Same folder and URL format as your normal uploads:
+            // https://tmsapi.rayloop.com/uploads/<uuid>.jpg
+            String objectKey = storageService.uploadImage(file, "uploads");
+            String savedUrl = appBaseUrl.replaceAll("/+$", "") + "/" + objectKey;
+            log.info("Saved image: {}", savedUrl);
 
             return ResponseEntity.ok(new ImageImportResponse(savedUrl));
 

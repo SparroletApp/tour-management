@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,7 +11,7 @@ import {
 } from "../types/tour";
 
 import "./tourform.css";
-import ImageUpload from "./ImageUpload";
+import ImageUploadWithSearch from "./ImageUploadWithSearch";
 
 type FieldType =
     | "text"
@@ -114,6 +113,7 @@ const HOTEL_FIELDS: FieldDef[] = [
     },
     { key: "remarks", label: "Remarks", wide: true },
 ];
+
 const DAY_FIELDS: FieldDef[] = [
     { key: "dayNumber", label: "Day number", type: "number" },
     { key: "tourDate", label: "Date", type: "date" },
@@ -145,7 +145,7 @@ const ACTIVITY_FIELDS: FieldDef[] = [
         ],
     },
     { key: "additionalPrice", label: "Extra price", type: "number" },
-       currencyField(),
+    currencyField(),
     { key: "included", label: "Included", type: "checkbox" },
     { key: "optional", label: "Optional", type: "checkbox" },
     { key: "description", label: "Description", type: "textarea", wide: true },
@@ -184,17 +184,6 @@ const PRICE_FIELDS: FieldDef[] = [
     { key: "remarks", label: "Remarks", wide: true },
 ];
 
-const MEDIA_FIELDS: FieldDef[] = [
-    {
-        key: "fileUrl",
-        label: "Upload tour images",
-        type: "images",
-        wide: true,
-    },
-];
-
-
-
 const TABS = [
     { key: "basic", label: "Basic details", icon: "bi-info-circle" },
     { key: "destinations", label: "Destinations", icon: "bi-geo-alt" },
@@ -222,7 +211,6 @@ function addDays(
 
     return d.toISOString().slice(0, 10);
 }
-
 
 
 function clean<T>(value: T): T {
@@ -274,10 +262,12 @@ function FieldInput({
     def,
     value,
     onChange,
+    searchHint,
 }: {
     def: FieldDef;
     value: any;
     onChange: (value: any) => void;
+    searchHint?: string;
 }) {
     const type = def.type ?? "text";
 
@@ -288,11 +278,12 @@ function FieldInput({
     if (type === "image" || type === "images") {
         return (
             <div className={className}>
-                <ImageUpload
+                <ImageUploadWithSearch
                     label={def.label}
                     value={value}
                     multiple={type === "images"}
                     onChange={onChange}
+                    searchHint={searchHint}
                 />
             </div>
         );
@@ -478,6 +469,11 @@ function RowsEditor<T extends object>({
                                         (row as Record<string, any>)[
                                         field.key
                                         ]
+                                    }
+                                    searchHint={
+                                        (row as Record<string, any>).hotelName ||
+                                        (row as Record<string, any>).cityName ||
+                                        ""
                                     }
                                     onChange={(value) =>
                                         update(index, field.key, value)
@@ -700,6 +696,7 @@ export default function TourForm({
                                         >
                                     )[field.key]
                                 }
+                                searchHint={data.tourPackage.tourName ?? ""}
                                 onChange={(value) =>
                                     setPkg(field.key, value)
                                 }
@@ -830,6 +827,11 @@ export default function TourForm({
                                                 >
                                             )[field.key]
                                         }
+                                        searchHint={
+                                            day.overnightCity ||
+                                            day.title ||
+                                            ""
+                                        }
                                         onChange={(value) =>
                                             updateDay(index, {
                                                 [field.key]: value,
@@ -951,14 +953,15 @@ export default function TourForm({
                         </span>
                     </div>
 
-                    <ImageUpload
+                    <ImageUploadWithSearch
                         label="Upload Tour Gallery Images"
+                        searchHint={data.tourPackage.tourName ?? ""}
                         value={data.media
                             .map((item) => item.fileUrl)
                             .filter((url): url is string => Boolean(url))}
                         multiple={true}
                         onChange={(value) => {
-                            const urls = Array.isArray(value)
+                            const urls: string[] = Array.isArray(value)
                                 ? value.filter(Boolean)
                                 : value
                                     ? [value]

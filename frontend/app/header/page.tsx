@@ -23,55 +23,37 @@ function Header() {
         setMenuOpen(false);
     };
 
+    const phoneNumber = "971 58 500 6990";
+
+
     return (
         <header className="main-header">
             <div className="header-container">
-
-                {/* LEFT SIDE - LOGO */}
                 <div
                     className="header-logo"
-                    onClick={() => scrollToSection("home")}
-                >
+                    onClick={() => scrollToSection("home")}>
                     <div className="header-logo-image">
                         <img
                             src="/bonv-logo.png"
                             alt="Tour Management Logo"
                         />
                     </div>
-
                 </div>
-
-                {/* MOBILE MENU BUTTON */}
-            
-
-                {/* CENTER - NAVIGATION */}
-                {/* <nav className={`header-nav ${menuOpen ? "active" : ""}`}>
-
-                    <button
-                        className="nav-link active"
-                        onClick={() => scrollToSection("home")}
+                    <div className="header-right">
+                    <a
+                        href={`tel:${phoneNumber.replace(/\s/g, "")}`}
+                        className="header-call-btn"
                     >
-                        <i className="bi bi-house-door"></i>
-                        <span>Home</span>
-                    </button>
+                        <span className="header-call-icon">
+                            <i className="bi bi-telephone-fill"></i>
+                        </span>
 
-                    <button
-                        className="nav-link"
-                        onClick={() => scrollToSection("available-tours")}
-                    >
-                        <i className="bi bi-compass"></i>
-                        <span>Available Tours</span>
-                    </button>
-
-                </nav> */}
-
-                {/* RIGHT SIDE - AUTH BUTTONS */}
-                <div className={`header-right ${menuOpen ? "active" : ""}`}>
-
-                   
-
+                        <span className="header-call-text">
+                            <small>Call Us Now</small>
+                            <strong>{phoneNumber}</strong>
+                        </span>
+                    </a>
                 </div>
-
             </div>
         </header>
     );

@@ -8,10 +8,6 @@
     --header-border: #e8efec;
 }
 
-/* =====================================
-   MAIN HEADER
-===================================== */
-
 .main-header {
     position: sticky;
     top: 0;
@@ -38,10 +34,6 @@
     justify-content: space-between;
     gap: 30px;
 }
-
-/* =====================================
-   LOGO SECTION
-===================================== */
 
 .header-logo {
     display: flex;
@@ -97,10 +89,6 @@
     white-space: nowrap;
 }
 
-/* =====================================
-   CENTER NAVIGATION
-===================================== */
-
 .header-nav {
     display: flex;
     align-items: center;
@@ -143,10 +131,6 @@
     background: var(--header-primary-light);
 }
 
-/* =====================================
-   RIGHT AUTH BUTTONS
-===================================== */
-
 .header-right {
     display: flex;
     align-items: center;
@@ -178,8 +162,6 @@
     font-size: 16px;
 }
 
-/* LOGIN */
-
 .header-login-btn {
     color: var(--header-primary);
     background: #ffffff;
@@ -191,9 +173,6 @@
     border-color: var(--header-primary);
     transform: translateY(-2px);
 }
-
-/* LOGOUT */
-
 .header-logout-btn {
     color: #ffffff;
     background: var(--header-primary);
@@ -207,10 +186,6 @@
     transform: translateY(-2px);
     box-shadow: 0 7px 16px rgba(6, 78, 69, 0.2);
 }
-
-/* =====================================
-   MOBILE MENU BUTTON
-===================================== */
 
 .mobile-menu-btn {
     display: none;
@@ -237,10 +212,6 @@
     background: var(--header-primary-light);
 }
 
-/* =====================================
-   TABLET RESPONSIVE
-===================================== */
-
 @media (max-width: 1100px) {
     .header-container {
         padding: 0 28px;
@@ -261,10 +232,6 @@
         padding: 0 14px;
     }
 }
-
-/* =====================================
-   MOBILE RESPONSIVE
-===================================== */
 
 @media (max-width: 768px) {
 
@@ -298,8 +265,6 @@
         flex-shrink: 0;
     }
 
-    /* MOBILE NAVIGATION */
-
     .header-nav {
         display: none;
 
@@ -332,41 +297,121 @@
     }
 
 
-    .header-right {
-        display: none;
-
-        position: absolute;
-        bottom: 0px;
-        left: 0;
-
-        width: 100%;
-        padding: 12px 18px 18px;
-
-        background: #ffffff;
-        border-bottom: 1px solid var(--header-border);
-
-        gap: 10px;
-    }
-
-    .header-right.active {
-        display: flex;
-    }
-
-    .header-login-btn,
-    .header-logout-btn {
-        flex: 1;
-        height: 44px;
-        padding: 0 12px;
-    }
+    
 
     .main-header{
         position: static;
     }
 }
 
-/* =====================================
-   SMALL MOBILE
-===================================== */
+.header-call-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 18px;
+
+    background: var(--header-primary-light);
+    border: 1px solid rgba(6, 78, 69, 0.12);
+    border-radius: 12px;
+
+    color: var(--header-primary);
+    text-decoration: none;
+
+    transition: all 0.3s ease;
+}
+
+.header-call-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--header-primary);
+    color: #ffffff;
+
+    border-radius: 50%;
+    font-size: 17px;
+
+    transition: all 0.3s ease;
+}
+
+.header-call-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.header-call-text small {
+    color: var(--header-muted);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.header-call-text strong {
+    color: var(--header-primary);
+    font-size: 15px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.header-call-btn:hover {
+    background: var(--header-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(6, 78, 69, 0.16);
+}
+
+.header-call-btn:hover .header-call-icon {
+    background: #ffffff;
+    color: var(--header-primary);
+}
+
+.header-call-btn:hover .header-call-text small,
+.header-call-btn:hover .header-call-text strong {
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .header-call-btn {
+        padding: 6px 10px;
+        gap: 8px;
+        border-radius: 10px;
+    }
+
+    .header-call-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 15px;
+    }
+
+    .header-call-text small {
+        font-size: 8px;
+    }
+
+    .header-call-text strong {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 380px) {
+    .header-call-btn {
+        padding: 5px 7px;
+        gap: 6px;
+    }
+
+    .header-call-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .header-call-text strong {
+        font-size: 10px;
+    }
+}
 
 @media (max-width: 380px) {
 

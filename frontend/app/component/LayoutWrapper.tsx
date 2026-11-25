@@ -12,17 +12,17 @@ export default function LayoutWrapper({
 }) {
     const pathname = usePathname();
 
-    const hideLayout =
+    const isPublicRoute =
         pathname === "/" ||
         pathname === "/login" ||
         pathname === "/super-admin/login" ||
         pathname === "/form" ||
-           pathname === "/forgot-password" ||
-           pathname === "/tour-list" ||
+        pathname === "/forgot-password" ||
+        pathname === "/tour-list" ||
         pathname.startsWith("/tour-form/") ||
-        pathname.startsWith("/tour-details/");
+        /^\/tour-details(\/.*)?$/.test(pathname);
 
-    if (hideLayout) {
+    if (isPublicRoute) {
         return <>{children}</>;
     }
 
@@ -30,7 +30,6 @@ export default function LayoutWrapper({
         <ProtectedRoute>
             <div className="app-layout">
                 <Sidebar />
-
                 <main className="main-content">
                     {children}
                 </main>

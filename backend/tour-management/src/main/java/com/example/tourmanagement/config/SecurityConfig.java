@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 "/api/questions/get-by-section",
                                 "/api/form-submissions/create",
                                 "/swagger-ui.html",
+                                "/tour-media/tours/**",
                                 "/api/form-builder/get-published-by-tour-code",
                                 "/v3/api-docs/**",
                                 "/api/webhook/**"

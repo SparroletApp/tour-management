@@ -51,6 +51,15 @@ public class TourPackageController extends BaseCrudController<TourPackageDto> {
         );
     }
 
+    @GetMapping("/public/{tourCode}/full")
+    public ResponseEntity<TourPackageFullDto> getFullByTourCode(
+            @PathVariable String tourCode) {
+
+        return ResponseEntity.ok(
+                service.getFullByTourCode(tourCode)
+        );
+    }
+
     @PostMapping("/get-by-company")
     public ResponseEntity<List<TourPackageDto>> getByCompanyId(
             @RequestBody TourCompanyIdDto request) {

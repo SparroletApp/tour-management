@@ -2,18 +2,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { tourPackageService } from "../../apiservice/tourservice";
+import { useParams, useRouter } from "next/navigation";
 import {
     TourPackageFull,
-    TourHotel,
     TourMedia,
 } from "../../types/tour";
-import { getSelectedTourId } from "../../utils/tourStorage";
 import "./tour-details.css";
 import Header from "@/app/header/page";
 import Swal from "sweetalert2";
 import formBuilderService from "@/app/apiservice/formsservice";
+import { tourPackageService } from "@/app/apiservice/tourservice";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
@@ -90,6 +88,10 @@ const isDirectVideo = (url: string) =>
 
 function TourDetails() {
     const router = useRouter();
+const params = useParams<{ tourcode: string }>();
+
+   const tourCode = params.tourcode;
+
     const [findingForm, setFindingForm] = useState(false);
     const [tour, setTour] = useState<TourPackageFull | null>(null);
     const [loading, setLoading] = useState(true);
@@ -105,31 +107,41 @@ function TourDetails() {
                 : [...prev, index]
         );
     };
-    useEffect(() => {
-        const selectedId = getSelectedTourId();
 
-        if (!selectedId) {
-            router.replace("/tours");
-            return;
-        }
+    useEffect(() => {
+        let isMounted = true;
 
         const loadTour = async () => {
+            if (!tourCode) {
+                setError("Tour code is missing.");
+                setLoading(false);
+                return;
+            }
+
             try {
                 setLoading(true);
                 setError("");
 
-                const response = await tourPackageService.getFull(selectedId);
+                console.log("Loading tour code:", tourCode);
 
-                const data = response;
+                const response =
+                    await tourPackageService.getFullByTourCode(tourCode);
 
-                if (!data || !data.tourPackage) {
-                    throw new Error("Invalid tour response");
+                const data = response ?? response;
+
+                console.log("Tour API response:", data);
+
+                if (!data?.tourPackage) {
+                    throw new Error("Tour not found.");
                 }
+
+                if (!isMounted) return;
 
                 setTour(data);
 
                 const firstMediaImage = (data.media || []).find(
-                    (media) => media.fileUrl && isImage(media)
+                    (media: TourMedia) =>
+                        media.fileUrl && isImage(media)
                 );
 
                 const initialImage =
@@ -137,27 +149,48 @@ function TourDetails() {
                     firstMediaImage?.fileUrl ||
                     "";
 
-                setActiveImage(imageUrl(initialImage));
+                setActiveImage(
+                    initialImage ? imageUrl(initialImage) : ""
+                );
 
                 const initialHotelImages: Record<number, number> = {};
 
-                (data.hotels || []).forEach((hotel) => {
+                (data.hotels || []).forEach((hotel: any) => {
                     if (hotel.id != null) {
                         initialHotelImages[hotel.id] = 0;
                     }
                 });
 
                 setHotelImages(initialHotelImages);
-            } catch (err) {
+
+            } catch (err: any) {
                 console.error("Tour loading error:", err);
-                setError("Unable to load tour details. Please try again.");
+
+                if (!isMounted) return;
+
+                setTour(null);
+                setActiveImage("");
+                setHotelImages({});
+
+                setError(
+                    err?.response?.data?.message ||
+                    err?.message ||
+                    "Unable to load tour details. Please try again."
+                );
+
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         loadTour();
-    }, [router]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [tourCode]);
 
     const p = tour?.tourPackage;
 
@@ -225,9 +258,9 @@ function TourDetails() {
                     tourCode: p.tourCode,
                 });
 
-            const publishedForm = response;
+            const publishedForm = response ?? response;
 
-            if (!publishedForm || !publishedForm.slug) {
+            if (!publishedForm?.slug) {
                 await Swal.fire({
                     icon: "info",
                     title: "Booking Form Not Available",
@@ -244,14 +277,12 @@ function TourDetails() {
         } catch (error: any) {
             console.error("Booking form lookup error:", error);
 
-            const errorMessage =
-                error?.response?.data?.message ||
-                "No published booking form is assigned to this tour.";
-
             await Swal.fire({
                 icon: "info",
                 title: "Booking Form Not Available",
-                text: errorMessage,
+                text:
+                    error?.response?.data?.message ||
+                    "No published booking form is assigned to this tour.",
                 confirmButtonColor: "#064e45",
             });
 
@@ -318,7 +349,6 @@ function TourDetails() {
     }
 
     const coverImage = activeImage || gallery[0]?.url;
-
     return (
         <div className="td-site">
             <Header />
@@ -542,32 +572,31 @@ function TourDetails() {
                                                         )}
                                                     </div>
                                                 )}
-                                               {destination.description && (
-    <div className="td-destination-description-wrapper">
-        <p
-            className={`td-destination-description ${
-                expandedDestinations.includes(index) ? "expanded" : ""
-            }`}
-        >
-            {destination.description}
-        </p>
+                                                {destination.description && (
+                                                    <div className="td-destination-description-wrapper">
+                                                        <p
+                                                            className={`td-destination-description ${expandedDestinations.includes(index) ? "expanded" : ""
+                                                                }`}
+                                                        >
+                                                            {destination.description}
+                                                        </p>
 
-        {destination.description.length > 100 && (
-            <button
-                type="button"
-                className="td-country-toggle"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDestination(index);
-                }}
-            >
-                {expandedDestinations.includes(index)
-                    ? "See Less"
-                    : "See More"}
-            </button>
-        )}
-    </div>
-)}
+                                                        {destination.description.length > 100 && (
+                                                            <button
+                                                                type="button"
+                                                                className="td-country-toggle"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleDestination(index);
+                                                                }}
+                                                            >
+                                                                {expandedDestinations.includes(index)
+                                                                    ? "See Less"
+                                                                    : "See More"}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </article>
                                     ))}
@@ -641,7 +670,7 @@ function TourDetails() {
                                                             {day.images.map((image, imageIndex) => (
                                                                 <a
                                                                     key={`${day.id}-${imageIndex}`}
-                                                            
+
                                                                     className="td-day-gallery-image"
                                                                 >
                                                                     <img

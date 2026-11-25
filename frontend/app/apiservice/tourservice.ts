@@ -10,6 +10,11 @@ export const tourPackageService = {
     updateFull: (id: Id, data: TourPackageFull) =>
         api.put<TourPackageFull>(`/api/tours/${id}/full`, data),
 
+    getFullByTourCode: (tourCode: string) =>
+        api.get<TourPackageFull>(
+            `/api/tours/public/${encodeURIComponent(tourCode)}/full`
+        ),
+
     getByCompanyId: (companyId: number) =>
         api.post<TourPackage[]>("/api/tours/get-by-company", {
             companyId,

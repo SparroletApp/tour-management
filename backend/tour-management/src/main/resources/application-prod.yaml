@@ -54,4 +54,4 @@ logging:
     com.example.tourmanagement.config: DEBUG
 
 pixabay:
-  api-key: ${PIXABAY_API_KEY}
+  api-key: 58820019-a25c103cf768e48794aaa95ed

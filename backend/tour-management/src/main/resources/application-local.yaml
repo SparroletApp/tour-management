@@ -52,7 +52,6 @@ app:
 pexels:
   api-key: 58820019-cd75a1f5e134a39fa8760175d
 
-
 logging:
   level:
     org.springframework.security: TRACE

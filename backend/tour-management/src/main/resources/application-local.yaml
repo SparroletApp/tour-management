@@ -50,7 +50,7 @@ app:
   base-url: ${APP_BASE_URL}
 
 pexels:
-  api-key: 58820019-cd75a1f5e134a39fa8760175d
+  api-key: 58820019-8712fea9593ce4e2f79517e51
 
 logging:
   level:

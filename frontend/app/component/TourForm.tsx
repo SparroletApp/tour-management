@@ -12,6 +12,7 @@ import {
 
 import "./tourform.css";
 import ImageUploadWithSearch from "./ImageUploadWithSearch";
+import couponService, { Coupon } from "../apiservice/couponservice";
 
 type FieldType =
     | "text"
@@ -514,7 +515,11 @@ export default function TourForm({
     const [tab, setTab] = useState<TabKey>("basic");
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
-
+    const [coupons, setCoupons] = useState<Coupon[]>([]);
+    const [couponSearch, setCouponSearch] = useState("");
+    const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
+    const [couponLoading, setCouponLoading] = useState(false);
+    const [showCouponSuggestions, setShowCouponSuggestions] = useState(false);
     useEffect(() => {
         const storedCompanyId = sessionStorage.getItem("company_id");
 
@@ -623,6 +628,69 @@ export default function TourForm({
         }
     };
 
+    useEffect(() => {
+        const fetchCompanyCoupons = async () => {
+            const companyId = Number(sessionStorage.getItem("company_id"));
+
+            if (!companyId || Number.isNaN(companyId)) {
+                return;
+            }
+
+            try {
+                setCouponLoading(true);
+
+                const response = await couponService.getByCompany({
+                    companyId,
+                });
+
+                const today = new Date().toISOString().slice(0, 10);
+
+                const activeCoupons = (response ?? []).filter((coupon) => {
+                    const isActive = coupon.status === "ACTIVE";
+
+                    const isNotExpired =
+                        !coupon.expiryDate || coupon.expiryDate >= today;
+
+                    const hasUsageAvailable =
+                        coupon.usageLimit === null ||
+                        coupon.usedCount < coupon.usageLimit;
+
+                    return isActive && isNotExpired && hasUsageAvailable;
+                });
+
+                setCoupons(activeCoupons);
+            } catch (err) {
+                console.error("Failed to load company coupons:", err);
+                setCoupons([]);
+            } finally {
+                setCouponLoading(false);
+            }
+        };
+
+        fetchCompanyCoupons();
+    }, []);
+
+    const filteredCoupons = coupons.filter((coupon) =>
+        coupon.couponCode
+            .toLowerCase()
+            .includes(couponSearch.trim().toLowerCase())
+    );
+
+    const handleCouponSelect = (coupon: Coupon) => {
+        setSelectedCoupon(coupon);
+        setCouponSearch(coupon.couponCode);
+        setShowCouponSuggestions(false);
+        setPkg("couponId", coupon.id);
+    };
+
+    const handleCouponClear = () => {
+        setSelectedCoupon(null);
+        setCouponSearch("");
+        setShowCouponSuggestions(false);
+
+        setPkg("couponId", null);
+    };
+
     return (
         <form className="tour-form" onSubmit={handleSubmit}>
             <div className="tour-form-header">
@@ -702,6 +770,108 @@ export default function TourForm({
                                 }
                             />
                         ))}
+
+
+                    </div>
+
+                    <div className="tour-coupon-section">
+                        <div className="tour-coupon-heading">
+                            <div>
+                                <h4>
+                                    <i className="bi bi-ticket-perforated" />
+                                    Apply Coupon
+                                </h4>
+                                <p>Select a coupon belonging to your company.</p>
+                            </div>
+
+                            {selectedCoupon && (
+                                <button
+                                    type="button"
+                                    className="tour-coupon-remove"
+                                    onClick={handleCouponClear}
+                                >
+                                    <i className="bi bi-x-circle" />
+                                    Remove
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="tour-coupon-input-wrapper">
+                            <div className="tour-coupon-input">
+                                <i className="bi bi-tag" />
+
+                                <input
+                                    type="text"
+                                    value={couponSearch}
+                                    placeholder="Search coupon code..."
+                                    autoComplete="off"
+                                    onFocus={() => setShowCouponSuggestions(true)}
+                                    onChange={(e) => {
+                                        setCouponSearch(e.target.value);
+                                        setSelectedCoupon(null);
+                                        setPkg("couponId", null);
+                                        setShowCouponSuggestions(true);
+                                    }}
+                                />
+
+                                {couponLoading && (
+                                    <span className="tour-coupon-loading">
+                                        <span className="tour-spinner" />
+                                    </span>
+                                )}
+                            </div>
+
+                            {showCouponSuggestions && (
+                                <div className="tour-coupon-suggestions">
+                                    {couponLoading ? (
+                                        <div className="tour-coupon-empty">
+                                            Loading coupons...
+                                        </div>
+                                    ) : filteredCoupons.length > 0 ? (
+                                        filteredCoupons.map((coupon) => (
+                                            <button
+                                                type="button"
+                                                key={coupon.id}
+                                                className="tour-coupon-option"
+                                                onClick={() => handleCouponSelect(coupon)}
+                                            >
+                                                <div className="tour-coupon-option-info">
+                                                    <strong>{coupon.couponCode}</strong>
+                                                    <span>
+                                                        {coupon.expiryDate
+                                                            ? `Expires ${coupon.expiryDate}`
+                                                            : "No expiry date"}
+                                                    </span>
+                                                </div>
+
+                                                <span className="tour-coupon-discount">
+                                                    {coupon.percentage}% OFF
+                                                </span>
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="tour-coupon-empty">
+                                            {couponSearch
+                                                ? "No matching active coupons found."
+                                                : "No active coupons available for this company."}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {selectedCoupon && (
+                            <div className="tour-coupon-selected">
+                                <i className="bi bi-check-circle-fill" />
+
+                                <div>
+                                    <strong>{selectedCoupon.couponCode}</strong>
+                                    <span>
+                                        {selectedCoupon.percentage}% discount applied to this tour.
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

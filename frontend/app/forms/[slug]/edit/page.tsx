@@ -1,7 +1,7 @@
 
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -19,16 +19,18 @@ export default function EditForm() {
     const router = useRouter();
 
     const slug = String(params.slug || "");
-
+    const packageSearchRef = useRef<HTMLDivElement>(null);
     const [form, setForm] = useState<FormResponseDto | null>(null);
     const [companyId, setCompanyId] = useState<number | null>(null);
+
     const [formTitle, setFormTitle] = useState("");
     const [formDescription, setFormDescription] = useState("");
     const [allowMultipleSubmissions, setAllowMultipleSubmissions] = useState(true);
     const [expiryDate, setExpiryDate] = useState("");
 
     const [packages, setPackages] = useState<TourPackage[]>([]);
-    const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
+    const [selectedPackages, setSelectedPackages] = useState<TourPackage[]>([]);
+
     const [packageSearch, setPackageSearch] = useState("");
     const [showPackageDropdown, setShowPackageDropdown] = useState(false);
     const [packageLoading, setPackageLoading] = useState(true);
@@ -36,6 +38,22 @@ export default function EditForm() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                packageSearchRef.current &&
+                !packageSearchRef.current.contains(event.target as Node)
+            ) {
+                setShowPackageDropdown(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         const storedCompanyId = sessionStorage.getItem("company_id");
@@ -43,7 +61,12 @@ export default function EditForm() {
             ? Number(storedCompanyId)
             : null;
 
-        if (!currentCompanyId || !Number.isFinite(currentCompanyId)) {
+        if (
+            !currentCompanyId ||
+            !Number.isFinite(currentCompanyId) ||
+            !slug ||
+            slug === "undefined"
+        ) {
             setLoading(false);
             setPackageLoading(false);
             return;
@@ -51,32 +74,30 @@ export default function EditForm() {
 
         setCompanyId(currentCompanyId);
 
-        if (!slug || slug === "undefined") {
-            setLoading(false);
-            setPackageLoading(false);
-            return;
-        }
-
         const loadData = async () => {
             try {
                 setLoading(true);
                 setPackageLoading(true);
 
-                const formResponse =
-                    await formBuilderService.forms.getBySlug({ slug });
+                const [formResponse, packageResponse] = await Promise.all([
+                    formBuilderService.forms.getBySlug({ slug }),
 
-                const packageResponse =
-                    await tourPackageService.getUnassignedByCompanyId(currentCompanyId);
+                    // Get all company packages so existing assignments
+                    // are also available for editing.
+                    tourPackageService.getByCompanyId(currentCompanyId)
+                ]);
+
                 const formData = formResponse;
                 const packageData: TourPackage[] = packageResponse || [];
 
                 setForm(formData);
                 setPackages(packageData);
 
-                setFormTitle(formData.formTitle);
+                setFormTitle(formData.formTitle || "");
                 setFormDescription(formData.formDescription || "");
+
                 setAllowMultipleSubmissions(
-                    formData.allowMultipleSubmissions
+                    formData.allowMultipleSubmissions ?? true
                 );
 
                 setExpiryDate(
@@ -85,20 +106,16 @@ export default function EditForm() {
                         : ""
                 );
 
-                const existingPackage = packageData.find(
-                    (pkg: TourPackage) => pkg.id === formData.packageId
+                // Restore previously selected packages
+                const existingPackageIds = formData.packageIds || [];
+
+                const existingPackages = packageData.filter(
+                    (pkg) =>
+                        pkg.id !== undefined &&
+                        existingPackageIds.includes(pkg.id)
                 );
 
-                if (existingPackage) {
-                    setSelectedPackage(existingPackage);
-
-                    setPackageSearch(
-                        `${existingPackage.tourCode
-                            ? existingPackage.tourCode + " - "
-                            : ""
-                        }${existingPackage.tourName}`
-                    );
-                }
+                setSelectedPackages(existingPackages);
 
             } catch (error) {
                 console.error("Error loading form:", error);
@@ -121,37 +138,49 @@ export default function EditForm() {
         loadData();
     }, [slug]);
 
-
+    // Filter available packages
     const filteredPackages = useMemo(() => {
         const search = packageSearch.trim().toLowerCase();
 
-        if (!search) {
-            return packages;
-        }
+        return packages.filter((pkg) => {
+            const matchesSearch =
+                !search ||
+                `${pkg.tourCode || ""} ${pkg.tourName || ""}`
+                    .toLowerCase()
+                    .includes(search);
 
-        return packages.filter((pkg) =>
-            `${pkg.tourCode || ""} ${pkg.tourName || ""}`
-                .toLowerCase()
-                .includes(search)
-        );
-    }, [packages, packageSearch]);
+            const alreadySelected = selectedPackages.some(
+                (selected) => selected.id === pkg.id
+            );
 
+            return matchesSearch && !alreadySelected;
+        });
+    }, [packages, packageSearch, selectedPackages]);
+
+    // Select package
     const handlePackageSelect = (pkg: TourPackage) => {
-        setSelectedPackage(pkg);
+        if (!pkg.id) return;
 
-        setPackageSearch(
-            `${pkg.tourCode ? pkg.tourCode + " - " : ""}${pkg.tourName}`
-        );
+        setSelectedPackages((previous) => {
+            if (previous.some((item) => item.id === pkg.id)) {
+                return previous;
+            }
 
+            return [...previous, pkg];
+        });
+
+        setPackageSearch("");
         setShowPackageDropdown(false);
     };
 
-    const handlePackageSearch = (value: string) => {
-        setPackageSearch(value);
-        setSelectedPackage(null);
-        setShowPackageDropdown(true);
+    // Remove selected package
+    const handleRemovePackage = (packageId: number) => {
+        setSelectedPackages((previous) =>
+            previous.filter((pkg) => pkg.id !== packageId)
+        );
     };
 
+    // Update form
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -165,7 +194,17 @@ export default function EditForm() {
             return;
         }
 
-        if (!form) {
+        if (selectedPackages.length === 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Tour Package Required",
+                text: "Please select at least one tour package.",
+                confirmButtonColor: "#064e45"
+            });
+            return;
+        }
+
+        if (!form || !companyId) {
             Swal.fire({
                 icon: "error",
                 title: "Form Not Found",
@@ -174,8 +213,6 @@ export default function EditForm() {
             });
             return;
         }
-
-
 
         const result = await Swal.fire({
             title: "Update Form?",
@@ -189,17 +226,15 @@ export default function EditForm() {
             reverseButtons: true
         });
 
-        if (!result.isConfirmed) {
-            return;
-        }
+        if (!result.isConfirmed) return;
 
         try {
             setSaving(true);
 
             await formBuilderService.forms.update({
                 id: form.id,
-                companyId: companyId,
-                packageId: selectedPackage?.id ?? null,
+                companyId,
+                packageIds: selectedPackages.map((pkg) => pkg.id!),
                 formTitle: formTitle.trim(),
                 formDescription: formDescription.trim(),
                 allowMultipleSubmissions,
@@ -254,6 +289,7 @@ export default function EditForm() {
     return (
         <section className="edit-form">
             <div className="edits-data-forms">
+
                 <div className="edit-form-header">
                     <div>
                         <button
@@ -270,14 +306,16 @@ export default function EditForm() {
                     </div>
                 </div>
 
-
                 <form className="edit-form-card" onSubmit={handleSubmit}>
-                    <div className="form-field package-search-field">
+
+                    {/* Multiple Package Selection */}
+                    <div className="form-field package-search-field"   ref={packageSearchRef}>
                         <label>
-                            Select Tour Package <span>*</span>
+                            Select Tour Packages <span>*</span>
                         </label>
 
                         <div className="package-search-wrapper">
+
                             <div className="package-search-input-wrapper">
                                 <i className="bi bi-search"></i>
 
@@ -285,9 +323,10 @@ export default function EditForm() {
                                     type="text"
                                     className="tour-name-data"
                                     value={packageSearch}
-                                    onChange={(e) =>
-                                        handlePackageSearch(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        setPackageSearch(e.target.value);
+                                        setShowPackageDropdown(true);
+                                    }}
                                     onFocus={() =>
                                         setShowPackageDropdown(true)
                                     }
@@ -299,11 +338,7 @@ export default function EditForm() {
                                     <button
                                         type="button"
                                         className="package-clear-btn"
-                                        onClick={() => {
-                                            setPackageSearch("");
-                                            setSelectedPackage(null);
-                                            setShowPackageDropdown(true);
-                                        }}
+                                        onClick={() => setPackageSearch("")}
                                     >
                                         <i className="bi bi-x-circle"></i>
                                     </button>
@@ -312,19 +347,18 @@ export default function EditForm() {
 
                             {showPackageDropdown && (
                                 <div className="package-dropdown">
+
                                     {packageLoading ? (
                                         <div className="package-dropdown-message">
                                             Loading tour packages...
                                         </div>
                                     ) : filteredPackages.length > 0 ? (
+
                                         filteredPackages.map((pkg) => (
                                             <button
                                                 type="button"
                                                 key={pkg.id}
-                                                className={`package-option ${selectedPackage?.id === pkg.id
-                                                    ? "selected"
-                                                    : ""
-                                                    }`}
+                                                className="package-option"
                                                 onClick={() =>
                                                     handlePackageSelect(pkg)
                                                 }
@@ -335,37 +369,79 @@ export default function EditForm() {
 
                                                 <div className="package-option-details">
                                                     <strong>{pkg.tourName}</strong>
+
                                                     <span>
                                                         {pkg.tourCode || "No tour code"}
                                                     </span>
                                                 </div>
 
-                                                {selectedPackage?.id === pkg.id && (
-                                                    <i className="bi bi-check-circle-fill package-check"></i>
-                                                )}
+                                                <i className="bi bi-plus-circle package-check"></i>
                                             </button>
                                         ))
+
                                     ) : (
                                         <div className="package-dropdown-message">
-                                            No tour packages found.
+                                            No available tour packages found.
                                         </div>
                                     )}
+
                                 </div>
                             )}
                         </div>
 
-                        {selectedPackage && (
-                            <div className="selected-package-info">
-                                <i className="bi bi-check-circle-fill"></i>
-                                Selected: {selectedPackage.tourName}
-                                {selectedPackage.tourCode &&
-                                    ` (${selectedPackage.tourCode})`}
+                        {/* Selected Packages */}
+                        {selectedPackages.length > 0 && (
+                            <div className="selected-packages-container">
+
+                                <div className="selected-packages-heading">
+                                    <span>Selected Packages</span>
+
+                                    <span className="selected-package-count">
+                                        {selectedPackages.length} selected
+                                    </span>
+                                </div>
+
+                                <div className="selected-packages-list">
+
+                                    {selectedPackages.map((pkg) => (
+                                        <div
+                                            className="selected-package-tag"
+                                            key={pkg.id}
+                                        >
+                                            <div className="selected-package-tag-icon">
+                                                <i className="bi bi-airplane"></i>
+                                            </div>
+
+                                            <div className="selected-package-tag-details">
+                                                <strong>{pkg.tourName}</strong>
+
+                                                <span>
+                                                    {pkg.tourCode || "No tour code"}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                className="remove-selected-package"
+                                                onClick={() =>
+                                                    handleRemovePackage(pkg.id!)
+                                                }
+                                                title="Remove package"
+                                            >
+                                                <i className="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                </div>
                             </div>
                         )}
                     </div>
 
+                    {/* Form Title */}
                     <div className="form-field">
                         <label>Form Title *</label>
+
                         <input
                             type="text"
                             value={formTitle}
@@ -375,8 +451,10 @@ export default function EditForm() {
                         />
                     </div>
 
+                    {/* Description */}
                     <div className="form-field">
                         <label>Description</label>
+
                         <textarea
                             rows={4}
                             value={formDescription}
@@ -387,8 +465,10 @@ export default function EditForm() {
                         />
                     </div>
 
+                    {/* Expiry Date */}
                     <div className="form-field">
                         <label>Expiry Date</label>
+
                         <input
                             type="datetime-local"
                             value={expiryDate}
@@ -398,6 +478,7 @@ export default function EditForm() {
                         />
                     </div>
 
+                    {/* Multiple Submissions */}
                     <label className="form-checkbox">
                         <input
                             type="checkbox"
@@ -406,10 +487,13 @@ export default function EditForm() {
                                 setAllowMultipleSubmissions(e.target.checked)
                             }
                         />
+
                         Allow multiple submissions
                     </label>
 
+                    {/* Actions */}
                     <div className="edit-form-actions">
+
                         <button
                             type="button"
                             className="form-secondary-btn"
@@ -426,7 +510,9 @@ export default function EditForm() {
                         >
                             {saving ? "Saving..." : "Save Changes"}
                         </button>
+
                     </div>
+
                 </form>
             </div>
         </section>

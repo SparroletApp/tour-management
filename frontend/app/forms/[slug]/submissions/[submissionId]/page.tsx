@@ -79,13 +79,9 @@ export default function SubmissionDetails() {
                     <p>Response #{submission.id}</p>
                 </div>
 
-                <button
-                    onClick={() =>
-                        router.push(`/forms/${slug}/submissions`)
-                    }
-                >
-                    Back to Submissions
-                </button>
+              <button onClick={() => router.back()}>
+    Back to Submissions
+</button>
             </header>
 
             <section className="respondent-card">

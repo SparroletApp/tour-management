@@ -53,10 +53,21 @@ function Sidebar() {
             icon: "bi-truck",
             path: "/tours",
         },
+
         {
             name: "Forms",
             icon: "bi-file-earmark-richtext",
             path: "/forms",
+        },
+        {
+            name: "Terms",
+            icon: "bi-info-circle",
+            path: "/terms-and-conditions"
+        },
+        {
+            name: "Coupons",
+            icon: "bi-credit-card-2-back",
+            path: "/coupons"
         },
         ...(userRole === "MANAGER"
             ? [

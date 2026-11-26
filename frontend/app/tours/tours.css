@@ -317,6 +317,46 @@
     position: relative;
 }
 
+.submission-form {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 12px;
+    border: 1px solid #c9dfd8;
+    border-radius: 7px;
+    background: #e8f3f0;
+    color: #064e45;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submission-form i {
+    font-size: 15px;
+}
+
+.submission-form:hover {
+    background: #064e45;
+    border-color: #064e45;
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(6, 78, 69, 0.15);
+    transform: translateY(-1px);
+}
+
+.submission-form:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .submission-form {
+        padding: 7px 9px;
+        font-size: 11px;
+    }
+}
+
 .tour-action-menu {
     position: relative;
     display: inline-block;

@@ -550,6 +550,222 @@
     transition: all 0.2s ease;
 }
 
+/* Coupon section */
+.tour-coupon-section {
+    position: relative;
+    margin-top: 24px;
+    padding: 20px;
+    background: #f8fbfa;
+    border: 1px solid #e2ece8;
+    border-radius: 12px;
+}
+
+.tour-coupon-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.tour-coupon-heading h4 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 5px;
+    color: #064e45;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.tour-coupon-heading h4 i {
+    font-size: 18px;
+}
+
+.tour-coupon-heading p {
+    margin: 0;
+    color: #82918d;
+    font-size: 12px;
+}
+
+.tour-coupon-remove {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border: 1px solid #f0caca;
+    border-radius: 7px;
+    background: #fff;
+    color: #c0392b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tour-coupon-remove:hover {
+    background: #fff0f0;
+}
+
+.tour-coupon-input-wrapper {
+    position: relative;
+}
+
+.tour-coupon-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 14px;
+    background: #fff;
+    border: 1px solid #dce7e3;
+    border-radius: 9px;
+    transition: border-color 0.2s ease;
+}
+
+.tour-coupon-input:focus-within {
+    border-color: #064e45;
+    box-shadow: 0 0 0 3px rgba(6, 78, 69, 0.08);
+}
+
+.tour-coupon-input > i {
+    color: #064e45;
+    font-size: 17px;
+}
+
+.tour-coupon-input input {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #263c38;
+    font-size: 14px;
+}
+
+.tour-coupon-input input::placeholder {
+    color: #a0aaa7;
+}
+
+.tour-coupon-suggestions {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    max-height: 230px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #e2ece8;
+    border-radius: 9px;
+    box-shadow: 0 8px 25px rgba(20, 50, 40, 0.12);
+}
+
+.tour-coupon-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 13px 15px;
+    border: none;
+    border-bottom: 1px solid #edf2ef;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.tour-coupon-option:last-child {
+    border-bottom: none;
+}
+
+.tour-coupon-option:hover {
+    background: #f2f8f5;
+}
+
+.tour-coupon-option-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tour-coupon-option-info strong {
+    color: #263c38;
+    font-size: 13px;
+}
+
+.tour-coupon-option-info span {
+    color: #82918d;
+    font-size: 11px;
+}
+
+.tour-coupon-discount {
+    flex-shrink: 0;
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #e7f5ec;
+    color: #16834b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.tour-coupon-empty {
+    padding: 17px;
+    color: #82918d;
+    font-size: 13px;
+    text-align: center;
+}
+
+.tour-coupon-loading {
+    display: flex;
+    align-items: center;
+}
+
+.tour-coupon-selected {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #cce8d5;
+    border-radius: 8px;
+    background: #eff9f2;
+}
+
+.tour-coupon-selected > i {
+    color: #16834b;
+    font-size: 19px;
+}
+
+.tour-coupon-selected div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.tour-coupon-selected strong {
+    color: #176b3c;
+    font-size: 13px;
+}
+
+.tour-coupon-selected span {
+    color: #648571;
+    font-size: 12px;
+}
+
+@media (max-width: 480px) {
+    .tour-coupon-section {
+        padding: 14px;
+    }
+
+    .tour-coupon-heading {
+        align-items: flex-start;
+    }
+
+    .tour-coupon-option {
+        padding: 11px;
+    }
+}
+
 .tour-submit-btn:hover:not(:disabled) {
     border-color: #043c35;
     background: #043c35;

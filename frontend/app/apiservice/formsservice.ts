@@ -16,10 +16,9 @@ export interface FormSlugDto {
 export interface FormCompanyIdDto {
     companyId: number;
 }
-
 export interface CreateFormDto {
     companyId: number | null;
-    packageId: number | null;
+    packageIds: number[];
     formTitle: string;
     formDescription?: string;
     allowMultipleSubmissions?: boolean;
@@ -29,12 +28,13 @@ export interface CreateFormDto {
 export interface UpdateFormDto {
     id: number;
     companyId: number | null;
-    packageId: number | null;
+    packageIds: number[];
     formTitle: string;
     formDescription?: string;
     allowMultipleSubmissions?: boolean;
     expiryDate?: string | null;
 }
+
 export interface FormResponseDto {
     id: number;
     companyId: number | null;
@@ -47,8 +47,8 @@ export interface FormResponseDto {
     expiryDate?: string | null;
     createdAt?: string;
     updatedAt?: string;
-    packageId: number | null;
-    tourPackageName?: string | null;
+    packageIds: number[];
+    tourPackageNames?: string[];
 }
 
 export interface CreateSectionDto {
@@ -127,14 +127,16 @@ export interface QuestionResponseDto {
 
 export interface CreateSubmissionDto {
     formId: number;
+    tourCode: string;
     respondentName?: string;
     respondentEmail?: string;
+    couponCode?: string;
     respondentPhone?: string;
 }
-
 export interface SubmissionResponseDto {
     id: number;
     formId: number;
+    packageId: number | null;
     formTitle: string;
     respondentName?: string;
     respondentEmail?: string;
@@ -142,9 +144,14 @@ export interface SubmissionResponseDto {
     status: string;
     submittedAt?: string;
     createdAt?: string;
+    couponCode?: string | null;
+    discountPercentage?: number | null;
 }
 
-// ANSWER DTOs
+export interface PackageSubmissionIdDto {
+    packageId: number;
+}
+
 export interface CreateAnswerDto {
     questionId: number;
     answer?: string;
@@ -321,6 +328,12 @@ export const formSubmissionService = {
     getById: (dto: IdDto) =>
         api.post<SubmissionResponseDto>(
             "/api/form-submissions/get-by-id",
+            dto
+        ),
+
+    getByPackage: (dto: PackageSubmissionIdDto) =>
+        api.post<SubmissionResponseDto[]>(
+            "/api/form-submissions/get-by-package",
             dto
         ),
 

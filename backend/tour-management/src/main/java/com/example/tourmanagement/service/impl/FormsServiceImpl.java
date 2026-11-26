@@ -27,9 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.text.Normalizer;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,9 +42,7 @@ public class FormsServiceImpl implements FormsService {
     public FormResponseDto createForm(CreateFormDto dto) {
 
         CompanyEntity company = null;
-        TourPackage tourPackage = null;
 
-        // Find company only when company ID is provided
         if (dto.getCompanyId() != null) {
             company = companyRepository.findById(dto.getCompanyId())
                     .orElseThrow(() -> new ResponseStatusException(
@@ -55,27 +51,8 @@ public class FormsServiceImpl implements FormsService {
                     ));
         }
 
-        // Find tour package only when package ID is provided
-        if (dto.getPackageId() != null) {
-            tourPackage = packageRepository.findById(dto.getPackageId())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "Tour package not found with ID: " + dto.getPackageId()
-                    ));
-        }
-
-        // Validate package belongs to company only when both are provided
-        if (company != null && tourPackage != null) {
-
-            if (tourPackage.getCompany() == null ||
-                    !tourPackage.getCompany().getId().equals(company.getId())) {
-
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Selected tour package does not belong to this company"
-                );
-            }
-        }
+        List<TourPackage> tourPackages =
+                getTourPackages(dto.getPackageIds(), company);
 
         String slug = generateUniqueSlug(dto.getFormTitle());
 
@@ -91,16 +68,18 @@ public class FormsServiceImpl implements FormsService {
                                 : true
                 )
                 .expiryDate(dto.getExpiryDate())
-                .tourPackage(tourPackage)
                 .company(company)
                 .build();
+        for (TourPackage tourPackage : tourPackages) {
+            tourPackage.setForm(form);
+            form.getTourPackages().add(tourPackage);
+        }
 
         FormEntity savedForm = formRepository.save(form);
 
         return mapToResponse(savedForm);
     }
 
-    // GENERATE UNIQUE SLUG
     private String generateUniqueSlug(String title) {
 
         if (title == null || title.isBlank()) {
@@ -160,7 +139,7 @@ public class FormsServiceImpl implements FormsService {
         }
 
         FormEntity form = formRepository
-                .findFirstByTourPackage_TourCodeAndStatus(
+                .findFirstByTourPackages_TourCodeAndStatus(
                         dto.getTourCode().trim(),
                         "PUBLISHED"
                 )
@@ -172,7 +151,6 @@ public class FormsServiceImpl implements FormsService {
         return mapToResponse(form);
     }
 
-    // GET ALL FORMS
     @Override
     @Transactional(readOnly = true)
     public List<FormResponseDto> getAllForms() {
@@ -232,6 +210,53 @@ public class FormsServiceImpl implements FormsService {
         return mapToResponse(form);
     }
 
+    private List<TourPackage> getTourPackages(
+            List<Long> packageIds,
+            CompanyEntity company
+    ) {
+
+        if (packageIds == null || packageIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Long> uniqueIds = packageIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (uniqueIds.size() != packageIds.size()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Duplicate or invalid package IDs"
+            );
+        }
+
+        List<TourPackage> packages =
+                packageRepository.findAllById(uniqueIds);
+
+        if (packages.size() != uniqueIds.size()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "One or more tour packages were not found"
+            );
+        }
+
+        for (TourPackage tourPackage : packages) {
+
+            if (company != null &&
+                    (tourPackage.getCompany() == null ||
+                            !tourPackage.getCompany().getId().equals(company.getId()))) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Selected tour package does not belong to this company"
+                );
+            }
+        }
+
+        return packages;
+    }
+
     @Override
     public FormResponseDto updateForm(UpdateFormDto dto) {
 
@@ -245,7 +270,6 @@ public class FormsServiceImpl implements FormsService {
         }
 
         CompanyEntity company = null;
-        TourPackage tourPackage = null;
 
         if (dto.getCompanyId() != null) {
             company = companyRepository.findById(dto.getCompanyId())
@@ -255,25 +279,8 @@ public class FormsServiceImpl implements FormsService {
                     ));
         }
 
-        if (dto.getPackageId() != null) {
-            tourPackage = packageRepository.findById(dto.getPackageId())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "Tour package not found with ID: " + dto.getPackageId()
-                    ));
-        }
-
-        if (company != null && tourPackage != null) {
-
-            if (tourPackage.getCompany() == null ||
-                    !tourPackage.getCompany().getId().equals(company.getId())) {
-
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Selected tour package does not belong to this company"
-                );
-            }
-        }
+        List<TourPackage> newPackages =
+                getTourPackages(dto.getPackageIds(), company);
 
         form.setFormTitle(dto.getFormTitle());
         form.setFormDescription(dto.getFormDescription());
@@ -285,9 +292,22 @@ public class FormsServiceImpl implements FormsService {
         );
 
         form.setExpiryDate(dto.getExpiryDate());
-
-        form.setTourPackage(tourPackage);
         form.setCompany(company);
+
+        // Remove old package relationships
+        for (TourPackage oldPackage :
+                new ArrayList<>(form.getTourPackages())) {
+
+            oldPackage.setForm(null);
+        }
+
+        form.getTourPackages().clear();
+
+        // Assign new packages
+        for (TourPackage tourPackage : newPackages) {
+            tourPackage.setForm(form);
+            form.getTourPackages().add(tourPackage);
+        }
 
         return mapToResponse(formRepository.save(form));
     }
@@ -354,6 +374,10 @@ public class FormsServiceImpl implements FormsService {
 
     private FormResponseDto mapToResponse(FormEntity form) {
 
+        List<TourPackage> packages = form.getTourPackages() != null
+                ? form.getTourPackages()
+                : Collections.emptyList();
+
         return FormResponseDto.builder()
                 .id(form.getId())
                 .formTitle(form.getFormTitle())
@@ -372,15 +396,15 @@ public class FormsServiceImpl implements FormsService {
                 )
                 .createdAt(form.getCreatedAt())
                 .updatedAt(form.getUpdatedAt())
-                .packageId(
-                        form.getTourPackage() != null
-                                ? form.getTourPackage().getId()
-                                : null
+                .packageIds(
+                        packages.stream()
+                                .map(TourPackage::getId)
+                                .toList()
                 )
-                .tourPackageName(
-                        form.getTourPackage() != null
-                                ? form.getTourPackage().getTourName()
-                                : null
+                .tourPackageNames(
+                        packages.stream()
+                                .map(TourPackage::getTourName)
+                                .toList()
                 )
                 .build();
     }

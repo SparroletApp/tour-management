@@ -350,7 +350,7 @@ export default function Forms() {
                 });
             const createdForm = await formBuilderService.forms.create({
                 companyId: loggedInCompanyId,
-                packageId: null,
+                packageIds: [],
                 formTitle: template.formTitle,
                 formDescription: template.formDescription || "",
                 allowMultipleSubmissions: template.allowMultipleSubmissions,
@@ -625,9 +625,24 @@ export default function Forms() {
                                             <tr key={form.id}>
                                                 <td className="forms-name-cell">
                                                     <strong>{form.formTitle}</strong>
+
                                                     <small>
                                                         {form.formDescription || "No description"}
                                                     </small>
+
+                                                    {form.tourPackageNames && form.tourPackageNames.length > 0 && (
+                                                        <div className="forms-package-list">
+                                                            {form.tourPackageNames.map((packageName, index) => (
+                                                                <span
+                                                                    key={`${form.id}-${index}`}
+                                                                    className="forms-package-tag"
+                                                                >
+                                                                    <i className="bi bi-airplane"></i>
+                                                                    {packageName}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </td>
 
                                                 <td>

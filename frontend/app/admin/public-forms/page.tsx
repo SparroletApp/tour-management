@@ -38,130 +38,129 @@ function PublicForm() {
     });
 
     const fetchPublicForms = async () => {
-    try {
-        setLoading(true);
+        try {
+            setLoading(true);
 
-        const response = await formBuilderService.forms.getPublicForms();
+            const response = await formBuilderService.forms.getPublicForms();
 
-        setForms(response || []);
+            setForms(response || []);
 
-    } catch (error: any) {
-        console.error("Error fetching public forms:", error);
+        } catch (error: any) {
+            console.error("Error fetching public forms:", error);
 
-        Toast.fire({
-            icon: "error",
-            title: error.response?.data?.message || "Failed to load public forms"
-        });
+            Toast.fire({
+                icon: "error",
+                title: error.response?.data?.message || "Failed to load public forms"
+            });
 
-    } finally {
-        setLoading(false);
-    }
-};
-
-useEffect(() => {
-    fetchPublicForms();
-}, []);
-
-// EDIT FORM
-const handleEdit = (form: FormResponseDto) => {
-
-    setSelectedForm(form);
-    setFormTitle(form.formTitle || "");
-    setFormDescription(form.formDescription || "");
-    setAllowMultipleSubmissions(form.allowMultipleSubmissions);
-
-    setExpiryDate(
-        form.expiryDate
-            ? form.expiryDate.substring(0, 10)
-            : ""
-    );
-
-    setShowEdit(true);
-};
-
-// UPDATE FORM
-const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!selectedForm) return;
-
-    if (!formTitle.trim()) {
-        Toast.fire({
-            icon: "warning",
-            title: "Please enter form title"
-        });
-        return;
-    }
-
-    const dto: UpdateFormDto = {
-        id: selectedForm.id,
-        companyId: null,
-        packageId: selectedForm.packageId ?? null,
-        formTitle: formTitle.trim(),
-        formDescription,
-        allowMultipleSubmissions,
-        expiryDate: expiryDate || null
+        } finally {
+            setLoading(false);
+        }
     };
 
-    try {
-        setSaving(true);
+    useEffect(() => {
+        fetchPublicForms();
+    }, []);
 
-        await formBuilderService.forms.update(dto);
+    const handleEdit = (form: FormResponseDto) => {
 
-        setShowEdit(false);
-        setSelectedForm(null);
+        setSelectedForm(form);
+        setFormTitle(form.formTitle || "");
+        setFormDescription(form.formDescription || "");
+        setAllowMultipleSubmissions(form.allowMultipleSubmissions);
 
-        Toast.fire({
-            icon: "success",
-            title: "Public form updated successfully"
+        setExpiryDate(
+            form.expiryDate
+                ? form.expiryDate.substring(0, 10)
+                : ""
+        );
+
+        setShowEdit(true);
+    };
+
+    // UPDATE FORM
+    const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (!selectedForm) return;
+
+        if (!formTitle.trim()) {
+            Toast.fire({
+                icon: "warning",
+                title: "Please enter form title"
+            });
+            return;
+        }
+
+        const dto: UpdateFormDto = {
+            id: selectedForm.id,
+            companyId: null,
+            packageIds: selectedForm.packageIds ?? [],
+            formTitle: formTitle.trim(),
+            formDescription,
+            allowMultipleSubmissions,
+            expiryDate: expiryDate || null
+        };
+
+        try {
+            setSaving(true);
+
+            await formBuilderService.forms.update(dto);
+
+            setShowEdit(false);
+            setSelectedForm(null);
+
+            Toast.fire({
+                icon: "success",
+                title: "Public form updated successfully"
+            });
+
+            await fetchPublicForms();
+
+        } catch (error: any) {
+            Toast.fire({
+                icon: "error",
+                title: error.response?.data?.message || "Unable to update form"
+            });
+
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // DELETE FORM
+    const handleDelete = async (id: number) => {
+
+        const result = await Swal.fire({
+            title: "Delete Public Form?",
+            text: "Are you sure you want to delete this form? This action cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc3545",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Yes, Delete",
+            cancelButtonText: "Cancel"
         });
 
-        await fetchPublicForms();
+        if (!result.isConfirmed) return;
 
-    } catch (error: any) {
-        Toast.fire({
-            icon: "error",
-            title: error.response?.data?.message || "Unable to update form"
-        });
+        try {
+            await formBuilderService.forms.delete({ id });
 
-    } finally {
-        setSaving(false);
-    }
-};
+            setForms(prev => prev.filter(form => form.id !== id));
 
-// DELETE FORM
-const handleDelete = async (id: number) => {
+            Toast.fire({
+                icon: "success",
+                title: "Public form deleted successfully"
+            });
 
-    const result = await Swal.fire({
-        title: "Delete Public Form?",
-        text: "Are you sure you want to delete this form? This action cannot be undone.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#dc3545",
-        cancelButtonColor: "#6c757d",
-        confirmButtonText: "Yes, Delete",
-        cancelButtonText: "Cancel"
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-        await formBuilderService.forms.delete({ id });
-
-        setForms(prev => prev.filter(form => form.id !== id));
-
-        Toast.fire({
-            icon: "success",
-            title: "Public form deleted successfully"
-        });
-
-    } catch (error: any) {
-        Toast.fire({
-            icon: "error",
-            title: error.response?.data?.message || "Unable to delete form"
-        });
-    }
-};
+        } catch (error: any) {
+            Toast.fire({
+                icon: "error",
+                title: error.response?.data?.message || "Unable to delete form"
+            });
+        }
+    };
 
     return (
         <div className="public-forms-page">
@@ -245,7 +244,21 @@ const handleDelete = async (id: number) => {
                                             </span>
                                         </td>
                                         <td>
-                                            {form.tourPackageName || "—"}
+                                            {form.tourPackageNames && form.tourPackageNames.length > 0 ? (
+                                                <div className="public-form-packages">
+                                                    {form.tourPackageNames.map((packageName, index) => (
+                                                        <span
+                                                            key={`${form.id}-${index}`}
+                                                            className="public-form-package-tag"
+                                                        >
+                                                            <i className="bi bi-airplane"></i>
+                                                            {packageName}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className="public-form-no-package">—</span>
+                                            )}
                                         </td>
                                         <td>
                                             <span className={`public-form-status ${form.status?.toLowerCase()}`}>

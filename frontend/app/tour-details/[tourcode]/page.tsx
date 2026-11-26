@@ -1,8 +1,7 @@
-
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
     TourPackageFull,
     TourMedia,
@@ -12,6 +11,8 @@ import Header from "@/app/header/page";
 import Swal from "sweetalert2";
 import formBuilderService from "@/app/apiservice/formsservice";
 import { tourPackageService } from "@/app/apiservice/tourservice";
+import Terms from "@/app/terms/page";
+import couponService from "@/app/apiservice/couponservice";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
@@ -59,9 +60,11 @@ const money = (
     if (amount == null || !Number.isFinite(Number(amount))) {
         return "Price on request";
     }
-
     return `${currency || "INR"} ${Number(amount).toLocaleString("en-IN")}`;
 };
+
+const applyDiscount = (amount: number, pct: number) =>
+    Math.round(amount * (100 - pct)) / 100;
 
 const isImage = (media: TourMedia) => {
     const url = media.fileUrl || "";
@@ -86,12 +89,26 @@ const isVideo = (media: TourMedia) => {
 const isDirectVideo = (url: string) =>
     /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
 
+interface CouponRecord {
+    id: number;
+    couponCode: string;
+    percentage: number;
+    companyId: number;
+    expiryDate?: string | null;
+    status: "ACTIVE" | "INACTIVE";
+    usageLimit?: number | null;
+    usedCount?: number;
+}
+
 function TourDetails() {
     const router = useRouter();
-const params = useParams<{ tourcode: string }>();
-
-   const tourCode = params.tourcode;
-
+    const params = useParams<{ tourcode: string }>();
+    const [showCouponInput, setShowCouponInput] = useState(false);
+    const [couponCode, setCouponCode] = useState("");
+    const [appliedCoupon, setAppliedCoupon] = useState<CouponRecord | null>(null);
+    const [applyingCoupon, setApplyingCoupon] = useState(false);
+    const tourCode = params.tourcode;
+    const [showTerms, setShowTerms] = useState(false);
     const [findingForm, setFindingForm] = useState(false);
     const [tour, setTour] = useState<TourPackageFull | null>(null);
     const [loading, setLoading] = useState(true);
@@ -100,6 +117,29 @@ const params = useParams<{ tourcode: string }>();
     const [hotelImages, setHotelImages] = useState<Record<number, number>>({});
     const [expandedDestinations, setExpandedDestinations] = useState<number[]>([]);
 
+    const searchParams = useSearchParams();
+    const urlCouponCode = searchParams.get("couponCode");
+
+    const showToast = (
+        icon: "success" | "error" | "warning" | "info",
+        title: string
+    ) => {
+        Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon,
+            title,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener("mouseenter", Swal.stopTimer);
+                toast.addEventListener("mouseleave", Swal.resumeTimer);
+            },
+        });
+    };
+
+    const autoAppliedCouponRef = useRef("");
     const toggleDestination = (index: number) => {
         setExpandedDestinations((prev) =>
             prev.includes(index)
@@ -192,6 +232,7 @@ const params = useParams<{ tourcode: string }>();
         };
     }, [tourCode]);
 
+    const companyId = tour?.tourPackage?.companyId ?? undefined;
     const p = tour?.tourPackage;
 
     const gallery = useMemo(() => {
@@ -270,8 +311,18 @@ const params = useParams<{ tourcode: string }>();
                 return;
             }
 
+            const queryParams = new URLSearchParams();
+            queryParams.set("tourCode", p.tourCode);
+
+            if (appliedCoupon) {
+                queryParams.set("couponCode", appliedCoupon.couponCode);
+            }
+
+            const queryString = queryParams.toString();
+
             router.push(
-                `/tour-form/${encodeURIComponent(publishedForm.slug)}`
+                `/tour-form/${encodeURIComponent(publishedForm.slug)}${queryString ? `?${queryString}` : ""
+                }`
             );
 
         } catch (error: any) {
@@ -290,6 +341,115 @@ const params = useParams<{ tourcode: string }>();
             setFindingForm(false);
         }
     };
+
+const handleApplyCoupon = async (codeFromUrl?: string) => {
+    const enteredCode = (codeFromUrl ?? couponCode).trim().toUpperCase();
+
+    if (!enteredCode) {
+        showToast("warning", "Please enter a coupon code.");
+        return;
+    }
+
+    if (!p?.tourCode) return;
+
+    if (!companyId) {
+        showToast("error", "Unable to identify the tour company.");
+        return;
+    }
+
+    try {
+        setApplyingCoupon(true);
+
+        const response = await couponService.validateByTourCode({
+            tourCode: p.tourCode,
+            couponCode: enteredCode,
+        });
+
+        const isValid = response === true;
+
+        if (!isValid) {
+            setAppliedCoupon(null);
+            showToast("error", "This coupon is not valid for this tour.");
+            return;
+        }
+
+        const couponResponse = await couponService.getByCompany({
+            companyId,
+        });
+
+        const coupons: CouponRecord[] = Array.isArray(couponResponse)
+            ? couponResponse
+            : [];
+
+        const matchedCoupon = coupons.find(
+            (coupon) =>
+                coupon.couponCode?.trim().toUpperCase() === enteredCode
+        );
+
+        if (!matchedCoupon) {
+            throw new Error("Unable to retrieve coupon details.");
+        }
+
+        setAppliedCoupon(matchedCoupon);
+        setCouponCode(matchedCoupon.couponCode);
+        setShowCouponInput(false);
+
+        showToast(
+            "success",
+            `${matchedCoupon.percentage}% discount applied successfully!`
+        );
+
+    } catch (error: any) {
+        console.error("Coupon validation error:", error);
+
+        setAppliedCoupon(null);
+
+        showToast(
+            "error",
+            error?.response?.data?.message ||
+            error?.message ||
+            "This coupon is not valid for this tour."
+        );
+
+    } finally {
+        setApplyingCoupon(false);
+    }
+};
+
+
+    useEffect(() => {
+        if (!urlCouponCode || !p?.tourCode || !companyId) {
+            return;
+        }
+
+        const enteredCode = urlCouponCode.trim().toUpperCase();
+
+        if (!enteredCode) return;
+
+        const couponKey = `${p.tourCode}-${enteredCode}`;
+
+        if (autoAppliedCouponRef.current === couponKey) {
+            return;
+        }
+
+        autoAppliedCouponRef.current = couponKey;
+
+        setCouponCode(enteredCode);
+        setShowCouponInput(false);
+
+        void handleApplyCoupon(enteredCode);
+
+  
+    }, [urlCouponCode, p?.tourCode, companyId]);
+
+
+   const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setShowCouponInput(false);
+
+    showToast("success", "Coupon removed successfully.");
+};
 
     const flights = tour?.flights || [];
     const hotels = tour?.hotels || [];
@@ -349,1076 +509,1172 @@ const params = useParams<{ tourcode: string }>();
     }
 
     const coverImage = activeImage || gallery[0]?.url;
+
+    const discountPct = appliedCoupon
+        ? Number(appliedCoupon.percentage)
+        : 0;
+
+    const hasDiscount = discountPct > 0;
+
+    const priceView = (
+        amount?: number | null,
+        currency?: string | null
+    ) => {
+        if (
+            !hasDiscount ||
+            amount == null ||
+            !Number.isFinite(Number(amount))
+        ) {
+            return money(amount, currency);
+        }
+
+        const originalAmount = Number(amount);
+        const discountedAmount = applyDiscount(
+            originalAmount,
+            discountPct
+        );
+
+        return (
+            <>
+                <s className="td-price-old">
+                    {money(originalAmount, currency)}
+                </s>
+
+                <span className="td-price-new">
+                    {money(discountedAmount, currency)}
+                </span>
+            </>
+        );
+    };
+
     return (
-        <div className="td-site">
-            <Header />
-            <main className="td-page">
-                <section className="td-hero">
-                    <div className="td-hero-image">
-                        {coverImage ? (
-                            <img
-                                src={coverImage}
-                                alt={p.tourName}
-                            />
-                        ) : (
-                            <div className="td-no-image">
-                                <i className="bi bi-image" />
-                                <span>Explore your next destination</span>
-                            </div>
-                        )}
-
-                        <div className="td-hero-overlay" />
-
-                        <div className="td-hero-content">
-
-                            <span className="td-eyebrow">
-                                <i className="bi bi-airplane" />
-                                YOUR NEXT ADVENTURE
-                            </span>
-
-                            <h1>{p.tourName}</h1>
-
-                            <p>
-                                <i className="bi bi-geo-alt-fill" />
-                                {destinations
-                                    .map((d) => d.cityName || d.countryName)
-                                    .filter(Boolean)
-                                    .join(" · ") ||
-                                    "Discover beautiful destinations"}
-                            </p>
-
-                            {p.status && (
-                                <span className="td-status">
-                                    {p.status}
-                                </span>
+        <>
+            <div className="td-site">
+                <Header />
+                <main className="td-page">
+                    <section className="td-hero">
+                        <div className="td-hero-image">
+                            {coverImage ? (
+                                <img
+                                    src={coverImage}
+                                    alt={p.tourName}
+                                />
+                            ) : (
+                                <div className="td-no-image">
+                                    <i className="bi bi-image" />
+                                    <span>Explore your next destination</span>
+                                </div>
                             )}
 
-                        </div>
-                    </div>
+                            <div className="td-hero-overlay" />
 
+                            <div className="td-hero-content">
 
-                    {gallery.length > 0 && (
-                        <div className="td-gallery">
-                            {gallery.map((image) => (
-                                <button
-                                    key={image.id}
-                                    className={`td-gallery-item ${activeImage === image.url ? "active" : ""
-                                        }`}
-                                    onClick={() => setActiveImage(image.url)}
-                                    aria-label={`View ${image.caption}`}
-                                >
-                                    <img
-                                        src={image.url}
-                                        alt={image.caption}
-                                    />
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                                <span className="td-eyebrow">
+                                    <i className="bi bi-airplane" />
+                                    YOUR NEXT ADVENTURE
+                                </span>
 
-                </section>
+                                <h1>{p.tourName}</h1>
 
-                <div className="td-layout">
+                                <p>
+                                    <i className="bi bi-geo-alt-fill" />
+                                    {destinations
+                                        .map((d) => d.cityName || d.countryName)
+                                        .filter(Boolean)
+                                        .join(" · ") ||
+                                        "Discover beautiful destinations"}
+                                </p>
 
-                    <div className="td-main">
-
-
-                        <section className="td-overview td-section">
-
-                            <div className="td-section-heading">
-                                <div>
-                                    <span className="td-small-label">
-                                        DISCOVER
-                                    </span>
-                                    <h2>About This Tour</h2>
-                                </div>
-
-                                {p.tourCode && (
-                                    <span className="td-tour-code">
-                                        {p.tourCode}
+                                {p.status && (
+                                    <span className="td-status">
+                                        {p.status}
                                     </span>
                                 )}
-                            </div>
-
-                            <p className="td-description">
-                                {p.description ||
-                                    "Discover amazing destinations and create unforgettable memories."}
-                            </p>
-
-                            <div className="td-highlights">
-
-                                <div>
-                                    <i className="bi bi-calendar2-week" />
-                                    <span>Duration</span>
-                                    <strong>
-                                        {p.durationDays ?? "-"} Days /{" "}
-                                        {p.durationNights ?? 0} Nights
-                                    </strong>
-                                </div>
-
-                                <div>
-                                    <i className="bi bi-people" />
-                                    <span>Group Size</span>
-                                    <strong>
-                                        {p.minimumTravellers ?? "-"} -{" "}
-                                        {p.maximumTravellers ?? "-"} People
-                                    </strong>
-                                </div>
-
-                                <div>
-                                    <i className="bi bi-calendar-event" />
-                                    <span>Start Date</span>
-                                    <strong>{formatDate(p.startDate)}</strong>
-                                </div>
-
-                                <div>
-                                    <i className="bi bi-calendar-check" />
-                                    <span>End Date</span>
-                                    <strong>{formatDate(p.endDate)}</strong>
-                                </div>
 
                             </div>
+                        </div>
 
-                            <div className="td-extra-meta">
-                                <span>
-                                    Tour Code: <strong>{p.tourCode || "-"}</strong>
-                                </span>
-                                <span>
-                                    Currency: <strong>{p.currency || "INR"}</strong>
-                                </span>
-                                <span>
-                                    Created: <strong>{formatDate(p.createdAt)}</strong>
-                                </span>
-                                <span>
-                                    Last Updated: <strong>{formatDate(p.updatedAt)}</strong>
-                                </span>
+
+                        {gallery.length > 0 && (
+                            <div className="td-gallery">
+                                {gallery.map((image) => (
+                                    <button
+                                        key={image.id}
+                                        className={`td-gallery-item ${activeImage === image.url ? "active" : ""
+                                            }`}
+                                        onClick={() => setActiveImage(image.url)}
+                                        aria-label={`View ${image.caption}`}
+                                    >
+                                        <img
+                                            src={image.url}
+                                            alt={image.caption}
+                                        />
+                                    </button>
+                                ))}
                             </div>
-
-                        </section>
-
-
-                        {destinations.length > 0 && (
-                            <section className="td-section" id="destinations">
-
-                                <div className="td-section-heading">
-                                    <div>
-                                        <span className="td-small-label">
-                                            WHERE YOU WILL GO
-                                        </span>
-                                        <h2>Explore Destinations</h2>
-                                    </div>
-
-                                    <span className="td-count">
-                                        {destinations.length} Places
-                                    </span>
-                                </div>
-
-                                <div className="td-destinations">
-                                    {destinations.map((destination, index) => (
-                                        <article
-                                            className="td-destination td-destination-full"
-                                            key={destination.id ?? index}
-                                        >
-                                            <div className="td-destination-image">
-                                                {destination.imageUrl ? (
-                                                    <img
-                                                        src={imageUrl(destination.imageUrl)}
-                                                        alt={destination.cityName || "Destination"}
-                                                    />
-                                                ) : (
-                                                    <div className="td-destination-placeholder">
-                                                        <span>{String(index + 1).padStart(2, "0")}</span>
-                                                    </div>
-                                                )}
-
-                                                <span className="td-destination-number">
-                                                    {String(index + 1).padStart(2, "0")}
-                                                </span>
-                                            </div>
-
-                                            <div className="td-destination-content">
-                                                <small>
-                                                    STOP {destination.sequenceNumber ?? index + 1}
-                                                </small>
-
-                                                <h4>
-                                                    {destination.cityName ||
-                                                        destination.countryName ||
-                                                        "Destination"}
-                                                </h4>
-
-                                                {destination.countryName && (
-                                                    <div className="td-destination-country-wrapper">
-                                                        <span
-                                                            className={`td-destination-country ${expandedDestinations.includes(index) ? "expanded" : ""
-                                                                }`}
-                                                        >
-                                                            {destination.countryName}
-                                                        </span>
-
-                                                        {destination.countryName.length > 60 && (
-                                                            <button
-                                                                type="button"
-                                                                className="td-country-toggle"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    toggleDestination(index);
-                                                                }}
-                                                            >
-                                                                {expandedDestinations.includes(index)
-                                                                    ? "See Less"
-                                                                    : "See More"}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )}
-                                                {destination.description && (
-                                                    <div className="td-destination-description-wrapper">
-                                                        <p
-                                                            className={`td-destination-description ${expandedDestinations.includes(index) ? "expanded" : ""
-                                                                }`}
-                                                        >
-                                                            {destination.description}
-                                                        </p>
-
-                                                        {destination.description.length > 100 && (
-                                                            <button
-                                                                type="button"
-                                                                className="td-country-toggle"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    toggleDestination(index);
-                                                                }}
-                                                            >
-                                                                {expandedDestinations.includes(index)
-                                                                    ? "See Less"
-                                                                    : "See More"}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </article>
-                                    ))}
-                                </div>
-                            </section>
                         )}
 
+                    </section>
 
-                        <section className="td-section" id="itinerary">
+                    <div className="td-layout">
 
-                            <div className="td-section-heading">
-                                <div>
-                                    <span className="td-small-label">
-                                        YOUR JOURNEY
-                                    </span>
-                                    <h2>Tour Itinerary</h2>
-                                </div>
-                                <span className="td-count">
-                                    {itinerary.length} Days
-                                </span>
-                            </div>
-
-                            {itinerary.length === 0 ? (
-                                <p className="td-empty">
-                                    Itinerary details coming soon.
-                                </p>
-                            ) : (
-                                <div className="td-itinerary">
-
-                                    {itinerary.map((day, index) => (
-                                        <article
-                                            className="td-day-card"
-                                            key={day.id ?? index}
-                                        >
-
-                                            <div className="td-day-marker">
-                                                <span>DAY</span>
-                                                <strong>{day.dayNumber ?? index + 1}</strong>
-                                            </div>
-
-                                            <div className="td-day-content">
-
-                                                <div className="td-day-heading">
-                                                    <div>
-                                                        <h3>
-                                                            {day.title || "Daily Activities"}
-                                                        </h3>
-
-                                                        <span>
-                                                            <i className="bi bi-calendar3" />
-                                                            {" "}
-                                                            {formatDate(day.tourDate)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {day.description && (
-                                                    <p className="td-day-description">
-                                                        {day.description}
-                                                    </p>
-                                                )}
-                                                {Array.isArray(day.images) && day.images.length > 0 && (
-                                                    <div className="td-day-gallery">
-                                                        <div className="td-day-gallery-heading">
-                                                            <i className="bi bi-images"></i>
-                                                            <h4>Day {day.dayNumber ?? index + 1} Photos</h4>
-                                                            <span>{day.images.length} Photos</span>
-                                                        </div>
-
-                                                        <div className="td-day-gallery-grid">
-                                                            {day.images.map((image, imageIndex) => (
-                                                                <a
-                                                                    key={`${day.id}-${imageIndex}`}
-
-                                                                    className="td-day-gallery-image"
-                                                                >
-                                                                    <img
-                                                                        src={imageUrl(image)}
-                                                                        alt={`Day ${day.dayNumber ?? index + 1} - Photo ${imageIndex + 1}`}
-                                                                        loading="lazy"
-                                                                    />
-                                                                    <span>
-                                                                        <i className="bi bi-zoom-in"></i>
-                                                                    </span>
-                                                                </a>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                <div className="td-day-info">
-
-                                                    <span>
-                                                        <i className="bi bi-geo-alt" />
-                                                        Overnight: {day.overnightCity || "-"}
-                                                    </span>
-
-                                                    <span>
-                                                        <i className="bi bi-cup-hot" />
-                                                        Meals: {day.mealPlan || "-"}
-                                                    </span>
-
-                                                </div>
-
-                                                <div className="td-activities">
-
-                                                    <h4>
-                                                        <i className="bi bi-stars" />
-                                                        Activities
-                                                    </h4>
-
-                                                    {(day.activities || []).length === 0 ? (
-                                                        <p className="td-empty">
-                                                            No activities added for this day.
-                                                        </p>
-                                                    ) : (
-                                                        day.activities?.map((activity, activityIndex) => (
-                                                            <div
-                                                                className="td-activity"
-                                                                key={activity.id ?? activityIndex}
-                                                            >
-
-                                                                <div className="td-activity-name">
-                                                                    <strong>
-                                                                        {activity.activityName || "Activity"}
-                                                                    </strong>
-
-                                                                    {activity.activityType && (
-                                                                        <span>
-                                                                            {activity.activityType}
-                                                                        </span>
-                                                                    )}
-
-                                                                    {activity.description && (
-                                                                        <p>{activity.description}</p>
-                                                                    )}
-                                                                </div>
-
-                                                                <div className="td-activity-tags">
-
-                                                                    {activity.included && (
-                                                                        <span className="td-included-tag">
-                                                                            Included
-                                                                        </span>
-                                                                    )}
-
-                                                                    {activity.optional && (
-                                                                        <span className="td-optional-tag">
-                                                                            Optional
-                                                                        </span>
-                                                                    )}
-
-                                                                    {activity.additionalPrice != null && (
-                                                                        <span className="td-activity-price">
-                                                                            {money(
-                                                                                activity.additionalPrice,
-                                                                                activity.currency
-                                                                            )}
-                                                                        </span>
-                                                                    )}
-
-                                                                </div>
-
-                                                            </div>
-                                                        ))
-                                                    )}
-
-                                                </div>
-
-                                            </div>
-                                        </article>
-                                    ))}
-
-                                </div>
-                            )}
-
-                        </section>
+                        <div className="td-main">
 
 
-                        {hotels.length > 0 && (
-                            <section className="td-section" id="hotels">
+                            <section className="td-overview td-section">
 
                                 <div className="td-section-heading">
                                     <div>
                                         <span className="td-small-label">
-                                            YOUR STAY
+                                            DISCOVER
                                         </span>
-                                        <h2>Accommodation</h2>
+                                        <h2>About This Tour</h2>
                                     </div>
-                                    <span className="td-count">
-                                        {hotels.length} Hotels
+
+                                    {p.tourCode && (
+                                        <span className="td-tour-code">
+                                            {p.tourCode}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <p className="td-description">
+                                    {p.description ||
+                                        "Discover amazing destinations and create unforgettable memories."}
+                                </p>
+
+                                <div className="td-highlights">
+
+                                    <div>
+                                        <i className="bi bi-calendar2-week" />
+                                        <span>Duration</span>
+                                        <strong>
+                                            {p.durationDays ?? "-"} Days /{" "}
+                                            {p.durationNights ?? 0} Nights
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <i className="bi bi-people" />
+                                        <span>Group Size</span>
+                                        <strong>
+                                            {p.minimumTravellers ?? "-"} -{" "}
+                                            {p.maximumTravellers ?? "-"} People
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <i className="bi bi-calendar-event" />
+                                        <span>Start Date</span>
+                                        <strong>{formatDate(p.startDate)}</strong>
+                                    </div>
+
+                                    <div>
+                                        <i className="bi bi-calendar-check" />
+                                        <span>End Date</span>
+                                        <strong>{formatDate(p.endDate)}</strong>
+                                    </div>
+
+                                </div>
+
+                                <div className="td-extra-meta">
+                                    <span>
+                                        Tour Code: <strong>{p.tourCode || "-"}</strong>
+                                    </span>
+                                    <span>
+                                        Currency: <strong>{p.currency || "INR"}</strong>
+                                    </span>
+                                    <span>
+                                        Created: <strong>{formatDate(p.createdAt)}</strong>
+                                    </span>
+                                    <span>
+                                        Last Updated: <strong>{formatDate(p.updatedAt)}</strong>
                                     </span>
                                 </div>
 
-                                <div className="td-hotel-grid">
+                            </section>
 
-                                    {hotels.map((hotel, index) => {
-                                        const images = (hotel.images || []).filter(Boolean);
-                                        const activeIndex = hotelImages[hotel.id ?? index] || 0;
 
-                                        const currentImage =
-                                            images.length > 0
-                                                ? imageUrl(images[activeIndex] || images[0])
-                                                : "";
+                            {destinations.length > 0 && (
+                                <section className="td-section" id="destinations">
 
-                                        return (
+                                    <div className="td-section-heading">
+                                        <div>
+                                            <span className="td-small-label">
+                                                WHERE YOU WILL GO
+                                            </span>
+                                            <h2>Explore Destinations</h2>
+                                        </div>
+
+                                        <span className="td-count">
+                                            {destinations.length} Places
+                                        </span>
+                                    </div>
+
+                                    <div className="td-destinations">
+                                        {destinations.map((destination, index) => (
                                             <article
-                                                className="td-hotel-card"
-                                                key={hotel.id ?? index}
+                                                className="td-destination td-destination-full"
+                                                key={destination.id ?? index}
                                             >
-
-
-                                                <div className="td-hotel-image">
-
-                                                    {currentImage ? (
+                                                <div className="td-destination-image">
+                                                    {destination.imageUrl ? (
                                                         <img
-                                                            src={currentImage}
-                                                            alt={hotel.hotelName || "Hotel"}
+                                                            src={imageUrl(destination.imageUrl)}
+                                                            alt={destination.cityName || "Destination"}
                                                         />
                                                     ) : (
-                                                        <div className="td-hotel-placeholder">
-                                                            <i className="bi bi-building" />
-                                                            <span>No hotel image available</span>
+                                                        <div className="td-destination-placeholder">
+                                                            <span>{String(index + 1).padStart(2, "0")}</span>
                                                         </div>
                                                     )}
 
-                                                    {images.length > 1 && (
-                                                        <>
-                                                            <button
-                                                                className="td-hotel-arrow td-hotel-prev"
-                                                                onClick={() =>
-                                                                    selectHotelImage(
-                                                                        hotel.id ?? index,
-                                                                        (activeIndex - 1 + images.length) % images.length
-                                                                    )
-                                                                }
-                                                                aria-label="Previous hotel image"
-                                                            >
-                                                                <i className="bi bi-chevron-left" />
-                                                            </button>
-
-                                                            <button
-                                                                className="td-hotel-arrow td-hotel-next"
-                                                                onClick={() =>
-                                                                    selectHotelImage(
-                                                                        hotel.id ?? index,
-                                                                        (activeIndex + 1) % images.length
-                                                                    )
-                                                                }
-                                                                aria-label="Next hotel image"
-                                                            >
-                                                                <i className="bi bi-chevron-right" />
-                                                            </button>
-                                                        </>
-                                                    )}
-
-                                                    {hotel.hotelCategory && (
-                                                        <span className="td-hotel-badge">
-                                                            {hotel.hotelCategory}
-                                                        </span>
-                                                    )}
-
+                                                    <span className="td-destination-number">
+                                                        {String(index + 1).padStart(2, "0")}
+                                                    </span>
                                                 </div>
 
-                                                {images.length > 1 && (
-                                                    <div className="td-hotel-thumbnails">
-                                                        {images.map((image, imageIndex) => (
-                                                            <button
-                                                                key={`${hotel.id}-${imageIndex}`}
-                                                                className={
-                                                                    activeIndex === imageIndex
-                                                                        ? "active"
-                                                                        : ""
-                                                                }
-                                                                onClick={() =>
-                                                                    selectHotelImage(
-                                                                        hotel.id ?? index,
-                                                                        imageIndex
-                                                                    )
-                                                                }
+                                                <div className="td-destination-content">
+                                                    <small>
+                                                        STOP {destination.sequenceNumber ?? index + 1}
+                                                    </small>
+
+                                                    <h4>
+                                                        {destination.cityName ||
+                                                            destination.countryName ||
+                                                            "Destination"}
+                                                    </h4>
+
+                                                    {destination.countryName && (
+                                                        <div className="td-destination-country-wrapper">
+                                                            <span
+                                                                className={`td-destination-country ${expandedDestinations.includes(index) ? "expanded" : ""
+                                                                    }`}
                                                             >
-                                                                <img
-                                                                    src={imageUrl(image)}
-                                                                    alt={`Hotel ${imageIndex + 1}`}
-                                                                />
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                                                {destination.countryName}
+                                                            </span>
 
-                                                <div className="td-hotel-body">
-
-                                                    <span className="td-hotel-city">
-                                                        <i className="bi bi-geo-alt" />
-                                                        {hotel.cityName || "Location"}
-                                                    </span>
-
-                                                    <h3>{hotel.hotelName || "Hotel"}</h3>
-
-                                                    <p>{hotel.hotelCategory || "Accommodation"}</p>
-
-                                                    <div className="td-hotel-details">
-
-                                                        <span>
-                                                            <small>Check-in</small>
-                                                            <strong>{formatDate(hotel.checkInDate)}</strong>
-                                                        </span>
-
-                                                        <span>
-                                                            <small>Check-out</small>
-                                                            <strong>{formatDate(hotel.checkOutDate)}</strong>
-                                                        </span>
-
-                                                        <span>
-                                                            <small>Nights</small>
-                                                            <strong>{hotel.numberOfNights ?? "-"}</strong>
-                                                        </span>
-
-                                                    </div>
-
-                                                    {hotel.address && (
-                                                        <div className="td-hotel-extra">
-                                                            <i className="bi bi-pin-map" />
-                                                            {hotel.address}
+                                                            {destination.countryName.length > 60 && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="td-country-toggle"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        toggleDestination(index);
+                                                                    }}
+                                                                >
+                                                                    {expandedDestinations.includes(index)
+                                                                        ? "See Less"
+                                                                        : "See More"}
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     )}
+                                                    {destination.description && (
+                                                        <div className="td-destination-description-wrapper">
+                                                            <p
+                                                                className={`td-destination-description ${expandedDestinations.includes(index) ? "expanded" : ""
+                                                                    }`}
+                                                            >
+                                                                {destination.description}
+                                                            </p>
 
-                                                    {hotel.contactNumber && (
-                                                        <div className="td-hotel-extra">
-                                                            <i className="bi bi-telephone" />
-                                                            {hotel.contactNumber}
+                                                            {destination.description.length > 100 && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="td-country-toggle"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        toggleDestination(index);
+                                                                    }}
+                                                                >
+                                                                    {expandedDestinations.includes(index)
+                                                                        ? "See Less"
+                                                                        : "See More"}
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     )}
+                                                </div>
+                                            </article>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
 
-                                                    {hotel.remarks && (
-                                                        <p className="td-hotel-remarks">
-                                                            {hotel.remarks}
+
+                            <section className="td-section" id="itinerary">
+
+                                <div className="td-section-heading">
+                                    <div>
+                                        <span className="td-small-label">
+                                            YOUR JOURNEY
+                                        </span>
+                                        <h2>Tour Itinerary</h2>
+                                    </div>
+                                    <span className="td-count">
+                                        {itinerary.length} Days
+                                    </span>
+                                </div>
+
+                                {itinerary.length === 0 ? (
+                                    <p className="td-empty">
+                                        Itinerary details coming soon.
+                                    </p>
+                                ) : (
+                                    <div className="td-itinerary">
+
+                                        {itinerary.map((day, index) => (
+                                            <article
+                                                className="td-day-card"
+                                                key={day.id ?? index}
+                                            >
+
+                                                <div className="td-day-marker">
+                                                    <span>DAY</span>
+                                                    <strong>{day.dayNumber ?? index + 1}</strong>
+                                                </div>
+
+                                                <div className="td-day-content">
+
+                                                    <div className="td-day-heading">
+                                                        <div>
+                                                            <h3>
+                                                                {day.title || "Daily Activities"}
+                                                            </h3>
+
+                                                            <span>
+                                                                <i className="bi bi-calendar3" />
+                                                                {" "}
+                                                                {formatDate(day.tourDate)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {day.description && (
+                                                        <p className="td-day-description">
+                                                            {day.description}
                                                         </p>
                                                     )}
+                                                    {Array.isArray(day.images) && day.images.length > 0 && (
+                                                        <div className="td-day-gallery">
+                                                            <div className="td-day-gallery-heading">
+                                                                <i className="bi bi-images"></i>
+                                                                <h4>Day {day.dayNumber ?? index + 1} Photos</h4>
+                                                                <span>{day.images.length} Photos</span>
+                                                            </div>
 
-                                                    <div className="td-hotel-image-count">
-                                                        <i className="bi bi-images" />
-                                                        {images.length} Hotel Images
+                                                            <div className="td-day-gallery-grid">
+                                                                {day.images.map((image, imageIndex) => (
+                                                                    <a
+                                                                        key={`${day.id}-${imageIndex}`}
+
+                                                                        className="td-day-gallery-image"
+                                                                    >
+                                                                        <img
+                                                                            src={imageUrl(image)}
+                                                                            alt={`Day ${day.dayNumber ?? index + 1} - Photo ${imageIndex + 1}`}
+                                                                            loading="lazy"
+                                                                        />
+                                                                        <span>
+                                                                            <i className="bi bi-zoom-in"></i>
+                                                                        </span>
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="td-day-info">
+
+                                                        <span>
+                                                            <i className="bi bi-geo-alt" />
+                                                            Overnight: {day.overnightCity || "-"}
+                                                        </span>
+
+                                                        <span>
+                                                            <i className="bi bi-cup-hot" />
+                                                            Meals: {day.mealPlan || "-"}
+                                                        </span>
+
+                                                    </div>
+
+                                                    <div className="td-activities">
+
+                                                        <h4>
+                                                            <i className="bi bi-stars" />
+                                                            Activities
+                                                        </h4>
+
+                                                        {(day.activities || []).length === 0 ? (
+                                                            <p className="td-empty">
+                                                                No activities added for this day.
+                                                            </p>
+                                                        ) : (
+                                                            day.activities?.map((activity, activityIndex) => (
+                                                                <div
+                                                                    className="td-activity"
+                                                                    key={activity.id ?? activityIndex}
+                                                                >
+
+                                                                    <div className="td-activity-name">
+                                                                        <strong>
+                                                                            {activity.activityName || "Activity"}
+                                                                        </strong>
+
+                                                                        {activity.activityType && (
+                                                                            <span>
+                                                                                {activity.activityType}
+                                                                            </span>
+                                                                        )}
+
+                                                                        {activity.description && (
+                                                                            <p>{activity.description}</p>
+                                                                        )}
+                                                                    </div>
+
+                                                                    <div className="td-activity-tags">
+
+                                                                        {activity.included && (
+                                                                            <span className="td-included-tag">
+                                                                                Included
+                                                                            </span>
+                                                                        )}
+
+                                                                        {activity.optional && (
+                                                                            <span className="td-optional-tag">
+                                                                                Optional
+                                                                            </span>
+                                                                        )}
+
+                                                                        {activity.additionalPrice != null && (
+                                                                            <span className="td-activity-price">
+                                                                                {money(
+                                                                                    activity.additionalPrice,
+                                                                                    activity.currency
+                                                                                )}
+                                                                            </span>
+                                                                        )}
+
+                                                                    </div>
+
+                                                                </div>
+                                                            ))
+                                                        )}
+
                                                     </div>
 
                                                 </div>
                                             </article>
-                                        );
-                                    })}
+                                        ))}
 
-                                </div>
-                            </section>
-                        )}
-
-
-                        {flights.length > 0 && (
-                            <section className="td-section" id="flights">
-
-                                <div className="td-section-heading">
-                                    <div>
-                                        <span className="td-small-label">
-                                            GETTING THERE
-                                        </span>
-                                        <h2>Flight Details</h2>
                                     </div>
-                                    <span className="td-count">
-                                        {flights.length} Flights
-                                    </span>
-                                </div>
+                                )}
 
-                                <div className="td-flight-list">
-
-                                    {flights.map((flight, index) => (
-                                        <article
-                                            className="td-flight-card"
-                                            key={flight.id ?? index}
-                                        >
-
-                                            <div className="td-flight-top">
-                                                <span>{flight.flightType || "Flight"}</span>
-                                                <span>{flight.airlineName || "Airline"}</span>
-                                                <span>{flight.flightNumber || "-"}</span>
-                                            </div>
-
-                                            <div className="td-flight-route">
-
-                                                <div>
-                                                    <strong>
-                                                        {flight.departureAirport || "-"}
-                                                    </strong>
-                                                    <span>
-                                                        {formatDateTime(flight.departureDateTime)}
-                                                    </span>
-                                                </div>
-
-                                                <div className="td-flight-line">
-                                                    <i className="bi bi-airplane" />
-                                                    <span />
-                                                </div>
-
-                                                <div>
-                                                    <strong>
-                                                        {flight.arrivalAirport || "-"}
-                                                    </strong>
-                                                    <span>
-                                                        {formatDateTime(flight.arrivalDateTime)}
-                                                    </span>
-                                                </div>
-
-                                            </div>
-
-                                            <div className="td-baggage">
-                                                <span>
-                                                    <i className="bi bi-luggage" />
-                                                    Check-in baggage: {flight.baggageAllowance || "-"}
-                                                </span>
-
-                                                <span>
-                                                    <i className="bi bi-bag" />
-                                                    Cabin baggage: {flight.cabinBaggage || "-"}
-                                                </span>
-                                            </div>
-
-                                            {flight.remarks && (
-                                                <p className="td-flight-remarks">
-                                                    {flight.remarks}
-                                                </p>
-                                            )}
-
-                                        </article>
-                                    ))}
-
-                                </div>
                             </section>
-                        )}
 
 
-                        <section className="td-section">
+                            {hotels.length > 0 && (
+                                <section className="td-section" id="hotels">
 
-                            <div className="td-section-heading">
-                                <div>
-                                    <span className="td-small-label">
-                                        KNOW BEFORE YOU GO
-                                    </span>
-                                    <h2>What's Included?</h2>
-                                </div>
-                            </div>
-
-                            <div className="td-inclusion-grid">
-
-                                <div className="td-inclusion-card">
-                                    <h3>
-                                        <i className="bi bi-check-circle-fill" />
-                                        Inclusions
-                                    </h3>
-
-                                    {inclusions.length > 0 ? (
-                                        <ul>
-                                            {inclusions.map((item, index) => (
-                                                <li key={item.id ?? index}>
-                                                    <i className="bi bi-check2" />
-                                                    {item.description}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="td-empty">
-                                            No inclusions specified.
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="td-exclusion-card">
-                                    <h3>
-                                        <i className="bi bi-x-circle-fill" />
-                                        Exclusions
-                                    </h3>
-
-                                    {exclusions.length > 0 ? (
-                                        <ul>
-                                            {exclusions.map((item, index) => (
-                                                <li key={item.id ?? index}>
-                                                    <i className="bi bi-x" />
-                                                    {item.description}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="td-empty">
-                                            No exclusions specified.
-                                        </p>
-                                    )}
-                                </div>
-
-                            </div>
-                        </section>
-
-
-                        {optionalActivities.length > 0 && (
-                            <section className="td-section">
-
-                                <div className="td-section-heading">
-                                    <div>
-                                        <span className="td-small-label">
-                                            MAKE IT SPECIAL
-                                        </span>
-                                        <h2>Optional Experiences</h2>
-                                    </div>
-                                </div>
-
-                                <div className="td-optional-grid">
-
-                                    {optionalActivities.map((activity, index) => (
-                                        <article
-                                            className="td-optional-card"
-                                            key={activity.id ?? index}
-                                        >
-                                            <i className="bi bi-stars" />
-
-                                            <h3>{activity.activityName}</h3>
-
-                                            {activity.description && (
-                                                <p>{activity.description}</p>
-                                            )}
-
-                                            <span>
-                                                {activity.availabilityType || "Available on request"}
+                                    <div className="td-section-heading">
+                                        <div>
+                                            <span className="td-small-label">
+                                                YOUR STAY
                                             </span>
-
-                                            <strong>
-                                                {money(
-                                                    activity.price,
-                                                    activity.currency || p.currency
-                                                )}
-                                            </strong>
-
-                                            <small>
-                                                Status: {activity.active ? "Active" : "Inactive"}
-                                            </small>
-                                        </article>
-                                    ))}
-
-                                </div>
-                            </section>
-                        )}
-
-
-                        {priceRules.length > 0 && (
-                            <section className="td-section" id="pricing">
-
-                                <div className="td-section-heading">
-                                    <div>
-                                        <span className="td-small-label">
-                                            PLAN YOUR BUDGET
+                                            <h2>Accommodation</h2>
+                                        </div>
+                                        <span className="td-count">
+                                            {hotels.length} Hotels
                                         </span>
-                                        <h2>Tour Pricing</h2>
                                     </div>
-                                </div>
 
-                                <div className="td-pricing-grid">
+                                    <div className="td-hotel-grid">
 
-                                    {priceRules.map((rule, index) => (
-                                        <article
-                                            className="td-price-card"
-                                            key={rule.id ?? index}
-                                        >
+                                        {hotels.map((hotel, index) => {
+                                            const images = (hotel.images || []).filter(Boolean);
+                                            const activeIndex = hotelImages[hotel.id ?? index] || 0;
 
-                                            <span className="td-price-category">
-                                                {rule.passengerCategory || "Passenger"}
-                                            </span>
+                                            const currentImage =
+                                                images.length > 0
+                                                    ? imageUrl(images[activeIndex] || images[0])
+                                                    : "";
 
-                                            <h3>
-                                                {money(
-                                                    rule.price,
-                                                    rule.currency || p.currency
-                                                )}
-                                            </h3>
-
-                                            <span className="td-room-category">
-                                                <i className="bi bi-door-open" />
-                                                {rule.roomCategory || "Room details on request"}
-                                            </span>
-
-                                            <div className="td-price-extra">
-                                                <span>
-                                                    Valid From:
-                                                    <strong>{formatDate(rule.validFrom)}</strong>
-                                                </span>
-
-                                                <span>
-                                                    Valid Until:
-                                                    <strong>{formatDate(rule.validUntil)}</strong>
-                                                </span>
-                                            </div>
-
-                                            {rule.remarks && (
-                                                <p>{rule.remarks}</p>
-                                            )}
-
-                                        </article>
-                                    ))}
-
-                                </div>
-                            </section>
-                        )}
-
-
-                        {videos.length > 0 && (
-                            <section className="td-section">
-
-                                <div className="td-section-heading">
-                                    <div>
-                                        <span className="td-small-label">
-                                            WATCH AND EXPLORE
-                                        </span>
-                                        <h2>Tour Videos</h2>
-                                    </div>
-                                    <span className="td-count">
-                                        {videos.length} Videos
-                                    </span>
-                                </div>
-
-                                <div className="td-media-grid">
-
-                                    {videos.map((video, index) => (
-                                        <article
-                                            className="td-media-card"
-                                            key={video.id ?? index}
-                                        >
-
-                                            {isDirectVideo(video.fileUrl!) ? (
-                                                <video
-                                                    src={imageUrl(video.fileUrl)}
-                                                    controls
-                                                    preload="metadata"
-                                                />
-                                            ) : (
-                                                <a
-                                                    href={imageUrl(video.fileUrl)}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="td-video-link"
+                                            return (
+                                                <article
+                                                    className="td-hotel-card"
+                                                    key={hotel.id ?? index}
                                                 >
-                                                    <i className="bi bi-play-circle-fill" />
-                                                    Play Video
-                                                </a>
-                                            )}
-
-                                            <div>
-                                                <h4>
-                                                    {video.caption ||
-                                                        video.fileName ||
-                                                        "Tour Video"}
-                                                </h4>
-                                                <span>{video.mediaType}</span>
-                                            </div>
-
-                                        </article>
-                                    ))}
-
-                                </div>
-                            </section>
-                        )}
 
 
-                        {documents.length > 0 && (
+                                                    <div className="td-hotel-image">
+
+                                                        {currentImage ? (
+                                                            <img
+                                                                src={currentImage}
+                                                                alt={hotel.hotelName || "Hotel"}
+                                                            />
+                                                        ) : (
+                                                            <div className="td-hotel-placeholder">
+                                                                <i className="bi bi-building" />
+                                                                <span>No hotel image available</span>
+                                                            </div>
+                                                        )}
+
+                                                        {images.length > 1 && (
+                                                            <>
+                                                                <button
+                                                                    className="td-hotel-arrow td-hotel-prev"
+                                                                    onClick={() =>
+                                                                        selectHotelImage(
+                                                                            hotel.id ?? index,
+                                                                            (activeIndex - 1 + images.length) % images.length
+                                                                        )
+                                                                    }
+                                                                    aria-label="Previous hotel image"
+                                                                >
+                                                                    <i className="bi bi-chevron-left" />
+                                                                </button>
+
+                                                                <button
+                                                                    className="td-hotel-arrow td-hotel-next"
+                                                                    onClick={() =>
+                                                                        selectHotelImage(
+                                                                            hotel.id ?? index,
+                                                                            (activeIndex + 1) % images.length
+                                                                        )
+                                                                    }
+                                                                    aria-label="Next hotel image"
+                                                                >
+                                                                    <i className="bi bi-chevron-right" />
+                                                                </button>
+                                                            </>
+                                                        )}
+
+                                                        {hotel.hotelCategory && (
+                                                            <span className="td-hotel-badge">
+                                                                {hotel.hotelCategory}
+                                                            </span>
+                                                        )}
+
+                                                    </div>
+
+                                                    {images.length > 1 && (
+                                                        <div className="td-hotel-thumbnails">
+                                                            {images.map((image, imageIndex) => (
+                                                                <button
+                                                                    key={`${hotel.id}-${imageIndex}`}
+                                                                    className={
+                                                                        activeIndex === imageIndex
+                                                                            ? "active"
+                                                                            : ""
+                                                                    }
+                                                                    onClick={() =>
+                                                                        selectHotelImage(
+                                                                            hotel.id ?? index,
+                                                                            imageIndex
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <img
+                                                                        src={imageUrl(image)}
+                                                                        alt={`Hotel ${imageIndex + 1}`}
+                                                                    />
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="td-hotel-body">
+
+                                                        <span className="td-hotel-city">
+                                                            <i className="bi bi-geo-alt" />
+                                                            {hotel.cityName || "Location"}
+                                                        </span>
+
+                                                        <h3>{hotel.hotelName || "Hotel"}</h3>
+
+                                                        <p>{hotel.hotelCategory || "Accommodation"}</p>
+
+                                                        <div className="td-hotel-details">
+
+                                                            <span>
+                                                                <small>Check-in</small>
+                                                                <strong>{formatDate(hotel.checkInDate)}</strong>
+                                                            </span>
+
+                                                            <span>
+                                                                <small>Check-out</small>
+                                                                <strong>{formatDate(hotel.checkOutDate)}</strong>
+                                                            </span>
+
+                                                            <span>
+                                                                <small>Nights</small>
+                                                                <strong>{hotel.numberOfNights ?? "-"}</strong>
+                                                            </span>
+
+                                                        </div>
+
+                                                        {hotel.address && (
+                                                            <div className="td-hotel-extra">
+                                                                <i className="bi bi-pin-map" />
+                                                                {hotel.address}
+                                                            </div>
+                                                        )}
+
+                                                        {hotel.contactNumber && (
+                                                            <div className="td-hotel-extra">
+                                                                <i className="bi bi-telephone" />
+                                                                {hotel.contactNumber}
+                                                            </div>
+                                                        )}
+
+                                                        {hotel.remarks && (
+                                                            <p className="td-hotel-remarks">
+                                                                {hotel.remarks}
+                                                            </p>
+                                                        )}
+
+                                                        <div className="td-hotel-image-count">
+                                                            <i className="bi bi-images" />
+                                                            {images.length} Hotel Images
+                                                        </div>
+
+                                                    </div>
+                                                </article>
+                                            );
+                                        })}
+
+                                    </div>
+                                </section>
+                            )}
+
+
+                            {flights.length > 0 && (
+                                <section className="td-section" id="flights">
+
+                                    <div className="td-section-heading">
+                                        <div>
+                                            <span className="td-small-label">
+                                                GETTING THERE
+                                            </span>
+                                            <h2>Flight Details</h2>
+                                        </div>
+                                        <span className="td-count">
+                                            {flights.length} Flights
+                                        </span>
+                                    </div>
+
+                                    <div className="td-flight-list">
+
+                                        {flights.map((flight, index) => (
+                                            <article
+                                                className="td-flight-card"
+                                                key={flight.id ?? index}
+                                            >
+
+                                                <div className="td-flight-top">
+                                                    <span>{flight.flightType || "Flight"}</span>
+                                                    <span>{flight.airlineName || "Airline"}</span>
+                                                    <span>{flight.flightNumber || "-"}</span>
+                                                </div>
+
+                                                <div className="td-flight-route">
+
+                                                    <div>
+                                                        <strong>
+                                                            {flight.departureAirport || "-"}
+                                                        </strong>
+                                                        <span>
+                                                            {formatDateTime(flight.departureDateTime)}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="td-flight-line">
+                                                        <i className="bi bi-airplane" />
+                                                        <span />
+                                                    </div>
+
+                                                    <div>
+                                                        <strong>
+                                                            {flight.arrivalAirport || "-"}
+                                                        </strong>
+                                                        <span>
+                                                            {formatDateTime(flight.arrivalDateTime)}
+                                                        </span>
+                                                    </div>
+
+                                                </div>
+
+                                                <div className="td-baggage">
+                                                    <span>
+                                                        <i className="bi bi-luggage" />
+                                                        Check-in baggage: {flight.baggageAllowance || "-"}
+                                                    </span>
+
+                                                    <span>
+                                                        <i className="bi bi-bag" />
+                                                        Cabin baggage: {flight.cabinBaggage || "-"}
+                                                    </span>
+                                                </div>
+
+                                                {flight.remarks && (
+                                                    <p className="td-flight-remarks">
+                                                        {flight.remarks}
+                                                    </p>
+                                                )}
+
+                                            </article>
+                                        ))}
+
+                                    </div>
+                                </section>
+                            )}
+
+
                             <section className="td-section">
 
                                 <div className="td-section-heading">
                                     <div>
                                         <span className="td-small-label">
-                                            MORE INFORMATION
+                                            KNOW BEFORE YOU GO
                                         </span>
-                                        <h2>Tour Documents</h2>
+                                        <h2>What's Included?</h2>
                                     </div>
                                 </div>
 
-                                <div className="td-documents">
+                                <div className="td-inclusion-grid">
 
-                                    {documents.map((document, index) => (
-                                        <a
-                                            href={imageUrl(document.fileUrl)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            key={document.id ?? index}
-                                        >
-                                            <i className="bi bi-file-earmark-arrow-down" />
+                                    <div className="td-inclusion-card">
+                                        <h3>
+                                            <i className="bi bi-check-circle-fill" />
+                                            Inclusions
+                                        </h3>
 
-                                            <span>
-                                                <strong>
-                                                    {document.caption ||
-                                                        document.fileName ||
-                                                        "View Document"}
-                                                </strong>
-                                                <small>
-                                                    {document.mediaType || "Document"}
-                                                </small>
-                                            </span>
+                                        {inclusions.length > 0 ? (
+                                            <ul>
+                                                {inclusions.map((item, index) => (
+                                                    <li key={item.id ?? index}>
+                                                        <i className="bi bi-check2" />
+                                                        {item.description}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="td-empty">
+                                                No inclusions specified.
+                                            </p>
+                                        )}
+                                    </div>
 
-                                            <i className="bi bi-arrow-up-right" />
-                                        </a>
-                                    ))}
+                                    <div className="td-exclusion-card">
+                                        <h3>
+                                            <i className="bi bi-x-circle-fill" />
+                                            Exclusions
+                                        </h3>
+
+                                        {exclusions.length > 0 ? (
+                                            <ul>
+                                                {exclusions.map((item, index) => (
+                                                    <li key={item.id ?? index}>
+                                                        <i className="bi bi-x" />
+                                                        {item.description}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="td-empty">
+                                                No exclusions specified.
+                                            </p>
+                                        )}
+                                    </div>
 
                                 </div>
                             </section>
-                        )}
-
-                    </div>
 
 
-                    <aside className="td-sidebar" id="td-booking">
+                            {optionalActivities.length > 0 && (
+                                <section className="td-section">
 
-                        <div className="td-booking-card">
+                                    <div className="td-section-heading">
+                                        <div>
+                                            <span className="td-small-label">
+                                                MAKE IT SPECIAL
+                                            </span>
+                                            <h2>Optional Experiences</h2>
+                                        </div>
+                                    </div>
 
-                            <span className="td-booking-label">
-                                YOUR NEXT ADVENTURE
-                            </span>
+                                    <div className="td-optional-grid">
 
-                            <h3>Ready to Explore?</h3>
+                                        {optionalActivities.map((activity, index) => (
+                                            <article
+                                                className="td-optional-card"
+                                                key={activity.id ?? index}
+                                            >
+                                                <i className="bi bi-stars" />
 
-                            <p>
-                                Make unforgettable memories. Get in touch
-                                with our travel team for availability and
-                                booking details.
-                            </p>
+                                                <h3>{activity.activityName}</h3>
 
-                            <div className="td-booking-divider" />
+                                                {activity.description && (
+                                                    <p>{activity.description}</p>
+                                                )}
 
-                            <div className="td-booking-detail">
-                                <i className="bi bi-ticket-perforated" />
-                                <div>
-                                    <span>Tour Code</span>
-                                    <strong>{p.tourCode || "-"}</strong>
-                                </div>
-                            </div>
+                                                <span>
+                                                    {activity.availabilityType || "Available on request"}
+                                                </span>
 
-                            <div className="td-booking-detail">
-                                <i className="bi bi-calendar-range" />
-                                <div>
-                                    <span>Duration</span>
-                                    <strong>
-                                        {p.durationDays ?? "-"} Days /{" "}
-                                        {p.durationNights ?? 0} Nights
-                                    </strong>
-                                </div>
-                            </div>
+                                                <strong>
+                                                    {money(
+                                                        activity.price,
+                                                        activity.currency || p.currency
+                                                    )}
+                                                </strong>
 
-                            <div className="td-booking-detail">
-                                <i className="bi bi-people" />
-                                <div>
-                                    <span>Travellers</span>
-                                    <strong>
-                                        {p.minimumTravellers ?? "-"} -{" "}
-                                        {p.maximumTravellers ?? "-"} People
-                                    </strong>
-                                </div>
-                            </div>
+                                                <small>
+                                                    Status: {activity.active ? "Active" : "Inactive"}
+                                                </small>
+                                            </article>
+                                        ))}
 
-                            <div className="td-booking-detail">
-                                <i className="bi bi-calendar-event" />
-                                <div>
-                                    <span>Tour Dates</span>
-                                    <strong>{formatDate(p.startDate)}</strong>
-                                </div>
-                            </div>
-
-                            <div className="td-booking-divider" />
-
-                            <div className="td-booking-price">
-                                <span>Starting Price</span>
-
-                                <strong>
-                                    {startingPrice != null
-                                        ? money(startingPrice, p.currency || priceRules[0]?.currency)
-                                        : "On Request"}
-                                </strong>
-
-                                <small>
-                                    Final price depends on room and passenger category.
-                                </small>
-                            </div>
+                                    </div>
+                                </section>
+                            )}
 
 
+                            {priceRules.length > 0 && (
+                                <section className="td-section" id="pricing">
 
-                            <div className="td-trust-note">
-                                <i className="bi bi-shield-check" />
-                                <span>Personalised travel assistance</span>
-                            </div>
+                                    <div className="td-section-heading">
+                                        <div>
+                                            <span className="td-small-label">
+                                                PLAN YOUR BUDGET
+                                            </span>
+                                            <h2>Tour Pricing</h2>
+                                        </div>
+                                    </div>
+
+                                    <div className="td-pricing-grid">
+
+                                        {priceRules.map((rule, index) => (
+                                            <article
+                                                className="td-price-card"
+                                                key={rule.id ?? index}
+                                            >
+
+                                                <span className="td-price-category">
+                                                    {rule.passengerCategory || "Passenger"}
+                                                </span>
+
+                                                <h3>
+                                                    {priceView(
+                                                        rule.price,
+                                                        rule.currency || p.currency
+                                                    )}
+                                                </h3>
+
+                                                <span className="td-room-category">
+                                                    <i className="bi bi-door-open" />
+                                                    {rule.roomCategory || "Room details on request"}
+                                                </span>
+
+                                                <div className="td-price-extra">
+                                                    <span>
+                                                        Valid From:
+                                                        <strong>{formatDate(rule.validFrom)}</strong>
+                                                    </span>
+
+                                                    <span>
+                                                        Valid Until:
+                                                        <strong>{formatDate(rule.validUntil)}</strong>
+                                                    </span>
+                                                </div>
+
+                                                {rule.remarks && (
+                                                    <p>{rule.remarks}</p>
+                                                )}
+
+                                            </article>
+                                        ))}
+
+                                    </div>
+                                </section>
+                            )}
+
+
+                            {videos.length > 0 && (
+                                <section className="td-section">
+
+                                    <div className="td-section-heading">
+                                        <div>
+                                            <span className="td-small-label">
+                                                WATCH AND EXPLORE
+                                            </span>
+                                            <h2>Tour Videos</h2>
+                                        </div>
+                                        <span className="td-count">
+                                            {videos.length} Videos
+                                        </span>
+                                    </div>
+
+                                    <div className="td-media-grid">
+
+                                        {videos.map((video, index) => (
+                                            <article
+                                                className="td-media-card"
+                                                key={video.id ?? index}
+                                            >
+
+                                                {isDirectVideo(video.fileUrl!) ? (
+                                                    <video
+                                                        src={imageUrl(video.fileUrl)}
+                                                        controls
+                                                        preload="metadata"
+                                                    />
+                                                ) : (
+                                                    <a
+                                                        href={imageUrl(video.fileUrl)}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="td-video-link"
+                                                    >
+                                                        <i className="bi bi-play-circle-fill" />
+                                                        Play Video
+                                                    </a>
+                                                )}
+
+                                                <div>
+                                                    <h4>
+                                                        {video.caption ||
+                                                            video.fileName ||
+                                                            "Tour Video"}
+                                                    </h4>
+                                                    <span>{video.mediaType}</span>
+                                                </div>
+
+                                            </article>
+                                        ))}
+
+                                    </div>
+                                </section>
+                            )}
+
+
+                            {documents.length > 0 && (
+                                <section className="td-section">
+
+                                    <div className="td-section-heading">
+                                        <div>
+                                            <span className="td-small-label">
+                                                MORE INFORMATION
+                                            </span>
+                                            <h2>Tour Documents</h2>
+                                        </div>
+                                    </div>
+
+                                    <div className="td-documents">
+
+                                        {documents.map((document, index) => (
+                                            <a
+                                                href={imageUrl(document.fileUrl)}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                key={document.id ?? index}
+                                            >
+                                                <i className="bi bi-file-earmark-arrow-down" />
+
+                                                <span>
+                                                    <strong>
+                                                        {document.caption ||
+                                                            document.fileName ||
+                                                            "View Document"}
+                                                    </strong>
+                                                    <small>
+                                                        {document.mediaType || "Document"}
+                                                    </small>
+                                                </span>
+
+                                                <i className="bi bi-arrow-up-right" />
+                                            </a>
+                                        ))}
+
+                                    </div>
+                                </section>
+                            )}
 
                         </div>
 
-                    </aside>
 
+                        <aside className="td-sidebar" id="td-booking">
+                            <div className="td-booking-card">
+                                <h3>Ready to Explore?</h3>
+                                <p>
+                                    Explore amazing destinations and book your next adventure with us.
+                                </p>
+                                <div className="td-booking-detail">
+                                    <i className="bi bi-calendar-range" />
+                                    <div>
+                                        <span>Duration</span>
+                                        <strong>
+                                            {p.durationDays ?? "-"} Days /{" "}
+                                            {p.durationNights ?? 0} Nights
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div className="td-booking-detail">
+                                    <i className="bi bi-people" />
+                                    <div>
+                                        <span>Travellers</span>
+                                        <strong>
+                                            {p.minimumTravellers ?? "-"} -{" "}
+                                            {p.maximumTravellers ?? "-"} People
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div className="td-booking-detail">
+                                    <i className="bi bi-calendar-event" />
+                                    <div>
+                                        <span>Tour Dates</span>
+                                        <strong>{formatDate(p.startDate)}</strong>
+                                    </div>
+                                </div>
+                                <div className="td-booking-divider" />
+                                <div className="td-coupon-section">
+                                    {!appliedCoupon ? (
+                                        <>
+                                            <button
+                                                type="button"
+                                                className="td-coupon-toggle"
+                                                onClick={() => setShowCouponInput(!showCouponInput)}
+                                            >
+                                                <span>
+                                                    <i className="bi bi-tag" />
+                                                    Apply Coupon
+                                                </span>
+
+                                                <i className={`bi ${showCouponInput ? "bi-chevron-up" : "bi-chevron-down"}`} />
+                                            </button>
+
+                                            {showCouponInput && (
+                                                <div className="td-coupon-input-wrapper">
+                                                    <label>Enter Coupon Code</label>
+
+                                                    <div className="td-coupon-input-group">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Enter coupon code"
+                                                            value={couponCode}
+                                                            onChange={(e) =>
+                                                                setCouponCode(e.target.value.toUpperCase())
+                                                            }
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === "Enter") {
+                                                                    e.preventDefault();
+                                                                    void handleApplyCoupon();
+                                                                }
+                                                            }}
+                                                        />
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleApplyCoupon()}
+                                                            disabled={applyingCoupon}
+                                                        >
+                                                            {applyingCoupon ? "Applying..." : "Apply"}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="td-applied-coupon">
+                                            <div className="td-applied-coupon-info">
+                                                <i className="bi bi-check-circle-fill" />
+                                                <div>
+                                                    <strong>{appliedCoupon.couponCode}</strong>
+                                                    <span>{discountPct}% discount applied</span>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                className="td-remove-coupon"
+                                                onClick={handleRemoveCoupon}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                                {hasDiscount && (
+                                    <div className="td-coupon-badge">
+                                        <i className="bi bi-tag-fill" />
+                                        {discountPct}% OFF with code{" "}
+                                        <strong>{appliedCoupon?.couponCode}</strong>
+                                    </div>
+                                )}
+
+                                <div className="td-booking-price">
+                                    <span>Starting Price</span>
+
+                                    <strong>
+                                        {startingPrice != null
+                                            ? priceView(startingPrice, p.currency || priceRules[0]?.currency)
+                                            : "On Request"}
+                                    </strong>
+                                </div>
+
+
+
+                                <div className="td-trust-note">
+
+                                    <span>Personalised travel assistance</span>
+                                    <a className="terms-link" onClick={() => setShowTerms(true)} role="button"
+                                    >
+                                        Terms and Conditions
+                                    </a>
+                                </div>
+
+                            </div>
+
+                        </aside>
+
+                    </div>
+
+                </main>
+
+                <div className="td-sticky-booking">
+                    <div className="td-sticky-booking-info">
+                        <span>Starting Price</span>
+                        <strong>
+                            {startingPrice != null
+                                ? priceView(
+                                    startingPrice,
+                                    p.currency || priceRules[0]?.currency
+                                )
+                                : "On Request"}
+                        </strong>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleBookNow}
+                        disabled={findingForm}
+                        className="td-sticky-booking-btn"
+                    >
+                        <i className="bi bi-calendar-check"></i>
+                        <span>
+                            {findingForm ? "Finding Form..." : "Book Now"}
+                        </span>
+                    </button>
                 </div>
-
-            </main>
-
-            <div className="td-sticky-booking">
-                <div className="td-sticky-booking-info">
-                    <span>Starting Price</span>
-                    <strong>
-                        {startingPrice != null
-                            ? money(
-                                startingPrice,
-                                p.currency || priceRules[0]?.currency
-                            )
-                            : "On Request"}
-                    </strong>
-                </div>
-                <button
-                    type="button"
-                    onClick={handleBookNow}
-                    disabled={findingForm}
-                    className="td-sticky-booking-btn"
-                >
-                    <i className="bi bi-calendar-check"></i>
-                    <span>
-                        {findingForm ? "Finding Form..." : "Book Now"}
-                    </span>
-                </button>
             </div>
-        </div>
+            <Terms
+                open={showTerms}
+                onClose={() => setShowTerms(false)}
+                companyId={companyId}
+            />
+        </>
     );
 }
 

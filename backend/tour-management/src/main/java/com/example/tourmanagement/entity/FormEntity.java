@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "forms")
@@ -24,9 +26,9 @@ public class FormEntity {
     @Column(nullable = false, length = 100)
     private String slug;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "tour_package_id", nullable = true)
-    private TourPackage tourPackage;
+    @OneToMany(mappedBy = "form", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<TourPackage> tourPackages = new ArrayList<>();
 
     @Column(columnDefinition = "TEXT")
     private String formDescription;
@@ -35,7 +37,7 @@ public class FormEntity {
     private String publicToken;
 
     @Column(nullable = false)
-    private String status; // DRAFT, PUBLISHED, CLOSED
+    private String status;
 
     @Column(nullable = false)
     private Boolean allowMultipleSubmissions;

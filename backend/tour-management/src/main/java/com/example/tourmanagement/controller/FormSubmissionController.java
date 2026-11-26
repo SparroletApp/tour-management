@@ -54,4 +54,14 @@ public class FormSubmissionController {
                 formSubmissionService.deleteSubmission(dto)
         );
     }
+
+    @PostMapping("/get-by-package")
+    public ResponseEntity<List<SubmissionResponseDto>> getSubmissionsByPackage(
+            @RequestBody PackageSubmissionIdDto dto
+    ) {
+
+        return ResponseEntity.ok(
+                formSubmissionService.getSubmissionsByPackage(dto)
+        );
+    }
 }

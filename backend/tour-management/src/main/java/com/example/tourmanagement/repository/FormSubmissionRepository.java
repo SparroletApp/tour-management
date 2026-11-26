@@ -15,6 +15,8 @@ public interface FormSubmissionRepository extends JpaRepository<FormSubmissionEn
     List<FormSubmissionEntity> findByFormIdOrderBySubmittedAtDesc(Long formId);
 
     List<FormSubmissionEntity> findByFormIdAndStatus(Long formId, String status);
-
+    List<FormSubmissionEntity> findByTourPackage_IdOrderByCreatedAtDesc(
+            Long packageId
+    );
     long countByFormId(Long formId);
 }

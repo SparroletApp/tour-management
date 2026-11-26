@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,6 +7,7 @@ import "./tour-form.css";
 import formBuilderService, { FieldType, FormResponseDto, QuestionResponseDto, SectionResponseDto } from "../../apiservice/formsservice";
 import { tourPackageService } from "../../apiservice/tourservice";
 import { setSelectedTourId } from "../../utils/tourStorage";
+import { couponService } from "../../apiservice/couponservice";
 
 interface FormFieldAnswer {
     questionId: number;
@@ -43,6 +43,14 @@ export default function PublicFormPage() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
+    const [coupon, setCoupon] = useState<{
+        valid: boolean;
+        couponCode?: string | null;
+        percentage?: number | null;
+        message?: string;
+    } | null>(null);
+
+    const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
 
     useEffect(() => {
         if (slug) {
@@ -50,15 +58,65 @@ export default function PublicFormPage() {
         }
     }, [slug]);
 
+
     const loadPublicForm = async () => {
         try {
             setLoading(true);
             setError("");
 
+            // Always clear previous form and coupon state
+            setCoupon(null);
+            setAppliedCouponCode(null);
+            setTourCode("");
+            setFormCoverImage("");
+            setCompanyId(null);
+
             const formData = await formBuilderService.forms.getBySlug({
                 slug,
             });
+
             setForm(formData);
+
+            const searchParams = new URLSearchParams(window.location.search);
+
+            const urlTourCode = searchParams.get("tourCode")?.trim() || "";
+            const linkCode = searchParams.get("couponCode")?.trim().toUpperCase() || "";
+
+            setTourCode(urlTourCode);
+
+            // Validate only when a coupon code is explicitly present in the URL
+            if (linkCode) {
+                try {
+                    const res = await couponService.validate({
+                        couponCode: linkCode,
+                        formId: formData.id,
+                    });
+
+                    setCoupon(res);
+
+                    if (
+                        res?.valid === true &&
+                        typeof res?.couponCode === "string" &&
+                        res.couponCode.trim() !== ""
+                    ) {
+                        setAppliedCouponCode(res.couponCode.trim());
+                    } else {
+                        setAppliedCouponCode(null);
+                    }
+                } catch (couponError: any) {
+                    console.error("Coupon validation error:", couponError);
+
+                    setCoupon({
+                        valid: false,
+                        couponCode: linkCode,
+                        message:
+                            couponError?.response?.data?.message ||
+                            "This coupon is not valid for this form.",
+                    });
+
+                    setAppliedCouponCode(null);
+                }
+            }
 
             const packageId = (
                 formData as FormResponseDto & { packageId?: number }
@@ -75,10 +133,9 @@ export default function PublicFormPage() {
                     const packageData = tourResponse?.tourPackage;
 
                     if (packageData) {
-                        setFormCoverImage(
-                            imageUrl(packageData.coverImageUrl)
-                        );
+                        setFormCoverImage(imageUrl(packageData.coverImageUrl));
 
+                        // Tour code is independent of coupon code
                         setTourCode(packageData.tourCode || "");
 
                         if (packageData.companyId) {
@@ -95,7 +152,10 @@ export default function PublicFormPage() {
                 return;
             }
 
-            if (formData.expiryDate && new Date(formData.expiryDate) < new Date()) {
+            if (
+                formData.expiryDate &&
+                new Date(formData.expiryDate) < new Date()
+            ) {
                 setError("This form has expired.");
                 return;
             }
@@ -120,6 +180,7 @@ export default function PublicFormPage() {
             setQuestions(questionMap);
         } catch (err: any) {
             console.error(err);
+
             setError(
                 err?.response?.data?.message ||
                 "Unable to load this form. The link may be invalid."
@@ -128,6 +189,7 @@ export default function PublicFormPage() {
             setLoading(false);
         }
     };
+
 
     const handleAnswerChange = (questionId: number, value: string) => {
         setAnswers((previous) => ({
@@ -322,12 +384,23 @@ export default function PublicFormPage() {
                 return;
             }
 
-            const submission = await formBuilderService.submissions.create({
+            const submissionData = {
                 formId: form.id,
+             tourCode: tourCode || "",
                 respondentName,
                 respondentEmail,
                 respondentPhone,
-            });
+
+                ...(appliedCouponCode
+                    ? { couponCode: appliedCouponCode }
+                    : {}),
+            };
+
+            console.log("SUBMISSION REQUEST:", submissionData);
+
+            const submission =
+                await formBuilderService.submissions.create(submissionData);
+
 
             const answerList = allQuestions
                 .filter((question) => answers[question.id]?.trim())
@@ -395,8 +468,7 @@ export default function PublicFormPage() {
                             }
 
                             router.push("/tour-list");
-                        }}
-                    >
+                        }}>
                         View Other Tour Packages
                         <i className="bi bi-arrow-right"></i>
                     </button>
@@ -449,6 +521,20 @@ export default function PublicFormPage() {
                         <p>{form.formDescription}</p>
                     )}
                 </div>
+
+                {coupon?.couponCode && (
+                    <div className={`coupon-banner ${coupon.valid ? "ok" : "bad"}`}>
+                        <i className={`bi ${coupon.valid ? "bi-tag-fill" : "bi-x-circle-fill"}`} />
+                        {coupon.valid ? (
+                            <span>
+                                Coupon <strong>{coupon.couponCode}</strong> applied:{" "}
+                                {coupon.percentage}% off
+                            </span>
+                        ) : (
+                            <span>{coupon.message}</span>
+                        )}
+                    </div>
+                )}
 
                 <div className="public-respondent-section">
                     <h3>Personal Information</h3>

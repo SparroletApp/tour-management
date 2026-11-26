@@ -19,5 +19,6 @@ public interface TourPackageService extends CrudService<TourPackageDto> {
             TourCompanyIdDto request
     );
 
+
     TourPackageFullDto getFullByTourCode(String tourCode);
 }

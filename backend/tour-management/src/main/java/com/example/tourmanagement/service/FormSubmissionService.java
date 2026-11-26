@@ -11,6 +11,8 @@ public interface FormSubmissionService {
     List<SubmissionResponseDto> getSubmissionsByForm(SubmissionIdDto dto);
 
     SubmissionResponseDto getSubmissionById(SubmissionIdDto dto);
-
+    List<SubmissionResponseDto> getSubmissionsByPackage(
+            PackageSubmissionIdDto dto
+    );
     String deleteSubmission(SubmissionIdDto dto);
 }

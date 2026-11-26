@@ -36,20 +36,16 @@ public class SecurityConfig {
             throws Exception {
 
         http
-                // CORS configuration
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
 
-                // Disable CSRF
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // Stateless authentication
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
-                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
 
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
@@ -62,6 +58,9 @@ public class SecurityConfig {
                                 "/api/forms/**",
                                 "/api/tours/**",
                                 "/uploads/**",
+                                "/api/coupons/get-by-company",
+                                "/api/coupons/validate/tourcode",
+                                "/api/coupons/validate",
                                 "/api/tours/public/**",
                                 "/api/answers/submit",
                                 "/api/form-sections/get-by-form",

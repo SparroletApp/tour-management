@@ -1,7 +1,7 @@
 
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -18,14 +18,35 @@ export default function CreateForm() {
     const [formDescription, setFormDescription] = useState("");
     const [allowMultipleSubmissions, setAllowMultipleSubmissions] = useState(true);
     const [expiryDate, setExpiryDate] = useState("");
+    const packageSearchRef = useRef<HTMLDivElement>(null);
     const [companyId, setCompanyId] = useState<number | null>(null);
+
     const [packages, setPackages] = useState<TourPackage[]>([]);
-    const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
+    const [selectedPackages, setSelectedPackages] = useState<TourPackage[]>([]);
+
     const [packageSearch, setPackageSearch] = useState("");
     const [showPackageDropdown, setShowPackageDropdown] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [packageLoading, setPackageLoading] = useState(true);
+
+    // Close package dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                packageSearchRef.current &&
+                !packageSearchRef.current.contains(event.target as Node)
+            ) {
+                setShowPackageDropdown(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         const storedCompanyId = sessionStorage.getItem("company_id");
@@ -39,7 +60,7 @@ export default function CreateForm() {
         setCompanyId(Number(storedCompanyId));
     }, [router]);
 
-
+    // Fetch unassigned packages
     useEffect(() => {
         if (!companyId) return;
 
@@ -52,7 +73,7 @@ export default function CreateForm() {
 
                 setPackages(response || []);
             } catch (error) {
-                console.error("Error loading unassigned tour packages:", error);
+                console.error("Error loading tour packages:", error);
                 alert("Unable to load available tour packages.");
             } finally {
                 setPackageLoading(false);
@@ -62,39 +83,49 @@ export default function CreateForm() {
         fetchPackages();
     }, [companyId]);
 
-
+    // Filter packages
     const filteredPackages = useMemo(() => {
         const search = packageSearch.trim().toLowerCase();
 
-        if (!search) {
-            return packages;
-        }
+        return packages.filter((pkg) => {
+            const matchesSearch =
+                !search ||
+                `${pkg.tourCode || ""} ${pkg.tourName || ""}`
+                    .toLowerCase()
+                    .includes(search);
 
-        return packages.filter((pkg) =>
-            `${pkg.tourCode || ""} ${pkg.tourName || ""}`
-                .toLowerCase()
-                .includes(search)
-        );
-    }, [packages, packageSearch]);
+            const alreadySelected = selectedPackages.some(
+                (selected) => selected.id === pkg.id
+            );
 
+            return matchesSearch && !alreadySelected;
+        });
+    }, [packages, packageSearch, selectedPackages]);
+
+    // Select package
     const handlePackageSelect = (pkg: TourPackage) => {
-        setSelectedPackage(pkg);
+        if (!pkg.id) return;
 
-        setPackageSearch(
-            `${pkg.tourCode ? pkg.tourCode + " - " : ""}${pkg.tourName}`
-        );
+        setSelectedPackages((previous) => {
+            if (previous.some((item) => item.id === pkg.id)) {
+                return previous;
+            }
 
+            return [...previous, pkg];
+        });
+
+        setPackageSearch("");
         setShowPackageDropdown(false);
     };
 
-    const handlePackageSearch = (value: string) => {
-        setPackageSearch(value);
-        setSelectedPackage(null);
-        setShowPackageDropdown(true);
+    // Remove package
+    const handleRemovePackage = (packageId: number) => {
+        setSelectedPackages((previous) =>
+            previous.filter((pkg) => pkg.id !== packageId)
+        );
     };
 
-
-
+    // Submit form
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -103,8 +134,8 @@ export default function CreateForm() {
             return;
         }
 
-        if (!selectedPackage || !selectedPackage.id) {
-            alert("Please select a tour package.");
+        if (selectedPackages.length === 0) {
+            alert("Please select at least one tour package.");
             return;
         }
 
@@ -117,25 +148,22 @@ export default function CreateForm() {
             setLoading(true);
 
             const response = await formBuilderService.forms.create({
-                companyId: companyId,
-                packageId: selectedPackage.id,
+                companyId,
+                packageIds: selectedPackages.map((pkg) => pkg.id!),
                 formTitle: formTitle.trim(),
                 formDescription: formDescription.trim(),
                 allowMultipleSubmissions,
                 expiryDate: expiryDate || null,
             });
 
-            const createdForm = response;
-
-            if (!createdForm.slug) {
+            if (!response.slug) {
                 alert("Form created, but slug was not returned by the server.");
                 return;
             }
 
             router.push(
-                `/forms/${encodeURIComponent(createdForm.slug)}/builder`
+                `/forms/${encodeURIComponent(response.slug)}/builder`
             );
-
         } catch (error) {
             console.error("Create form error:", error);
             alert("Unable to create form.");
@@ -161,9 +189,10 @@ export default function CreateForm() {
                 </div>
 
                 <form className="create-form-card" onSubmit={handleSubmit}>
-                    <div className="form-field package-search-field">
+
+                    <div className="form-field package-search-field" ref={packageSearchRef}>
                         <label>
-                            Select Tour Package <span>*</span>
+                            Select Tour Packages <span>*</span>
                         </label>
 
                         <div className="package-search-wrapper">
@@ -175,12 +204,11 @@ export default function CreateForm() {
                                     type="text"
                                     value={packageSearch}
                                     className="search-name-data"
-                                    onChange={(e) =>
-                                        handlePackageSearch(e.target.value)
-                                    }
-                                    onFocus={() =>
-                                        setShowPackageDropdown(true)
-                                    }
+                                    onChange={(e) => {
+                                        setPackageSearch(e.target.value);
+                                        setShowPackageDropdown(true);
+                                    }}
+                                    onFocus={() => setShowPackageDropdown(true)}
                                     placeholder="Search by tour name or code..."
                                     autoComplete="off"
                                 />
@@ -189,11 +217,7 @@ export default function CreateForm() {
                                     <button
                                         type="button"
                                         className="package-clear-btn"
-                                        onClick={() => {
-                                            setPackageSearch("");
-                                            setSelectedPackage(null);
-                                            setShowPackageDropdown(true);
-                                        }}
+                                        onClick={() => setPackageSearch("")}
                                     >
                                         <i className="bi bi-x-circle"></i>
                                     </button>
@@ -214,38 +238,28 @@ export default function CreateForm() {
                                             <button
                                                 type="button"
                                                 key={pkg.id}
-                                                className={`package-option ${selectedPackage?.id === pkg.id
-                                                    ? "selected"
-                                                    : ""
-                                                    }`}
-                                                onClick={() =>
-                                                    handlePackageSelect(pkg)
-                                                }
+                                                className="package-option"
+                                                onClick={() => handlePackageSelect(pkg)}
                                             >
                                                 <div className="package-option-icon">
                                                     <i className="bi bi-airplane"></i>
                                                 </div>
 
                                                 <div className="package-option-details">
-                                                    <strong>
-                                                        {pkg.tourName}
-                                                    </strong>
-
+                                                    <strong>{pkg.tourName}</strong>
                                                     <span>
                                                         {pkg.tourCode || "No tour code"}
                                                     </span>
                                                 </div>
 
-                                                {selectedPackage?.id === pkg.id && (
-                                                    <i className="bi bi-check-circle-fill package-check"></i>
-                                                )}
+                                                <i className="bi bi-plus-circle package-check"></i>
                                             </button>
                                         ))
 
                                     ) : (
                                         <div className="package-dropdown-message">
                                             <i className="bi bi-search"></i>
-                                            No tour packages found.
+                                            No available tour packages found.
                                         </div>
                                     )}
 
@@ -253,17 +267,56 @@ export default function CreateForm() {
                             )}
                         </div>
 
-                        {selectedPackage && (
-                            <div className="selected-package-info">
-                                <i className="bi bi-check-circle-fill"></i>
+                        {/* Selected Package Tags */}
+                        {selectedPackages.length > 0 && (
+                            <div className="selected-packages-container">
 
-                                Selected: {selectedPackage.tourName}
+                                <div className="selected-packages-heading">
+                                    <span>
+                                        Selected Packages
+                                    </span>
 
-                                {selectedPackage.tourCode &&
-                                    ` (${selectedPackage.tourCode})`}
+                                    <span className="selected-package-count">
+                                        {selectedPackages.length} selected
+                                    </span>
+                                </div>
+
+                                <div className="selected-packages-list">
+                                    {selectedPackages.map((pkg) => (
+                                        <div
+                                            className="selected-package-tag"
+                                            key={pkg.id}
+                                        >
+                                            <div className="selected-package-tag-icon">
+                                                <i className="bi bi-airplane"></i>
+                                            </div>
+
+                                            <div className="selected-package-tag-details">
+                                                <strong>{pkg.tourName}</strong>
+
+                                                <span>
+                                                    {pkg.tourCode || "No tour code"}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                className="remove-selected-package"
+                                                onClick={() =>
+                                                    handleRemovePackage(pkg.id!)
+                                                }
+                                                title="Remove package"
+                                            >
+                                                <i className="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
+
+                    {/* Form Title */}
                     <div className="form-field">
                         <label>Form Title *</label>
 
@@ -276,31 +329,30 @@ export default function CreateForm() {
                         />
                     </div>
 
+                    {/* Description */}
                     <div className="form-field">
                         <label>Description</label>
 
                         <textarea
                             value={formDescription}
-                            onChange={(e) =>
-                                setFormDescription(e.target.value)
-                            }
+                            onChange={(e) => setFormDescription(e.target.value)}
                             placeholder="Enter form description"
                             rows={4}
                         />
                     </div>
 
+                    {/* Expiry Date */}
                     <div className="form-field">
                         <label>Expiry Date</label>
 
                         <input
                             type="datetime-local"
                             value={expiryDate}
-                            onChange={(e) =>
-                                setExpiryDate(e.target.value)
-                            }
+                            onChange={(e) => setExpiryDate(e.target.value)}
                         />
                     </div>
 
+                    {/* Multiple Submissions */}
                     <label className="form-checkbox">
                         <input
                             type="checkbox"
@@ -313,6 +365,7 @@ export default function CreateForm() {
                         Allow multiple submissions
                     </label>
 
+                    {/* Actions */}
                     <div className="create-form-actions">
 
                         <button
@@ -326,7 +379,11 @@ export default function CreateForm() {
 
                         <button
                             type="submit"
-                            disabled={loading || packageLoading}
+                            disabled={
+                                loading ||
+                                packageLoading ||
+                                selectedPackages.length === 0
+                            }
                             className="form-primary-btn"
                         >
                             {loading ? "Creating..." : "Create and Continue"}

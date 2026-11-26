@@ -1,0 +1,480 @@
+
+/* =========================================
+   CREATE COUPON PAGE
+========================================= */
+
+.create-coupon-page {
+    width: 100%;
+    min-height: 100%;
+    padding: 24px;
+    background: #f5f8f7;
+    animation: createCouponPageFade 0.3s ease-in-out;
+}
+
+@keyframes createCouponPageFade {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   PAGE HEADING
+========================================= */
+
+.create-coupon-page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.create-coupon-page-heading h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #064e45;
+    margin: 0 0 6px;
+}
+
+.create-coupon-page-heading p {
+    font-size: 13px;
+    color: #82918d;
+    margin: 0;
+}
+
+.create-coupon-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #ffffff;
+    color: #064e45;
+    border: 1px solid #dce5e1;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.create-coupon-back:hover {
+    background: #064e45;
+    border-color: #064e45;
+    color: #ffffff;
+}
+
+.create-coupon-back i {
+    font-size: 14px;
+}
+
+.create-coupon-back:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   COUPON FORM CONTAINER
+========================================= */
+
+.create-coupon-container {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e8eeeb;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 15px rgba(6, 78, 69, 0.04);
+}
+
+/* =========================================
+   FORM HEADER
+========================================= */
+
+.create-coupon-container .create-coupon-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 26px;
+    background: #ffffff;
+    border-bottom: 1px solid #edf1ef;
+}
+
+.create-coupon-header h4 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #064e45;
+    margin: 0 0 5px;
+}
+
+.create-coupon-header p {
+    font-size: 12px;
+    color: #82918d;
+    margin: 0;
+}
+
+/* =========================================
+   FORM BODY
+========================================= */
+
+.create-coupon-body {
+    padding: 28px 26px;
+}
+
+.create-coupon-body .row {
+    margin-bottom: 5px;
+}
+
+.create-coupon-field {
+    width: 100%;
+    margin-bottom: 22px;
+}
+
+.create-coupon-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #344a44;
+    margin-bottom: 9px;
+}
+
+.create-coupon-field label span {
+    color: #dc3545;
+    font-weight: 700;
+}
+
+/* =========================================
+   INPUT FIELDS
+========================================= */
+
+.create-coupon-field > input,
+.create-coupon-field > select,
+.create-coupon-percentage input {
+    display: block;
+    width: 100%;
+    height: 44px;
+    padding: 10px 13px;
+    background-color: #ffffff;
+    border: 1px solid #dce5e1;
+    border-radius: 7px;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #263c38;
+    transition: all 0.2s ease;
+}
+
+.create-coupon-field input::placeholder {
+    color: #a6b2ad;
+    font-weight: 400;
+}
+
+.create-coupon-field > input:hover,
+.create-coupon-field > select:hover,
+.create-coupon-percentage input:hover {
+    border-color: #a8c3ba;
+}
+
+.create-coupon-field > input:focus,
+.create-coupon-field > select:focus,
+.create-coupon-percentage input:focus {
+    border-color: #064e45;
+    box-shadow: 0 0 0 3px rgba(6, 78, 69, 0.09);
+}
+
+/* =========================================
+   COUPON CODE INPUT
+========================================= */
+
+.create-coupon-field input[type="text"] {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* =========================================
+   PERCENTAGE INPUT
+========================================= */
+
+.create-coupon-percentage {
+    position: relative;
+    width: 100%;
+}
+
+.create-coupon-percentage input {
+    padding-right: 45px;
+}
+
+.create-coupon-percentage span {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: #064e45;
+    font-size: 14px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+/* =========================================
+   SELECT FIELD
+========================================= */
+
+.create-coupon-field select {
+    cursor: pointer;
+    appearance: auto;
+}
+
+/* =========================================
+   HELPER TEXT
+========================================= */
+
+.create-coupon-field small {
+    display: block;
+    margin-top: 7px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #82918d;
+    font-weight: 400;
+}
+
+/* =========================================
+   FORM FOOTER
+========================================= */
+
+.create-coupon-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 26px;
+    background: #ffffff;
+    border-top: 1px solid #edf1ef;
+}
+
+/* =========================================
+   CANCEL BUTTON
+========================================= */
+
+.create-coupon-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    padding: 11px 19px;
+    background: #f1f5f3;
+    color: #53645f;
+    border: 1px solid #e5ece8;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.create-coupon-cancel:hover {
+    background: #e6eeea;
+    color: #344a44;
+}
+
+/* =========================================
+   CREATE BUTTON
+========================================= */
+
+.create-coupon-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 155px;
+    padding: 11px 20px;
+    background: #064e45;
+    color: #ffffff;
+    border: 1px solid #064e45;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.create-coupon-submit:hover {
+    background: #043c35;
+    border-color: #043c35;
+    box-shadow: 0 4px 12px rgba(6, 78, 69, 0.16);
+    transform: translateY(-1px);
+}
+
+.create-coupon-submit:active {
+    transform: translateY(0);
+}
+
+.create-coupon-submit i {
+    font-size: 14px;
+}
+
+.create-coupon-submit .spinner-border {
+    width: 15px;
+    height: 15px;
+    border-width: 2px;
+}
+
+/* =========================================
+   DISABLED BUTTONS
+========================================= */
+
+.create-coupon-cancel:disabled,
+.create-coupon-submit:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* =========================================
+   DATE INPUT
+========================================= */
+
+.create-coupon-field input[type="date"] {
+    cursor: pointer;
+}
+
+/* =========================================
+   NUMBER INPUT
+========================================= */
+
+.create-coupon-field input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.create-coupon-field input[type="number"]::-webkit-inner-spin-button,
+.create-coupon-field input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* =========================================
+   TABLET RESPONSIVE
+========================================= */
+
+@media (max-width: 991px) {
+    .create-coupon-page {
+        padding: 20px;
+    }
+
+    .create-coupon-body {
+        padding: 24px;
+    }
+
+    .create-coupon-page-heading h2 {
+        font-size: 22px;
+    }
+}
+
+/* =========================================
+   MOBILE RESPONSIVE
+========================================= */
+
+@media (max-width: 576px) {
+    .create-coupon-page {
+        padding: 15px;
+    }
+
+    .create-coupon-page-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .create-coupon-page-heading h2 {
+        font-size: 20px;
+    }
+
+    .create-coupon-page-heading p {
+        font-size: 12px;
+    }
+
+    .create-coupon-back {
+        width: 100%;
+    }
+
+    .create-coupon-container {
+        border-radius: 9px;
+    }
+
+    .create-coupon-container .create-coupon-header {
+        padding: 18px;
+    }
+
+    .create-coupon-header h4 {
+        font-size: 16px;
+    }
+
+    .create-coupon-body {
+        padding: 20px 18px;
+    }
+
+    .create-coupon-field {
+        margin-bottom: 19px;
+    }
+
+    .create-coupon-field label {
+        font-size: 12px;
+    }
+
+    .create-coupon-field > input,
+    .create-coupon-field > select,
+    .create-coupon-percentage input {
+        height: 43px;
+        font-size: 13px;
+    }
+
+    .create-coupon-footer {
+        padding: 15px 18px;
+        gap: 9px;
+    }
+
+    .create-coupon-cancel,
+    .create-coupon-submit {
+        flex: 1;
+        min-width: 0;
+        padding: 11px 10px;
+        font-size: 12px;
+    }
+}
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 360px) {
+    .create-coupon-page {
+        padding: 10px;
+    }
+
+    .create-coupon-body {
+        padding: 16px 13px;
+    }
+
+    .create-coupon-container .create-coupon-header {
+        padding: 16px 13px;
+    }
+
+    .create-coupon-footer {
+        padding: 13px;
+    }
+
+    .create-coupon-cancel,
+    .create-coupon-submit {
+        padding: 10px 7px;
+        font-size: 11px;
+    }
+}

@@ -1,0 +1,511 @@
+
+/* =========================================
+   EDIT COUPON PAGE
+========================================= */
+
+.edit-coupon-page {
+    width: 100%;
+    min-height: 100%;
+    padding: 24px;
+    background: #f5f8f7;
+    animation: editCouponPageFade 0.3s ease-in-out;
+}
+
+@keyframes editCouponPageFade {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   PAGE HEADING
+========================================= */
+
+.edit-coupon-page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.edit-coupon-page-heading h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #064e45;
+    margin: 0 0 6px;
+}
+
+.edit-coupon-page-heading p {
+    font-size: 13px;
+    color: #82918d;
+    margin: 0;
+}
+
+/* =========================================
+   BACK BUTTON
+========================================= */
+
+.edit-coupon-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #ffffff;
+    color: #064e45;
+    border: 1px solid #dce5e1;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.edit-coupon-back:hover {
+    background: #064e45;
+    border-color: #064e45;
+    color: #ffffff;
+}
+
+.edit-coupon-back i {
+    font-size: 14px;
+}
+
+.edit-coupon-back:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   FORM CONTAINER
+========================================= */
+
+.edit-coupon-container {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e8eeeb;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 15px rgba(6, 78, 69, 0.04);
+}
+
+/* =========================================
+   FORM HEADER
+========================================= */
+
+.edit-coupon-container .edit-coupon-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 26px;
+    background: #ffffff;
+    border-bottom: 1px solid #edf1ef;
+}
+
+.edit-coupon-header h4 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #064e45;
+    margin: 0 0 5px;
+}
+
+.edit-coupon-header p {
+    font-size: 12px;
+    color: #82918d;
+    margin: 0;
+}
+
+/* =========================================
+   FORM BODY
+========================================= */
+
+.edit-coupon-body {
+    padding: 28px 26px;
+}
+
+.edit-coupon-body .row {
+    margin-bottom: 5px;
+}
+
+.edit-coupon-field {
+    width: 100%;
+    margin-bottom: 22px;
+}
+
+/* =========================================
+   LABELS
+========================================= */
+
+.edit-coupon-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #344a44;
+    margin-bottom: 9px;
+}
+
+.edit-coupon-field label span {
+    color: #dc3545;
+    font-weight: 700;
+}
+
+/* =========================================
+   INPUT FIELDS
+========================================= */
+
+.edit-coupon-field > input,
+.edit-coupon-field > select,
+.edit-coupon-percentage input {
+    display: block;
+    width: 100%;
+    height: 44px;
+    padding: 10px 13px;
+    background: #ffffff;
+    border: 1px solid #dce5e1;
+    border-radius: 7px;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #263c38;
+    transition: all 0.2s ease;
+}
+
+.edit-coupon-field input::placeholder {
+    color: #a6b2ad;
+    font-weight: 400;
+}
+
+.edit-coupon-field > input:hover,
+.edit-coupon-field > select:hover,
+.edit-coupon-percentage input:hover {
+    border-color: #a8c3ba;
+}
+
+.edit-coupon-field > input:focus,
+.edit-coupon-field > select:focus,
+.edit-coupon-percentage input:focus {
+    border-color: #064e45;
+    box-shadow: 0 0 0 3px rgba(6, 78, 69, 0.09);
+}
+
+/* =========================================
+   COUPON CODE
+========================================= */
+
+.edit-coupon-field input[type="text"] {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* =========================================
+   PERCENTAGE FIELD
+========================================= */
+
+.edit-coupon-percentage {
+    position: relative;
+    width: 100%;
+}
+
+.edit-coupon-percentage input {
+    padding-right: 45px;
+}
+
+.edit-coupon-percentage span {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: #064e45;
+    font-size: 14px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+/* =========================================
+   SELECT FIELD
+========================================= */
+
+.edit-coupon-field select {
+    cursor: pointer;
+    appearance: auto;
+}
+
+/* =========================================
+   HELPER TEXT
+========================================= */
+
+.edit-coupon-field small {
+    display: block;
+    margin-top: 7px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #82918d;
+    font-weight: 400;
+}
+
+/* =========================================
+   DISABLED USED COUNT FIELD
+========================================= */
+
+.edit-coupon-field input:disabled,
+.edit-coupon-field input[readonly] {
+    background: #f1f5f3;
+    border-color: #e3ebe7;
+    color: #82918d;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.edit-coupon-field input:disabled:focus,
+.edit-coupon-field input[readonly]:focus {
+    border-color: #e3ebe7;
+    box-shadow: none;
+}
+
+/* =========================================
+   DATE INPUT
+========================================= */
+
+.edit-coupon-field input[type="date"] {
+    cursor: pointer;
+}
+
+/* =========================================
+   NUMBER INPUT
+========================================= */
+
+.edit-coupon-field input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.edit-coupon-field input[type="number"]::-webkit-inner-spin-button,
+.edit-coupon-field input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* =========================================
+   FORM FOOTER
+========================================= */
+
+.edit-coupon-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 26px;
+    background: #ffffff;
+    border-top: 1px solid #edf1ef;
+}
+
+/* =========================================
+   CANCEL BUTTON
+========================================= */
+
+.edit-coupon-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    padding: 11px 19px;
+    background: #f1f5f3;
+    color: #53645f;
+    border: 1px solid #e5ece8;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-coupon-cancel:hover {
+    background: #e6eeea;
+    color: #344a44;
+}
+
+/* =========================================
+   UPDATE BUTTON
+========================================= */
+
+.edit-coupon-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 160px;
+    padding: 11px 20px;
+    background: #064e45;
+    color: #ffffff;
+    border: 1px solid #064e45;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-coupon-submit:hover {
+    background: #043c35;
+    border-color: #043c35;
+    box-shadow: 0 4px 12px rgba(6, 78, 69, 0.16);
+    transform: translateY(-1px);
+}
+
+.edit-coupon-submit:active {
+    transform: translateY(0);
+}
+
+.edit-coupon-submit i {
+    font-size: 15px;
+}
+
+/* =========================================
+   LOADING SPINNER
+========================================= */
+
+.edit-coupon-submit .spinner-border {
+    width: 15px;
+    height: 15px;
+    border-width: 2px;
+}
+
+/* =========================================
+   DISABLED BUTTONS
+========================================= */
+
+.edit-coupon-cancel:disabled,
+.edit-coupon-submit:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* =========================================
+   TABLET RESPONSIVE
+========================================= */
+
+@media (max-width: 991px) {
+    .edit-coupon-page {
+        padding: 20px;
+    }
+
+    .edit-coupon-body {
+        padding: 24px;
+    }
+
+    .edit-coupon-page-heading h2 {
+        font-size: 22px;
+    }
+}
+
+/* =========================================
+   MOBILE RESPONSIVE
+========================================= */
+
+@media (max-width: 576px) {
+    .edit-coupon-page {
+        padding: 15px;
+    }
+
+    .edit-coupon-page-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .edit-coupon-page-heading h2 {
+        font-size: 20px;
+    }
+
+    .edit-coupon-page-heading p {
+        font-size: 12px;
+    }
+
+    .edit-coupon-back {
+        width: 100%;
+    }
+
+    .edit-coupon-container {
+        border-radius: 9px;
+    }
+
+    .edit-coupon-container .edit-coupon-header {
+        padding: 18px;
+    }
+
+    .edit-coupon-header h4 {
+        font-size: 16px;
+    }
+
+    .edit-coupon-body {
+        padding: 20px 18px;
+    }
+
+    .edit-coupon-field {
+        margin-bottom: 19px;
+    }
+
+    .edit-coupon-field label {
+        font-size: 12px;
+    }
+
+    .edit-coupon-field > input,
+    .edit-coupon-field > select,
+    .edit-coupon-percentage input {
+        height: 43px;
+        font-size: 13px;
+    }
+
+    .edit-coupon-footer {
+        padding: 15px 18px;
+        gap: 9px;
+    }
+
+    .edit-coupon-cancel,
+    .edit-coupon-submit {
+        flex: 1;
+        min-width: 0;
+        padding: 11px 10px;
+        font-size: 12px;
+    }
+}
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 360px) {
+    .edit-coupon-page {
+        padding: 10px;
+    }
+
+    .edit-coupon-container .edit-coupon-header {
+        padding: 16px 13px;
+    }
+
+    .edit-coupon-body {
+        padding: 16px 13px;
+    }
+
+    .edit-coupon-footer {
+        padding: 13px;
+    }
+
+    .edit-coupon-cancel,
+    .edit-coupon-submit {
+        padding: 10px 7px;
+        font-size: 11px;
+    }
+}

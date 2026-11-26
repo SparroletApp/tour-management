@@ -232,3 +232,62 @@ databaseChangeLog:
         - sqlFile:
             path: sql/alter_iteranary_days_add_images.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_terms_table
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_terms_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: create_coupon_entity
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/create_coupon_entity.sql
+            relativeToChangelogFile: true
+
+
+  - changeSet:
+      id: alter_package_add_coupon
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_package_add_coupon.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_coupon_add_expiry
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_coupon_add_expiry.sql
+            relativeToChangelogFile: true
+
+
+  - changeSet:
+      id: alter_submission_add_coupon
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_submission_add_coupon.sql
+            relativeToChangelogFile: true
+
+
+  - changeSet:
+      id: alter_form_package_id_array
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_form_package_id_array.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: alter_form_submission_add_package_id
+      author: amrutha
+      changes:
+        - sqlFile:
+            path: sql/alter_form_submission_add_package_id.sql
+            relativeToChangelogFile: true

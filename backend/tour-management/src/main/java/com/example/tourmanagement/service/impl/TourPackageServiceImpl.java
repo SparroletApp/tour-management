@@ -1,5 +1,6 @@
 package com.example.tourmanagement.service.impl;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.example.tourmanagement.enums.CouponStatus;
 import com.example.tourmanagement.service.GarageStorageService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
@@ -26,8 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage, TourPackageDto>
-        implements TourPackageService {
+public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage, TourPackageDto> implements TourPackageService {
     private final GarageStorageService garageStorageService;
     private final TourPackageRepository packageRepo;
     private final TourDestinationRepository destinationRepo;
@@ -42,7 +43,9 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
     private final TourPriceRuleRepository priceRuleRepo;
     private final TourMediaRepository mediaRepo;
     private final CompanyRepository companyRepository;
+    private final CouponRepository couponRepository;
     private final TourPackageRepository tourPackageRepository;
+
     @Override
     protected JpaRepository<TourPackage, Long> repo() {
         return packageRepo;
@@ -100,7 +103,7 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
 
         TourPackage pkg = findEntity(id);
 
-        if (formRepository.existsByTourPackage_Id(id)) {
+        if (formRepository.existsByTourPackages_Id(id)) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Cannot delete this tour package because it is already assigned to a form. Please delete the assigned form first."
@@ -118,7 +121,6 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
         }
     }
 
-
     @Override
     @Transactional
     public TourPackageFullDto createFull(TourPackageFullDto req) {
@@ -135,7 +137,6 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
             throw bad("Company ID is required");
         }
 
-        // Find company using company ID
         CompanyEntity company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -143,6 +144,7 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
                 ));
 
         pkg.setCompany(company);
+        applyCoupon(pkg, req.getTourPackage().getCouponId(), companyId);
 
         pkg.setTourCode(generateTourCode());
 
@@ -162,8 +164,12 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
         if (req == null || req.getTourPackage() == null) {
             throw bad("tourPackage is required");
         }
+
         TourPackage existing = findEntity(id);
+
         org.springframework.beans.BeanUtils.copyProperties(req.getTourPackage(), existing, IGNORED);
+        applyCoupon(existing, req.getTourPackage().getCouponId(), existing.getCompany().getId());
+
         validate(existing, id);
         prepare(existing);
         packageRepo.save(existing);
@@ -180,11 +186,7 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
 
         TourPackageFullDto full = new TourPackageFullDto();
         TourPackageDto dto = toDto(pkg);
-
-        if (pkg.getCompany() != null) {
-            dto.setCompanyId(pkg.getCompany().getId());
-            dto.setCompanyName(pkg.getCompany().getCompanyName());
-        }
+        fillRelations(pkg, dto);   // company + coupon
 
         full.setTourPackage(dto);
         full.setDestinations(destinationRepo.findByTourPackageIdOrderBySequenceNumber(id).stream()
@@ -215,8 +217,6 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
                 .map(e -> copy(e, TourMediaDto::new)).toList());
         return full;
     }
-
-
 
     // ---------- helpers ----------
 
@@ -318,6 +318,42 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
         }
     }
 
+    private void applyCoupon(TourPackage pkg, Long couponId, Long companyId) {
+        if (couponId == null) {
+            pkg.setCoupon(null);
+            return;
+        }
+
+        CouponEntity coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> bad("Coupon not found with ID: " + couponId));
+
+        // A tour may only use a coupon from its own company
+        if (!coupon.getCompany().getId().equals(companyId)) {
+            throw bad("This coupon does not belong to the tour's company");
+        }
+
+        pkg.setCoupon(coupon);
+    }
+
+    private void fillRelations(TourPackage pkg, TourPackageDto dto) {
+        if (pkg.getCompany() != null) {
+            dto.setCompanyId(pkg.getCompany().getId());
+            dto.setCompanyName(pkg.getCompany().getCompanyName());
+        }
+
+        CouponEntity c = pkg.getCoupon();
+        if (c != null) {
+            boolean valid = c.getStatus() == CouponStatus.ACTIVE
+                    && (c.getExpiryDate() == null || !c.getExpiryDate().isBefore(LocalDate.now()))
+                    && (c.getUsageLimit() == null || c.getUsedCount() < c.getUsageLimit());
+
+            dto.setCouponId(c.getId());
+            dto.setCouponCode(c.getCouponCode());
+            dto.setCouponPercentage(c.getPercentage());
+            dto.setCouponValid(valid);
+        }
+    }
+
     private void deleteChildren(Long id) {
         for (TourItineraryDay d : dayRepo.findByTourPackageIdOrderByDayNumber(id)) {
             activityRepo.deleteAll(activityRepo.findByItineraryDayIdOrderBySequenceNumber(d.getId()));
@@ -370,13 +406,15 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
     }
 
     @Override
+    @Transactional(readOnly = true)
     public TourPackageFullDto getFullByTourCode(String tourCode) {
 
         TourPackage tour = tourPackageRepository
                 .findByTourCodeIgnoreCase(tourCode)
-                .orElseThrow(() ->
-                        new RuntimeException("Tour not found: " + tourCode)
-                );
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Tour not found: " + tourCode
+                ));
 
         return getFull(tour.getId());
     }
@@ -401,18 +439,12 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
                 packageRepo.findByCompany_Id(companyId);
 
         return packages.stream().map(pkg -> {
-
             TourPackageDto dto = toDto(pkg);
-
-            if (pkg.getCompany() != null) {
-                dto.setCompanyId(pkg.getCompany().getId());
-                dto.setCompanyName(pkg.getCompany().getCompanyName());
-            }
-
+            fillRelations(pkg, dto);
             return dto;
-
         }).toList();
     }
+
     private void deleteFromGarageAfterCommit(String objectKey) {
 
         TransactionSynchronizationManager.registerSynchronization(
@@ -448,17 +480,10 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
 
         return packages.stream().map(pkg -> {
             TourPackageDto dto = toDto(pkg);
-
-            if (pkg.getCompany() != null) {
-                dto.setCompanyId(pkg.getCompany().getId());
-                dto.setCompanyName(pkg.getCompany().getCompanyName());
-            }
-
+            fillRelations(pkg, dto);
             return dto;
         }).toList();
     }
-
-
 
     private static <T> List<T> orEmpty(List<T> list) {
         return list == null ? List.of() : list;
@@ -471,6 +496,7 @@ public class TourPackageServiceImpl extends AbstractCrudServiceImpl<TourPackage,
 
         return prefix + String.format("%04d", nextId);
     }
+
     private <T> void autoSequence(List<T> items, Function<T, Integer> getter, BiConsumer<T, Integer> setter) {
         for (int i = 0; i < items.size(); i++) {
             if (getter.apply(items.get(i)) == null) {

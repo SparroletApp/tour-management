@@ -3,6 +3,7 @@ package com.example.tourmanagement.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -38,6 +39,11 @@ public class FormSubmissionEntity {
 
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "package_id", nullable = true)
+    private TourPackage tourPackage;
+
+
     @PrePersist
     public void onCreate() {
         createdAt = LocalDateTime.now();
@@ -47,4 +53,10 @@ public class FormSubmissionEntity {
             status = "SUBMITTED";
         }
     }
+
+    @Column(name = "coupon_code")
+    private String couponCode;
+
+    @Column(name = "discount_percentage", precision = 5, scale = 2)
+    private BigDecimal discountPercentage;
 }

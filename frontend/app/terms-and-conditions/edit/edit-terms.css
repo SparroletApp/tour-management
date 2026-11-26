@@ -1,0 +1,254 @@
+.edit-terms-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 15px;
+    background: #e8f3f0;
+    color: #064e45;
+    border: 1px solid #d5e9e3;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.edit-terms-btn:hover {
+    background: #064e45;
+    color: #fff;
+    border-color: #064e45;
+}
+
+/* Overlay */
+.edit-terms-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 30, 27, 0.58);
+    backdrop-filter: blur(3px);
+    animation: editTermsFade 0.2s ease;
+}
+
+/* Modal */
+.edit-terms-modal {
+    width: 100%;
+    max-width: 550px;
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 15px 60px rgba(0, 0, 0, 0.18);
+    animation: editTermsSlide 0.25s ease;
+}
+
+.edit-terms-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 22px 25px;
+    border-bottom: 1px solid #edf0ef;
+}
+
+.edit-terms-modal-header h3 {
+    margin: 0 0 6px;
+    color: #243b36;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.edit-terms-modal-header p {
+    margin: 0;
+    color: #899590;
+    font-size: 13px;
+}
+
+.edit-terms-close {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 7px;
+    background: #f1f5f4;
+    color: #53635e;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-terms-close:hover {
+    background: #e5eeeb;
+    color: #064e45;
+}
+
+/* Form */
+.edit-terms-modal-body {
+    padding: 25px;
+}
+
+.edit-terms-form-group {
+    margin-bottom: 21px;
+}
+
+.edit-terms-form-group:last-child {
+    margin-bottom: 0;
+}
+
+.edit-terms-form-group label {
+    display: block;
+    margin-bottom: 9px;
+    color: #344640;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.edit-terms-form-group label span {
+    color: #dc4545;
+}
+
+.edit-terms-form-group input,
+.edit-terms-form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #dce5e1;
+    border-radius: 8px;
+    outline: none;
+    color: #263c36;
+    background: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+.edit-terms-form-group input {
+    height: 45px;
+}
+
+.edit-terms-form-group textarea {
+    min-height: 130px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.edit-terms-form-group input:focus,
+.edit-terms-form-group textarea:focus {
+    border-color: #064e45;
+    box-shadow: 0 0 0 3px rgba(6, 78, 69, 0.08);
+}
+
+.edit-terms-form-group input::placeholder,
+.edit-terms-form-group textarea::placeholder {
+    color: #a5afab;
+}
+
+/* Footer */
+.edit-terms-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 18px 25px;
+    background: #f9fbfa;
+    border-top: 1px solid #edf0ef;
+}
+
+.edit-terms-cancel,
+.edit-terms-save {
+    min-width: 110px;
+    padding: 11px 17px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.edit-terms-cancel {
+    background: #fff;
+    color: #53635e;
+    border: 1px solid #dce5e1;
+}
+
+.edit-terms-cancel:hover {
+    background: #f0f4f2;
+}
+
+.edit-terms-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #064e45;
+    color: #fff;
+    border: 1px solid #064e45;
+}
+
+.edit-terms-save:hover {
+    background: #043c35;
+}
+
+.edit-terms-save:disabled,
+.edit-terms-cancel:disabled,
+.edit-terms-close:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Spinner */
+.edit-terms-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: editTermsSpin 0.7s linear infinite;
+}
+
+/* Animations */
+@keyframes editTermsFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes editTermsSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes editTermsSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .edit-terms-modal {
+        max-width: 100%;
+    }
+
+    .edit-terms-modal-header,
+    .edit-terms-modal-body {
+        padding: 18px;
+    }
+
+    .edit-terms-modal-footer {
+        padding: 15px 18px;
+    }
+}

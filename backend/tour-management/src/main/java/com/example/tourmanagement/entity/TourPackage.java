@@ -27,6 +27,14 @@ public class TourPackage {
     private LocalDate endDate;
     private String coverImageUrl;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "form_id", nullable = true)
+    private FormEntity form;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "coupon_id", nullable = true)
+    private CouponEntity coupon;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     private CompanyEntity company;

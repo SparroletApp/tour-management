@@ -12,8 +12,9 @@ public class CreateSubmissionDto {
     private Long formId;
 
     private String respondentName;
-
+    private String tourCode;
     private String respondentEmail;
 
     private String respondentPhone;
+    private String couponCode;
 }

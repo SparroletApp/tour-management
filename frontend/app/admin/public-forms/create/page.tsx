@@ -18,6 +18,7 @@ export default function CreatePublicForm() {
         useState(true);
     const [expiryDate, setExpiryDate] = useState("");
     const [loading, setLoading] = useState(false);
+
     const Toast = Swal.mixin({
         toast: true,
         position: "top-end",
@@ -46,7 +47,7 @@ export default function CreatePublicForm() {
 
             const response = await formBuilderService.forms.create({
                 companyId: null,
-                packageId: null,
+                packageIds: [],
                 formTitle: formTitle.trim(),
                 formDescription: formDescription.trim(),
                 allowMultipleSubmissions,

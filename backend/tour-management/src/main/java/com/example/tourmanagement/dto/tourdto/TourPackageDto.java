@@ -1,5 +1,6 @@
 package com.example.tourmanagement.dto.tourdto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -21,7 +22,11 @@ public class TourPackageDto {
     private Integer minimumTravellers;
     private Integer maximumTravellers;
     private String currency;
+    private BigDecimal couponPercentage;
     private String status;
+    private Long couponId;
+    private Boolean couponValid;
+    private String couponCode;
     private Long companyId;
     private String companyName;
     private LocalDate startDate;

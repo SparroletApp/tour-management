@@ -19,6 +19,10 @@ export interface TourPackage extends Audit {
     startDate?: string | null;
     endDate?: string | null;
     coverImageUrl?: string | null;
+    couponId?: number | null;
+    couponCode?: string | null;
+    couponPercentage?: number | null;
+    couponValid?: boolean | null;
 }
 
 export interface TourDestination extends Audit {

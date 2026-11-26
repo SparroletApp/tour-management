@@ -1,8 +1,10 @@
+
 package com.example.tourmanagement.dto.formdto;
 
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,11 +14,14 @@ import java.time.LocalDateTime;
 public class CreateFormDto {
 
     private String formTitle;
+
     private Long companyId;
+
     private String formDescription;
 
     private Boolean allowMultipleSubmissions;
-    private Long packageId;
+
+    private List<Long> packageIds;
 
     private LocalDateTime expiryDate;
 }

@@ -13,6 +13,7 @@ import {
     getSelectedTourId,
     setSelectedTourId,
 } from "../utils/tourStorage";
+import couponService from "../apiservice/couponservice";
 
 
 function Tours() {
@@ -30,6 +31,11 @@ function Tours() {
     const endIndex = Math.min(startIndex + pageSize, tours.length);
 
     const currentTours = tours.slice(startIndex, endIndex);
+
+    const openFormSubmissions = (tourId: number) => {
+        localStorage.setItem("form_package_id", tourId.toString());
+        router.push("/tours/forms-submissions");
+    };
 
     useEffect(() => {
         const handleOutsideClick = (event: MouseEvent) => {
@@ -71,6 +77,7 @@ function Tours() {
         });
     };
 
+
     const getTourShareLink = (tour: TourPackage) => {
         const baseUrl = window.location.origin;
         const tourCode = encodeURIComponent(tour.tourCode ?? "");
@@ -78,6 +85,7 @@ function Tours() {
         return `${baseUrl}/tour-details/${tourCode}`;
     };
 
+    // Copy without coupon
     const handleCopyLink = async (tour: TourPackage) => {
         try {
             const link = getTourShareLink(tour);
@@ -89,6 +97,33 @@ function Tours() {
             showToast("error", "Unable to copy tour link!");
         }
     };
+
+    const handleCopyCouponLink = async (tour: TourPackage) => {
+        try {
+            const response = await couponService.getByPackageId({
+                packageId: tour.id as number,
+            });
+
+            const couponCode = response?.couponCode;
+
+            if (!couponCode) {
+                showToast("warning", "No coupon assigned to this tour!");
+                return;
+            }
+
+            const link = `${getTourShareLink(tour)}?couponCode=${encodeURIComponent(couponCode)}`;
+
+            await navigator.clipboard.writeText(link);
+
+            showToast("success", "Tour link with coupon copied successfully!");
+        } catch (error: any) {
+            showToast(
+                "error",
+                error?.response?.data?.message || "Unable to fetch coupon!"
+            );
+        }
+    };
+
 
     const handleWhatsAppShare = (tour: TourPackage) => {
         const link = getTourShareLink(tour);
@@ -384,6 +419,14 @@ function Tours() {
                                         </td>
 
                                         <td className="tour-actions">
+                                            <button
+                                                type="button"
+                                                className="submission-form"
+                                                onClick={() => openFormSubmissions(tour.id as number)}
+                                            >
+                                                <i className="bi bi-file-earmark-text"></i>
+                                                <span>Form Submissions</span>
+                                            </button>
                                             <div className="tour-action-menu">
 
                                                 <button
@@ -432,6 +475,14 @@ function Tours() {
                                                     >
                                                         <i className="bi bi-link-45deg"></i>
                                                         <span>Copy Tour Link</span>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleCopyCouponLink(tour)}
+                                                    >
+                                                        <i className="bi bi-ticket-perforated"></i>
+                                                        <span>Copy Link with Coupon</span>
                                                     </button>
 
                                                     <button

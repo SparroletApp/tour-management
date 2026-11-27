@@ -516,7 +516,10 @@ export default function TourForm({
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [coupons, setCoupons] = useState<Coupon[]>([]);
-    const [couponSearch, setCouponSearch] = useState("");
+    const [couponSearch, setCouponSearch] = useState(
+        initial?.tourPackage?.couponCode ?? ""
+    );
+
     const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
     const [couponLoading, setCouponLoading] = useState(false);
     const [showCouponSuggestions, setShowCouponSuggestions] = useState(false);
@@ -643,22 +646,30 @@ export default function TourForm({
                     companyId,
                 });
 
-                const today = new Date().toISOString().slice(0, 10);
+                const allCoupons = response ?? [];
 
-                const activeCoupons = (response ?? []).filter((coupon) => {
-                    const isActive = coupon.status === "ACTIVE";
+                // Keep all coupons so an already-applied coupon
+                // can still be displayed when editing.
+                setCoupons(allCoupons);
 
-                    const isNotExpired =
-                        !coupon.expiryDate || coupon.expiryDate >= today;
+                // Find the coupon already assigned to this tour.
+                const existingCouponId = data.tourPackage.couponId;
 
-                    const hasUsageAvailable =
-                        coupon.usageLimit === null ||
-                        coupon.usedCount < coupon.usageLimit;
+                if (existingCouponId) {
+                    const existingCoupon = allCoupons.find(
+                        (coupon) => coupon.id === existingCouponId
+                    );
 
-                    return isActive && isNotExpired && hasUsageAvailable;
-                });
-
-                setCoupons(activeCoupons);
+                    if (existingCoupon) {
+                        setSelectedCoupon(existingCoupon);
+                        setCouponSearch(existingCoupon.couponCode);
+                    } else {
+                        // Fallback to the coupon code returned by tour API.
+                        setCouponSearch(
+                            data.tourPackage.couponCode ?? ""
+                        );
+                    }
+                }
             } catch (err) {
                 console.error("Failed to load company coupons:", err);
                 setCoupons([]);
@@ -670,11 +681,29 @@ export default function TourForm({
         fetchCompanyCoupons();
     }, []);
 
-    const filteredCoupons = coupons.filter((coupon) =>
-        coupon.couponCode
+    const today = new Date().toISOString().slice(0, 10);
+
+    const filteredCoupons = coupons.filter((coupon) => {
+        const isActive = coupon.status === "ACTIVE";
+
+        const isNotExpired =
+            !coupon.expiryDate || coupon.expiryDate >= today;
+
+        const hasUsageAvailable =
+            coupon.usageLimit === null ||
+            coupon.usedCount < coupon.usageLimit;
+
+        const matchesSearch = coupon.couponCode
             .toLowerCase()
-            .includes(couponSearch.trim().toLowerCase())
-    );
+            .includes(couponSearch.trim().toLowerCase());
+
+        return (
+            isActive &&
+            isNotExpired &&
+            hasUsageAvailable &&
+            matchesSearch
+        );
+    });
 
     const handleCouponSelect = (coupon: Coupon) => {
         setSelectedCoupon(coupon);

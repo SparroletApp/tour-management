@@ -1424,7 +1424,7 @@
 
 .td-destination-image {
     position: relative;
-    height: 115px;
+    height: 250px;
     overflow: hidden;
     background: #edf3f0;
 }
@@ -1472,7 +1472,7 @@
 }
 
 .td-destination-content h4 {
-    font-size: 15px;
+    font-size: 17px;
     margin: 5px 0 3px;
     color: #203c34;
 }
@@ -1483,7 +1483,7 @@
 }
 
 .td-destination-content p {
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.5;
     margin: 7px 0 0;
     color: #718079;

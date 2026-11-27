@@ -1,21 +1,52 @@
+
 import api from "./apiservice";
 
 export interface OnlineImage {
-    id: number;
-    thumb: string;
+    id: string;
+    preview: string;
     full: string;
-    credit: string;
-    link: string;
+    photographer: string;
+    pageUrl: string;
+    photographerUrl: string;
+    downloadLocation: string;
 }
 
-export const searchImages = async (q: string, page = 1): Promise<OnlineImage[]> => {
-    const res = await api.get<{ images: OnlineImage[] }>("/api/images/search", {
-        params: { q, page },
-    });
-    return res.images ?? [];
+interface ImageSearchResponse {
+    images: OnlineImage[];
+}
+
+interface ImageImportResponse {
+    url: string;
+}
+
+export const searchImages = async (
+    q: string,
+    page = 1
+): Promise<OnlineImage[]> => {
+    const response = await api.get<ImageSearchResponse>(
+        "/api/images/search",
+        {
+            params: { q, page },
+        }
+    );
+
+    return response?.images ?? [];
 };
 
-export const importImage = async (url: string): Promise<string> => {
-    const res = await api.post<{ url: string }>("/api/images/import", { url });
-    return res.url;
+export const importImage = async (
+    image: OnlineImage
+): Promise<string> => {
+    const response = await api.post<ImageImportResponse>(
+        "/api/images/import",
+        {
+            url: image.full,
+            downloadLocation: image.downloadLocation,
+        }
+    );
+
+    if (!response?.url) {
+        throw new Error("Image import failed. Image URL not returned.");
+    }
+
+    return response.url;
 };

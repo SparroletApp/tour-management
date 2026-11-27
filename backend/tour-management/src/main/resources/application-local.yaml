@@ -49,8 +49,10 @@ garage:
 app:
   base-url: ${APP_BASE_URL}
 
-pexels:
-  api-key: 58820019-8712fea9593ce4e2f79517e51
+unsplash:
+  application-id: 1146224
+  access-key: cPZ1TNhwquqDKOK74iatlwWVNlsYUhwtMQsX22EAXBE
+  secret-key: MYDdXS7H7kcuJ8aLLxp1w7QHFHTziEOinTq2zHb5CF4
 
 logging:
   level:
